@@ -36,11 +36,13 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: 'Sign In', headerBackTitle: 'Back' }} />
         <Stack.Screen name="register" options={{ title: 'Create Account', headerBackTitle: 'Back' }} />
         <Stack.Screen name="add-payment" options={{ title: 'Add Payment Method', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="ready-to-tap" options={{ headerShown: false }} />
         <Stack.Screen name="pricing-confirmation" options={{ title: 'Confirm Pricing', headerBackTitle: 'Back' }} />
         <Stack.Screen name="live-session" options={{ title: 'Charging Session', headerBackVisible: false, gestureEnabled: false }} />
         <Stack.Screen name="receipt" options={{ title: 'Receipt', headerBackVisible: false, gestureEnabled: false }} />
         <Stack.Screen name="history" options={{ title: 'Charging History', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="station-details" options={{ title: 'Station Details', headerBackTitle: 'Back' }} />
       </Stack>
       <StatusBar style="light" />
     </>
