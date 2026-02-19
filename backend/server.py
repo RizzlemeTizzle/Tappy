@@ -535,12 +535,12 @@ async def get_session(session_id: str, user: dict = Depends(get_current_user)):
         if seconds_until_penalty > 0:
             penalty_countdown = int(seconds_until_penalty)
     
-    return {
+    return serialize_doc({
         **session,
         "station": station,
         "charger": charger,
         "penalty_countdown_seconds": penalty_countdown
-    }
+    })
 
 @api_router.post("/sessions/{session_id}/stop")
 async def stop_session(session_id: str, user: dict = Depends(get_current_user)):
