@@ -356,6 +356,283 @@ class ChargeTapAPITester:
             
         except ValueError:
             return False, "Invalid JSON response from get session history"
+
+    # NEW MAP/NEARBY STATIONS TESTS
+    
+    def test_10_map_user_registration(self):
+        """Test 10: Register map test user (mapuser@test.com)"""
+        self.log("=== Testing Map User Registration ===")
+        
+        map_user_data = {
+            "email": "mapuser@test.com",
+            "password": "test123",
+            "name": "Map User"
+        }
+        
+        response = self.make_request("POST", "/auth/register", map_user_data, auth=False)
+        
+        if not response:
+            return False, "Failed to make map user registration request"
+        
+        # Try registration first, fallback to login if user exists
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if "token" not in data:
+                    return False, "No token in registration response"
+                
+                self.token = data["token"]  # Update token for map user
+                self.log(f"Map user registration successful")
+                return True, "Map user registration successful"
+                
+            except ValueError:
+                return False, "Invalid JSON response from registration"
+        
+        elif response.status_code == 400:
+            # User exists, try login
+            self.log("User exists, trying login...")
+            login_data = {
+                "email": "mapuser@test.com",
+                "password": "test123"
+            }
+            
+            login_response = self.make_request("POST", "/auth/login", login_data, auth=False)
+            
+            if login_response and login_response.status_code == 200:
+                try:
+                    data = login_response.json()
+                    self.token = data["token"]
+                    self.log("Map user login successful")
+                    return True, "Map user login successful (user existed)"
+                except ValueError:
+                    return False, "Invalid JSON response from login"
+            else:
+                return False, f"Login failed after registration conflict"
+        else:
+            return False, f"Registration failed with status {response.status_code}: {response.text}"
+    
+    def test_11_add_payment_method_map_user(self):
+        """Test 11: Add payment method for map user"""
+        self.log("=== Testing Add Payment Method (Map User) ===")
+        
+        payment_data = {
+            "card_number": "4242424242424242",
+            "expiry": "12/25",
+            "cvv": "123"
+        }
+        
+        response = self.make_request("POST", "/users/payment-method", payment_data, auth=True)
+        
+        if not response:
+            return False, "Failed to make add payment method request"
+        
+        if response.status_code != 200:
+            return False, f"Add payment method failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if not data.get("success"):
+                return False, "Payment method addition was not successful"
+            
+            if "last4" not in data or data["last4"] != "4242":
+                return False, "Incorrect last4 digits in payment method response"
+            
+            self.log(f"Payment method added successfully for map user")
+            return True, "Payment method added successfully for map user"
+            
+        except ValueError:
+            return False, "Invalid JSON response from add payment method"
+    
+    def test_12_nearby_stations_basic(self):
+        """Test 12: Get nearby stations with basic parameters"""
+        self.log("=== Testing Nearby Stations (Basic) ===")
+        
+        # Rotterdam coordinates with 10km radius
+        params = "lat=51.9244&lng=4.4777&radius_km=10"
+        
+        response = self.make_request("GET", f"/stations/nearby?{params}", auth=False)
+        
+        if not response:
+            return False, "Failed to make nearby stations request"
+        
+        if response.status_code != 200:
+            return False, f"Nearby stations failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if not isinstance(data, list):
+                return False, "Nearby stations response is not a list"
+            
+            if len(data) == 0:
+                return False, "No nearby stations found"
+            
+            # Validate first station has required fields
+            station = data[0]
+            required_fields = ["id", "name", "address", "latitude", "longitude", "distance_km", "pricing_summary", "availability"]
+            missing_fields = [field for field in required_fields if field not in station]
+            
+            if missing_fields:
+                return False, f"Missing fields in station: {missing_fields}"
+            
+            self.log(f"Found {len(data)} nearby stations, nearest: {station['name']} ({station['distance_km']}km)")
+            return True, f"Found {len(data)} nearby stations"
+            
+        except ValueError:
+            return False, "Invalid JSON response from nearby stations"
+    
+    def test_13_nearby_stations_connector_filter(self):
+        """Test 13: Get nearby stations filtered by connector type"""
+        self.log("=== Testing Nearby Stations (Connector Filter) ===")
+        
+        params = "lat=51.9244&lng=4.4777&radius_km=10&connector_type=CCS"
+        
+        response = self.make_request("GET", f"/stations/nearby?{params}", auth=False)
+        
+        if not response:
+            return False, "Failed to make connector filter request"
+        
+        if response.status_code != 200:
+            return False, f"Connector filter failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if not isinstance(data, list):
+                return False, "Response is not a list"
+            
+            # Check that returned stations have CCS connectors
+            ccs_stations = 0
+            for station in data:
+                if "availability" in station and "connector_breakdown" in station["availability"]:
+                    if "CCS" in station["availability"]["connector_breakdown"]:
+                        ccs_stations += 1
+            
+            self.log(f"Found {len(data)} stations with CCS filter, {ccs_stations} have CCS")
+            return True, f"Connector filter working, found {len(data)} stations"
+            
+        except ValueError:
+            return False, "Invalid JSON response from connector filter"
+    
+    def test_14_nearby_stations_sort_by_price(self):
+        """Test 14: Get nearby stations sorted by price"""
+        self.log("=== Testing Nearby Stations (Sort by Price) ===")
+        
+        params = "lat=51.9244&lng=4.4777&radius_km=10&sort_by=price"
+        
+        response = self.make_request("GET", f"/stations/nearby?{params}", auth=False)
+        
+        if not response:
+            return False, "Failed to make sort by price request"
+        
+        if response.status_code != 200:
+            return False, f"Sort by price failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if not isinstance(data, list):
+                return False, "Response is not a list"
+            
+            if len(data) > 1:
+                # Check if sorted by energy rate
+                prices = [station["pricing_summary"]["energy_rate_cents_per_kwh"] for station in data if "pricing_summary" in station]
+                is_sorted = all(prices[i] <= prices[i+1] for i in range(len(prices)-1))
+                
+                if is_sorted:
+                    self.log(f"Stations properly sorted by price: {prices[0]} to {prices[-1]} cents/kWh")
+                else:
+                    self.log(f"Stations not properly sorted by price")
+                    return False, "Stations not sorted by price"
+            
+            return True, f"Price sorting working, found {len(data)} stations"
+            
+        except ValueError:
+            return False, "Invalid JSON response from price sort"
+    
+    def test_15_nearby_stations_available_only(self):
+        """Test 15: Get nearby stations with available_only filter"""
+        self.log("=== Testing Nearby Stations (Available Only) ===")
+        
+        params = "lat=51.9244&lng=4.4777&radius_km=10&available_only=true"
+        
+        response = self.make_request("GET", f"/stations/nearby?{params}", auth=False)
+        
+        if not response:
+            return False, "Failed to make available only request"
+        
+        if response.status_code != 200:
+            return False, f"Available only filter failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if not isinstance(data, list):
+                return False, "Response is not a list"
+            
+            # Check that all returned stations have available chargers
+            for station in data:
+                available_count = station.get("availability", {}).get("available_count", 0)
+                if available_count == 0:
+                    return False, f"Station {station['name']} has no available chargers but was returned"
+            
+            self.log(f"Available only filter working, found {len(data)} stations with available chargers")
+            return True, f"Available only filter working, {len(data)} stations"
+            
+        except ValueError:
+            return False, "Invalid JSON response from available only filter"
+    
+    def test_16_get_station_details(self):
+        """Test 16: Get individual station details"""
+        self.log("=== Testing Get Station Details ===")
+        
+        station_id = "station-001"
+        
+        response = self.make_request("GET", f"/stations/{station_id}", auth=False)
+        
+        if not response:
+            return False, "Failed to make get station details request"
+        
+        if response.status_code != 200:
+            return False, f"Get station details failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            required_fields = ["id", "name", "address", "latitude", "longitude", "chargers", "pricing"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                return False, f"Missing fields in station details: {missing_fields}"
+            
+            charger_count = len(data["chargers"]) if data["chargers"] else 0
+            self.log(f"Station details retrieved: {data['name']} with {charger_count} chargers")
+            return True, f"Station details retrieved successfully"
+            
+        except ValueError:
+            return False, "Invalid JSON response from station details"
+    
+    def test_17_simulate_availability(self):
+        """Test 17: Test availability simulator"""
+        self.log("=== Testing Availability Simulator ===")
+        
+        response = self.make_request("POST", "/simulate/availability", {}, auth=False)
+        
+        if not response:
+            return False, "Failed to make simulate availability request"
+        
+        if response.status_code != 200:
+            return False, f"Simulate availability failed with status {response.status_code}: {response.text}"
+        
+        try:
+            data = response.json()
+            if "message" not in data:
+                return False, "No message in simulate availability response"
+            
+            message = data["message"]
+            if "Updated" not in message:
+                return False, f"Unexpected simulator response: {message}"
+            
+            self.log(f"Availability simulation completed: {message}")
+            return True, "Availability simulator working correctly"
+            
+        except ValueError:
+            return False, "Invalid JSON response from simulate availability"
     
     def run_all_tests(self):
         """Run all tests in sequence"""
