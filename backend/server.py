@@ -367,6 +367,38 @@ async def add_payment_method(payment: PaymentMethodAdd, user: dict = Depends(get
     )
     return {"success": True, "last4": last4}
 
+# ==================== HELPER FUNCTIONS ====================
+
+import math
+
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two points in kilometers"""
+    R = 6371  # Earth's radius in km
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lon = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    return R * c
+
+def get_penalty_summary(penalty: dict) -> str:
+    """Generate a short penalty summary string"""
+    if not penalty.get("enabled", False):
+        return "No idle fee"
+    
+    grace = penalty.get("grace_minutes", 30)
+    rate = penalty.get("penalty_cents_per_minute", 0)
+    cap = penalty.get("daily_cap_cents")
+    
+    rate_str = f"€{rate/100:.2f}/min"
+    cap_str = f" (max €{cap/100:.0f})" if cap else " (no cap)"
+    
+    return f"Idle fee after {grace}min: {rate_str}{cap_str}"
+
 # ==================== STATION ENDPOINTS ====================
 
 @api_router.get("/stations")
@@ -382,6 +414,181 @@ async def get_stations():
             "pricing": pricing
         }))
     return result
+
+@api_router.get("/stations/nearby")
+async def get_nearby_stations(
+    lat: float,
+    lng: float,
+    radius_km: float = 10.0,
+    connector_type: Optional[str] = None,
+    min_power_kw: Optional[float] = None,
+    max_price_cents: Optional[int] = None,
+    available_only: bool = False,
+    sort_by: str = "distance"  # distance, price, power, estimated_cost
+):
+    """Get stations near a location with filters"""
+    all_stations = await db.stations.find().to_list(500)
+    
+    result = []
+    for station in all_stations:
+        # Calculate distance
+        distance = haversine_distance(lat, lng, station["latitude"], station["longitude"])
+        
+        # Filter by radius
+        if distance > radius_km:
+            continue
+        
+        # Get chargers and pricing
+        chargers = await db.chargers.find({"station_id": station["id"]}).to_list(100)
+        pricing = await db.pricing_plans.find_one({"station_id": station["id"]})
+        
+        if not pricing:
+            continue
+        
+        # Filter by connector type
+        if connector_type:
+            chargers = [c for c in chargers if c["connector_type"] == connector_type]
+            if not chargers:
+                continue
+        
+        # Filter by minimum power
+        if min_power_kw:
+            chargers = [c for c in chargers if c["max_kw"] >= min_power_kw]
+            if not chargers:
+                continue
+        
+        # Filter by max price
+        if max_price_cents and pricing["energy_rate_cents_per_kwh"] > max_price_cents:
+            continue
+        
+        # Calculate availability
+        available_chargers = [c for c in chargers if c["status"] == "AVAILABLE"]
+        available_count = len(available_chargers)
+        total_count = len(chargers)
+        
+        # Filter by availability
+        if available_only and available_count == 0:
+            continue
+        
+        # Get max power
+        max_power = max([c["max_kw"] for c in chargers]) if chargers else 0
+        
+        # Calculate estimated cost for 20 kWh
+        estimated_20kwh = pricing["start_fee_cents"] + (20 * pricing["energy_rate_cents_per_kwh"])
+        estimated_20kwh_with_tax = int(estimated_20kwh * (1 + pricing["tax_percent"] / 100))
+        
+        # Build connector breakdown
+        connector_breakdown = {}
+        for charger in chargers:
+            ct = charger["connector_type"]
+            if ct not in connector_breakdown:
+                connector_breakdown[ct] = {"total": 0, "available": 0, "max_kw": 0}
+            connector_breakdown[ct]["total"] += 1
+            connector_breakdown[ct]["max_kw"] = max(connector_breakdown[ct]["max_kw"], charger["max_kw"])
+            if charger["status"] == "AVAILABLE":
+                connector_breakdown[ct]["available"] += 1
+        
+        station_data = {
+            **station,
+            "distance_km": round(distance, 2),
+            "pricing_summary": {
+                "start_fee_cents": pricing["start_fee_cents"],
+                "energy_rate_cents_per_kwh": pricing["energy_rate_cents_per_kwh"],
+                "tax_percent": pricing["tax_percent"],
+                "penalty_summary": get_penalty_summary(pricing.get("penalty", {})),
+                "penalty_enabled": pricing.get("penalty", {}).get("enabled", False),
+                "estimated_20kwh_cents": estimated_20kwh_with_tax
+            },
+            "availability": {
+                "available_count": available_count,
+                "total_count": total_count,
+                "connector_breakdown": connector_breakdown
+            },
+            "max_power_kw": max_power,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        result.append(serialize_doc(station_data))
+    
+    # Sort results
+    if sort_by == "distance":
+        result.sort(key=lambda x: x["distance_km"])
+    elif sort_by == "price":
+        result.sort(key=lambda x: x["pricing_summary"]["energy_rate_cents_per_kwh"])
+    elif sort_by == "power":
+        result.sort(key=lambda x: -x["max_power_kw"])
+    elif sort_by == "estimated_cost":
+        result.sort(key=lambda x: x["pricing_summary"]["estimated_20kwh_cents"])
+    
+    return result
+
+@api_router.get("/stations/viewport")
+async def get_stations_in_viewport(
+    min_lat: float,
+    max_lat: float,
+    min_lng: float,
+    max_lng: float,
+    connector_type: Optional[str] = None,
+    min_power_kw: Optional[float] = None,
+    available_only: bool = False
+):
+    """Get stations within a map viewport (bounding box)"""
+    # Query stations within bounds
+    stations = await db.stations.find({
+        "latitude": {"$gte": min_lat, "$lte": max_lat},
+        "longitude": {"$gte": min_lng, "$lte": max_lng}
+    }).to_list(200)
+    
+    result = []
+    for station in stations:
+        chargers = await db.chargers.find({"station_id": station["id"]}).to_list(100)
+        pricing = await db.pricing_plans.find_one({"station_id": station["id"]})
+        
+        if not pricing:
+            continue
+        
+        # Filter by connector type
+        if connector_type:
+            chargers = [c for c in chargers if c["connector_type"] == connector_type]
+            if not chargers:
+                continue
+        
+        # Filter by minimum power
+        if min_power_kw:
+            chargers = [c for c in chargers if c["max_kw"] >= min_power_kw]
+            if not chargers:
+                continue
+        
+        available_count = len([c for c in chargers if c["status"] == "AVAILABLE"])
+        total_count = len(chargers)
+        
+        if available_only and available_count == 0:
+            continue
+        
+        max_power = max([c["max_kw"] for c in chargers]) if chargers else 0
+        
+        station_data = {
+            "id": station["id"],
+            "name": station["name"],
+            "latitude": station["latitude"],
+            "longitude": station["longitude"],
+            "available_count": available_count,
+            "total_count": total_count,
+            "max_power_kw": max_power,
+            "energy_rate_cents": pricing["energy_rate_cents_per_kwh"],
+            "has_penalty": pricing.get("penalty", {}).get("enabled", False)
+        }
+        
+        result.append(serialize_doc(station_data))
+    
+    return result
+
+@api_router.get("/chargers/status/bulk")
+async def get_chargers_status_bulk(ids: str):
+    """Get status of multiple chargers by IDs (comma-separated)"""
+    charger_ids = [id.strip() for id in ids.split(",")]
+    chargers = await db.chargers.find({"id": {"$in": charger_ids}}).to_list(100)
+    return serialize_doc(chargers)
 
 @api_router.get("/stations/{station_id}")
 async def get_station(station_id: str):
