@@ -15,13 +15,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useMapStore, NearbyStation } from '../../src/store/mapStore';
-import { useSessionStore } from '../../src/store/sessionStore';
 import debounce from 'lodash/debounce';
 
 const { width, height } = Dimensions.get('window');
+
+// Conditionally import MapView only for native platforms
+let MapView: any = null;
+let Marker: any = null;
+if (Platform.OS !== 'web') {
+  const Maps = require('react-native-maps');
+  MapView = Maps.default;
+  Marker = Maps.Marker;
+}
 
 const CONNECTOR_TYPES = ['CCS', 'CHAdeMO', 'Type2'];
 const POWER_OPTIONS = [
@@ -39,7 +46,7 @@ const SORT_OPTIONS = [
 
 export default function FindScreen() {
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const {
     nearbyStations,
     selectedStation,
@@ -60,13 +67,15 @@ export default function FindScreen() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
-        setUserLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
+      if (Platform.OS !== 'web') {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({});
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
       }
       fetchNearbyStations();
     })();
@@ -91,13 +100,10 @@ export default function FindScreen() {
   };
 
   const handleNavigate = (station: NearbyStation) => {
-    const scheme = Platform.select({
-      ios: 'maps:',
-      android: 'geo:',
-    });
     const url = Platform.select({
       ios: `maps:?daddr=${station.latitude},${station.longitude}`,
       android: `geo:${station.latitude},${station.longitude}?q=${station.latitude},${station.longitude}(${encodeURIComponent(station.name)})`,
+      web: `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,
     });
 
     if (url) {
@@ -129,12 +135,14 @@ export default function FindScreen() {
       ]}
       onPress={() => {
         selectStation(station);
-        mapRef.current?.animateToRegion({
-          latitude: station.latitude,
-          longitude: station.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        });
+        if (MapView && mapRef.current) {
+          mapRef.current.animateToRegion({
+            latitude: station.latitude,
+            longitude: station.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
       }}
     >
       <View style={styles.cardHeader}>
@@ -208,36 +216,210 @@ export default function FindScreen() {
     </TouchableOpacity>
   );
 
+  // Web fallback - list only view
+  if (Platform.OS === 'web') {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {/* Search Bar */}
+        <View style={styles.webHeader}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#888" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search stations..."
+              placeholderTextColor="#888"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setShowFilters(!showFilters)}
+            >
+              <Ionicons
+                name="options"
+                size={20}
+                color={showFilters ? '#4CAF50' : '#888'}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Filters */}
+          {showFilters && (
+            <View style={styles.filtersContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {/* Connector Type */}
+                <View style={styles.filterGroup}>
+                  <Text style={styles.filterLabel}>Connector</Text>
+                  <View style={styles.filterChips}>
+                    <TouchableOpacity
+                      style={[
+                        styles.chip,
+                        !filters.connector_type && styles.chipActive,
+                      ]}
+                      onPress={() => setFilters({ connector_type: null })}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          !filters.connector_type && styles.chipTextActive,
+                        ]}
+                      >
+                        All
+                      </Text>
+                    </TouchableOpacity>
+                    {CONNECTOR_TYPES.map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={[
+                          styles.chip,
+                          filters.connector_type === type && styles.chipActive,
+                        ]}
+                        onPress={() => setFilters({ connector_type: type })}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            filters.connector_type === type && styles.chipTextActive,
+                          ]}
+                        >
+                          {type}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Power */}
+                <View style={styles.filterGroup}>
+                  <Text style={styles.filterLabel}>Power</Text>
+                  <View style={styles.filterChips}>
+                    {POWER_OPTIONS.map((opt) => (
+                      <TouchableOpacity
+                        key={opt.label}
+                        style={[
+                          styles.chip,
+                          filters.min_power_kw === opt.value && styles.chipActive,
+                        ]}
+                        onPress={() => setFilters({ min_power_kw: opt.value })}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            filters.min_power_kw === opt.value && styles.chipTextActive,
+                          ]}
+                        >
+                          {opt.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Available Only */}
+                <View style={styles.filterGroup}>
+                  <Text style={styles.filterLabel}>Status</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.chip,
+                      filters.available_only && styles.chipActive,
+                    ]}
+                    onPress={() => setFilters({ available_only: !filters.available_only })}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        filters.available_only && styles.chipTextActive,
+                      ]}
+                    >
+                      Available Now
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+
+              {/* Sort */}
+              <View style={styles.sortContainer}>
+                <Text style={styles.filterLabel}>Sort by:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {SORT_OPTIONS.map((opt) => (
+                    <TouchableOpacity
+                      key={opt.value}
+                      style={[
+                        styles.sortChip,
+                        filters.sort_by === opt.value && styles.sortChipActive,
+                      ]}
+                      onPress={() => setFilters({ sort_by: opt.value as any })}
+                    >
+                      <Text
+                        style={[
+                          styles.sortChipText,
+                          filters.sort_by === opt.value && styles.sortChipTextActive,
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          )}
+
+          <Text style={styles.webTitle}>
+            {nearbyStations.length} Charging Stations Near Rotterdam
+          </Text>
+        </View>
+
+        {/* Station List */}
+        <ScrollView style={styles.webStationList} showsVerticalScrollIndicator={false}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />
+          ) : nearbyStations.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="location-outline" size={48} color="#444" />
+              <Text style={styles.emptyText}>No stations found</Text>
+            </View>
+          ) : (
+            nearbyStations.map((station, index) => renderStationCard(station, index))
+          )}
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // Native Map View
   return (
     <View style={styles.container}>
       {/* Map */}
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        initialRegion={region}
-        onRegionChangeComplete={handleRegionChange}
-        showsUserLocation
-        showsMyLocationButton={false}
-      >
-        {nearbyStations.map((station) => (
-          <Marker
-            key={station.id}
-            coordinate={{
-              latitude: station.latitude,
-              longitude: station.longitude,
-            }}
-            onPress={() => handleMarkerPress(station)}
-          >
-            <View style={[styles.marker, { backgroundColor: getMarkerColor(station) }]}>
-              <Ionicons name="flash" size={16} color="#FFF" />
-              <Text style={styles.markerText}>
-                {station.availability.available_count}
-              </Text>
-            </View>
-          </Marker>
-        ))}
-      </MapView>
+      {MapView && (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={region}
+          onRegionChangeComplete={handleRegionChange}
+          showsUserLocation
+          showsMyLocationButton={false}
+        >
+          {nearbyStations.map((station) => (
+            <Marker
+              key={station.id}
+              coordinate={{
+                latitude: station.latitude,
+                longitude: station.longitude,
+              }}
+              onPress={() => handleMarkerPress(station)}
+            >
+              <View style={[styles.marker, { backgroundColor: getMarkerColor(station) }]}>
+                <Ionicons name="flash" size={16} color="#FFF" />
+                <Text style={styles.markerText}>
+                  {station.availability.available_count}
+                </Text>
+              </View>
+            </Marker>
+          ))}
+        </MapView>
+      )}
 
       {/* Search Bar */}
       <SafeAreaView style={styles.searchContainer} edges={['top']}>
@@ -389,8 +571,8 @@ export default function FindScreen() {
       <TouchableOpacity
         style={styles.myLocationButton}
         onPress={async () => {
-          if (userLocation) {
-            mapRef.current?.animateToRegion({
+          if (userLocation && mapRef.current) {
+            mapRef.current.animateToRegion({
               ...region,
               latitude: userLocation.latitude,
               longitude: userLocation.longitude,
@@ -454,6 +636,24 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  webHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E1E1E',
+  },
+  webTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+  },
+  webStationList: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   searchContainer: {
     position: 'absolute',
