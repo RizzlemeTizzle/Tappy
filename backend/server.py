@@ -403,7 +403,7 @@ async def get_station_pricing(station_id: str):
     pricing = await db.pricing_plans.find_one({"station_id": station_id})
     if not pricing:
         raise HTTPException(status_code=404, detail="Pricing not found")
-    return pricing
+    return serialize_doc(pricing)
 
 # ==================== CHARGER ENDPOINTS ====================
 
@@ -412,7 +412,7 @@ async def get_charger_status(charger_id: str):
     charger = await db.chargers.find_one({"id": charger_id})
     if not charger:
         raise HTTPException(status_code=404, detail="Charger not found")
-    return charger
+    return serialize_doc(charger)
 
 # ==================== NFC ENDPOINTS ====================
 
@@ -437,9 +437,9 @@ async def resolve_nfc(payload: dict):
         raise HTTPException(status_code=404, detail="Station or pricing not found")
     
     return {
-        "charger": charger,
-        "station": station,
-        "pricing": pricing
+        "charger": serialize_doc(charger),
+        "station": serialize_doc(station),
+        "pricing": serialize_doc(pricing)
     }
 
 # ==================== SESSION ENDPOINTS ====================
