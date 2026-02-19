@@ -605,10 +605,10 @@ async def get_session_history(user: dict = Depends(get_current_user)):
     result = []
     for session in sessions:
         station = await db.stations.find_one({"id": session["station_id"]})
-        result.append({
+        result.append(serialize_doc({
             **session,
             "station": station
-        })
+        }))
     
     return result
 
