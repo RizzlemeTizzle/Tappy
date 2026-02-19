@@ -16,8 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import PriceBreakdown from '../src/components/PriceBreakdown';
 import { useSessionStore } from '../src/store/sessionStore';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import { API_URL } from '../src/config/api';
 
 interface Charger {
   id: string;
