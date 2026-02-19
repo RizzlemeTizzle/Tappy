@@ -2,8 +2,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import debounce from 'lodash/debounce';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import { API_URL } from '../config/api';
 
 interface PricingSummary {
   start_fee_cents: number;
