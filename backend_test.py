@@ -655,7 +655,16 @@ class ChargeTapAPITester:
             ("Start Charging Session", self.test_6_start_session),
             ("Get Session Status", self.test_7_get_session_status),
             ("Stop Session", self.test_8_stop_session),
-            ("Get Session History", self.test_9_get_session_history)
+            ("Get Session History", self.test_9_get_session_history),
+            # NEW MAP/NEARBY STATIONS TESTS
+            ("Map User Registration", self.test_10_map_user_registration),
+            ("Map User Payment Method", self.test_11_add_payment_method_map_user),
+            ("Nearby Stations Basic", self.test_12_nearby_stations_basic),
+            ("Nearby Stations Connector Filter", self.test_13_nearby_stations_connector_filter),
+            ("Nearby Stations Sort by Price", self.test_14_nearby_stations_sort_by_price),
+            ("Nearby Stations Available Only", self.test_15_nearby_stations_available_only),
+            ("Get Station Details", self.test_16_get_station_details),
+            ("Simulate Availability", self.test_17_simulate_availability)
         ]
         
         results = {}
