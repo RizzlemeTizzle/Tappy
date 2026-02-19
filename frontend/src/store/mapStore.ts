@@ -132,13 +132,15 @@ export const useMapStore = create<MapState>((set, get) => ({
     const lat = userLocation?.latitude || region.latitude;
     const lng = userLocation?.longitude || region.longitude;
 
+    console.log('[MapStore] Fetching stations near:', { lat, lng, userLocation: !!userLocation });
+
     try {
       set({ isLoading: true, error: null });
 
       const params = new URLSearchParams({
         lat: lat.toString(),
         lng: lng.toString(),
-        radius_km: '20',
+        radius_km: '50', // Increased radius to find stations further away
         sort_by: filters.sort_by,
       });
 
@@ -155,7 +157,11 @@ export const useMapStore = create<MapState>((set, get) => ({
         params.append('available_only', 'true');
       }
 
-      const response = await axios.get(`${API_URL}/api/stations/nearby?${params}`);
+      const url = `${API_URL}/api/stations/nearby?${params}`;
+      console.log('[MapStore] API URL:', url);
+      
+      const response = await axios.get(url);
+      console.log('[MapStore] Fetched stations:', response.data.length);
       set({ nearbyStations: response.data, isLoading: false });
     } catch (error: any) {
       set({
