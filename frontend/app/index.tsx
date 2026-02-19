@@ -16,7 +16,7 @@ export default function Index() {
     } else if (!user?.payment_method_added) {
       router.replace('/add-payment');
     } else {
-      router.replace('/ready-to-tap');
+      router.replace('/(tabs)/find');
     }
   }, [isAuthenticated, user, isLoading]);
 
