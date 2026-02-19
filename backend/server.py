@@ -500,8 +500,8 @@ async def start_session(data: dict, background_tasks: BackgroundTasks, user: dic
     
     return {
         "session_id": session.id,
-        "pricing_snapshot": pricing_snapshot.dict(),
-        "charger": charger,
+        "pricing_snapshot": serialize_doc(pricing_snapshot.dict()),
+        "charger": serialize_doc(charger),
         "message": "Charging started successfully"
     }
 
