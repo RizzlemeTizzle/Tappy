@@ -823,140 +823,185 @@ async def get_session_history(user: dict = Depends(get_current_user)):
 
 @api_router.post("/seed")
 async def seed_data():
-    """Seed demo data - 3 stations with different pricing"""
+    """Seed demo data - 30+ stations around Rotterdam with varied pricing"""
     
     # Clear existing data
     await db.stations.delete_many({})
     await db.chargers.delete_many({})
     await db.pricing_plans.delete_many({})
     
-    # Station 1: Downtown Fast Charge - Standard pricing
-    station1 = Station(
-        id="station-001",
-        name="Downtown Fast Charge",
-        address="123 Main Street, San Francisco, CA 94102",
-        latitude=37.7749,
-        longitude=-122.4194
-    )
+    # Rotterdam center coordinates: 51.9244, 4.4777
+    # Generate 30 stations around Rotterdam
     
-    pricing1 = PricingPlan(
-        id="pricing-001",
-        station_id="station-001",
-        start_fee_cents=100,  # $1.00
-        energy_rate_cents_per_kwh=35,  # $0.35/kWh
-        penalty=PenaltyConfig(
-            enabled=True,
-            grace_minutes=30,
-            penalty_cents_per_minute=50,  # $0.50/min
-            applies_when="charging_complete_but_plugged",
-            daily_cap_cents=3000  # $30 max
-        ),
-        tax_percent=8.5
-    )
+    station_configs = [
+        # Downtown Rotterdam - Fast chargers, moderate pricing
+        {"name": "Rotterdam Centraal", "address": "Stationsplein 1, Rotterdam", "lat": 51.9244, "lng": 4.4692, "type": "fast", "chargers": [("CCS", 150), ("CCS", 150), ("CHAdeMO", 100)]},
+        {"name": "Markthal Charging Hub", "address": "Dominee Jan Scharpstraat 298, Rotterdam", "lat": 51.9200, "lng": 4.4863, "type": "fast", "chargers": [("CCS", 100), ("CCS", 100)]},
+        {"name": "Erasmusbrug Plaza", "address": "Erasmusbrug, Rotterdam", "lat": 51.9094, "lng": 4.4868, "type": "fast", "chargers": [("CCS", 150), ("Type2", 22)]},
+        {"name": "Euromast Parking", "address": "Parkhaven 20, Rotterdam", "lat": 51.9054, "lng": 4.4666, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22), ("Type2", 22)]},
+        {"name": "Kop van Zuid", "address": "Wilhelminakade 137, Rotterdam", "lat": 51.9028, "lng": 4.4896, "type": "premium", "chargers": [("CCS", 350), ("CCS", 350)]},
+        
+        # Noord Rotterdam
+        {"name": "Blijdorp Zoo Charge", "address": "Blijdorplaan 8, Rotterdam", "lat": 51.9285, "lng": 4.4488, "type": "standard", "chargers": [("Type2", 22), ("Type2", 22), ("Type2", 11)]},
+        {"name": "Schiebroek Hub", "address": "Wilgenplaslaan 56, Rotterdam", "lat": 51.9467, "lng": 4.4683, "type": "budget", "chargers": [("Type2", 11), ("Type2", 11)]},
+        {"name": "Hillegersberg Charge", "address": "Straatweg 190, Rotterdam", "lat": 51.9512, "lng": 4.4829, "type": "budget", "chargers": [("Type2", 22), ("Type2", 22)]},
+        
+        # Zuid Rotterdam
+        {"name": "Zuidplein Mall", "address": "Zuidplein 100, Rotterdam", "lat": 51.8804, "lng": 4.4835, "type": "standard", "chargers": [("CCS", 50), ("CCS", 50), ("Type2", 22)]},
+        {"name": "Ahoy Rotterdam", "address": "Ahoyweg 10, Rotterdam", "lat": 51.8848, "lng": 4.4941, "type": "fast", "chargers": [("CCS", 150), ("CCS", 150), ("CHAdeMO", 100)]},
+        {"name": "Feyenoord Stadium", "address": "Van Zandvlietplein 1, Rotterdam", "lat": 51.8939, "lng": 4.5231, "type": "fast", "chargers": [("CCS", 100), ("CCS", 100)]},
+        {"name": "Charlois Point", "address": "Groene Hilledijk 315, Rotterdam", "lat": 51.8830, "lng": 4.4599, "type": "budget", "chargers": [("Type2", 22)]},
+        
+        # Oost Rotterdam
+        {"name": "Kralingen Charge", "address": "Kralingse Plaslaan 1, Rotterdam", "lat": 51.9303, "lng": 4.5088, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22)]},
+        {"name": "Alexander Station", "address": "Alexander, Rotterdam", "lat": 51.9516, "lng": 4.5532, "type": "fast", "chargers": [("CCS", 150), ("CCS", 100), ("CHAdeMO", 50)]},
+        {"name": "Ommoord Hub", "address": "Ommoord, Rotterdam", "lat": 51.9608, "lng": 4.5324, "type": "budget", "chargers": [("Type2", 11), ("Type2", 11), ("Type2", 11)]},
+        {"name": "Capelle Noord", "address": "Capelle aan den IJssel", "lat": 51.9331, "lng": 4.5757, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22)]},
+        
+        # West Rotterdam
+        {"name": "Delfshaven Historic", "address": "Delfshaven, Rotterdam", "lat": 51.9058, "lng": 4.4468, "type": "budget", "chargers": [("Type2", 22), ("Type2", 22)]},
+        {"name": "Spangen Charge", "address": "Spangen, Rotterdam", "lat": 51.9120, "lng": 4.4320, "type": "budget", "chargers": [("Type2", 11)]},
+        {"name": "Schiedam Centrum", "address": "Broersveld, Schiedam", "lat": 51.9177, "lng": 4.3994, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22), ("Type2", 22)]},
+        {"name": "Vlaardingen Hub", "address": "Hoogstraat, Vlaardingen", "lat": 51.9122, "lng": 4.3408, "type": "fast", "chargers": [("CCS", 100), ("CCS", 100)]},
+        
+        # Surrounding areas
+        {"name": "Barendrecht Park", "address": "Barendrecht", "lat": 51.8571, "lng": 4.5339, "type": "budget", "chargers": [("Type2", 22), ("Type2", 22)]},
+        {"name": "Ridderkerk Station", "address": "Ridderkerk", "lat": 51.8698, "lng": 4.5935, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22)]},
+        {"name": "Hoogvliet Center", "address": "Hoogvliet, Rotterdam", "lat": 51.8628, "lng": 4.3533, "type": "standard", "chargers": [("CCS", 50), ("Type2", 11)]},
+        {"name": "Pernis Industrial", "address": "Pernis, Rotterdam", "lat": 51.8836, "lng": 4.3866, "type": "fast", "chargers": [("CCS", 150), ("CCS", 100)]},
+        {"name": "Rozenburg Port", "address": "Rozenburg", "lat": 51.9003, "lng": 4.2583, "type": "budget", "chargers": [("Type2", 22)]},
+        
+        # Highway stations
+        {"name": "A16 Fastcharge North", "address": "A16 Northbound", "lat": 51.9756, "lng": 4.5194, "type": "premium", "chargers": [("CCS", 350), ("CCS", 350), ("CCS", 150)]},
+        {"name": "A15 Truckers Stop", "address": "A15 Europoort", "lat": 51.8936, "lng": 4.3194, "type": "fast", "chargers": [("CCS", 150), ("CCS", 150), ("CHAdeMO", 100)]},
+        {"name": "A20 Charging Plaza", "address": "A20 Westbound", "lat": 51.9256, "lng": 4.3458, "type": "fast", "chargers": [("CCS", 150), ("CCS", 100)]},
+        {"name": "A4 Service Station", "address": "A4 Direction Den Haag", "lat": 51.9892, "lng": 4.3994, "type": "fast", "chargers": [("CCS", 150), ("CCS", 150), ("CHAdeMO", 100), ("Type2", 22)]},
+        
+        # Shopping centers
+        {"name": "Alexandrium Mall", "address": "Alexandrium, Rotterdam", "lat": 51.9537, "lng": 4.5478, "type": "standard", "chargers": [("CCS", 50), ("CCS", 50), ("Type2", 22), ("Type2", 22)]},
+        {"name": "The Hague IKEA", "address": "IKEA Den Haag", "lat": 52.0477, "lng": 4.3826, "type": "standard", "chargers": [("CCS", 50), ("Type2", 22), ("Type2", 22), ("Type2", 22)]},
+    ]
     
-    charger1a = Charger(
-        id="charger-001a",
-        station_id="station-001",
-        connector_type="CCS",
-        max_kw=50.0,
-        status="AVAILABLE",
-        nfc_payload="CHARGETAP-001A"
-    )
+    # Pricing templates
+    pricing_templates = {
+        "budget": {
+            "start_fee_cents": 0,
+            "energy_rate_cents_per_kwh": 25,
+            "penalty": PenaltyConfig(enabled=False, grace_minutes=0, penalty_cents_per_minute=0, daily_cap_cents=None),
+            "tax_percent": 21.0
+        },
+        "standard": {
+            "start_fee_cents": 50,
+            "energy_rate_cents_per_kwh": 35,
+            "penalty": PenaltyConfig(enabled=True, grace_minutes=30, penalty_cents_per_minute=25, daily_cap_cents=2500),
+            "tax_percent": 21.0
+        },
+        "fast": {
+            "start_fee_cents": 100,
+            "energy_rate_cents_per_kwh": 45,
+            "penalty": PenaltyConfig(enabled=True, grace_minutes=15, penalty_cents_per_minute=50, daily_cap_cents=3000),
+            "tax_percent": 21.0
+        },
+        "premium": {
+            "start_fee_cents": 200,
+            "energy_rate_cents_per_kwh": 59,
+            "penalty": PenaltyConfig(enabled=True, grace_minutes=10, penalty_cents_per_minute=100, daily_cap_cents=None),
+            "tax_percent": 21.0
+        }
+    }
     
-    charger1b = Charger(
-        id="charger-001b",
-        station_id="station-001",
-        connector_type="CHAdeMO",
-        max_kw=50.0,
-        status="AVAILABLE",
-        nfc_payload="CHARGETAP-001B"
-    )
+    stations = []
+    chargers = []
+    pricing_plans = []
     
-    # Station 2: Highway Supercharger - Premium pricing, no penalty cap
-    station2 = Station(
-        id="station-002",
-        name="Highway Supercharger",
-        address="456 Highway 101, Palo Alto, CA 94301",
-        latitude=37.4419,
-        longitude=-122.1430
-    )
-    
-    pricing2 = PricingPlan(
-        id="pricing-002",
-        station_id="station-002",
-        start_fee_cents=200,  # $2.00
-        energy_rate_cents_per_kwh=45,  # $0.45/kWh
-        penalty=PenaltyConfig(
-            enabled=True,
-            grace_minutes=15,  # Shorter grace period
-            penalty_cents_per_minute=100,  # $1.00/min - aggressive!
-            applies_when="charging_complete_but_plugged",
-            daily_cap_cents=None  # No cap!
-        ),
-        tax_percent=9.25
-    )
-    
-    charger2a = Charger(
-        id="charger-002a",
-        station_id="station-002",
-        connector_type="CCS",
-        max_kw=150.0,  # Fast charger
-        status="AVAILABLE",
-        nfc_payload="CHARGETAP-002A"
-    )
-    
-    # Station 3: Neighborhood Charge - Budget friendly, no penalties
-    station3 = Station(
-        id="station-003",
-        name="Neighborhood Charge",
-        address="789 Oak Avenue, Oakland, CA 94612",
-        latitude=37.8044,
-        longitude=-122.2712
-    )
-    
-    pricing3 = PricingPlan(
-        id="pricing-003",
-        station_id="station-003",
-        start_fee_cents=0,  # No start fee!
-        energy_rate_cents_per_kwh=28,  # $0.28/kWh - cheapest
-        penalty=PenaltyConfig(
-            enabled=False,  # No penalty!
-            grace_minutes=0,
-            penalty_cents_per_minute=0,
-            applies_when="charging_complete_but_plugged",
-            daily_cap_cents=None
-        ),
-        tax_percent=8.0
-    )
-    
-    charger3a = Charger(
-        id="charger-003a",
-        station_id="station-003",
-        connector_type="Type2",
-        max_kw=22.0,  # Level 2 charger
-        status="AVAILABLE",
-        nfc_payload="CHARGETAP-003A"
-    )
-    
-    charger3b = Charger(
-        id="charger-003b",
-        station_id="station-003",
-        connector_type="Type2",
-        max_kw=22.0,
-        status="AVAILABLE",
-        nfc_payload="CHARGETAP-003B"
-    )
+    for i, config in enumerate(station_configs):
+        station_id = f"station-{i+1:03d}"
+        
+        # Create station
+        station = Station(
+            id=station_id,
+            name=config["name"],
+            address=config["address"],
+            latitude=config["lat"],
+            longitude=config["lng"]
+        )
+        stations.append(station.dict())
+        
+        # Create pricing
+        template = pricing_templates[config["type"]]
+        pricing = PricingPlan(
+            id=f"pricing-{i+1:03d}",
+            station_id=station_id,
+            start_fee_cents=template["start_fee_cents"],
+            energy_rate_cents_per_kwh=template["energy_rate_cents_per_kwh"],
+            penalty=template["penalty"],
+            tax_percent=template["tax_percent"]
+        )
+        pricing_plans.append(pricing.dict())
+        
+        # Create chargers with randomized availability
+        for j, (connector, power) in enumerate(config["chargers"]):
+            # Randomize status: 70% available, 20% charging, 10% faulted
+            rand = random.random()
+            if rand < 0.7:
+                status = "AVAILABLE"
+            elif rand < 0.9:
+                status = "CHARGING"
+            else:
+                status = "FAULTED"
+            
+            charger = Charger(
+                id=f"charger-{i+1:03d}-{chr(97+j)}",
+                station_id=station_id,
+                connector_type=connector,
+                max_kw=float(power),
+                status=status,
+                nfc_payload=f"CHARGETAP-{i+1:03d}-{chr(65+j)}"
+            )
+            chargers.append(charger.dict())
     
     # Insert all data
-    await db.stations.insert_many([station1.dict(), station2.dict(), station3.dict()])
-    await db.pricing_plans.insert_many([pricing1.dict(), pricing2.dict(), pricing3.dict()])
-    await db.chargers.insert_many([
-        charger1a.dict(), charger1b.dict(),
-        charger2a.dict(),
-        charger3a.dict(), charger3b.dict()
-    ])
+    await db.stations.insert_many(stations)
+    await db.pricing_plans.insert_many(pricing_plans)
+    await db.chargers.insert_many(chargers)
     
-    return {"message": "Demo data seeded successfully", "stations": 3, "chargers": 5}
+    return {
+        "message": "Demo data seeded successfully",
+        "stations": len(stations),
+        "chargers": len(chargers),
+        "location": "Rotterdam, Netherlands"
+    }
+
+# Availability simulator that updates charger statuses randomly
+@api_router.post("/simulate/availability")
+async def simulate_availability():
+    """Randomly update charger availability for demo purposes"""
+    chargers = await db.chargers.find().to_list(500)
+    
+    updated = 0
+    for charger in chargers:
+        # 30% chance to change status
+        if random.random() < 0.3:
+            # Skip chargers with active sessions
+            if charger.get("current_session_id"):
+                continue
+            
+            rand = random.random()
+            if rand < 0.7:
+                new_status = "AVAILABLE"
+            elif rand < 0.9:
+                new_status = "CHARGING"
+            else:
+                new_status = "FAULTED"
+            
+            if new_status != charger["status"]:
+                await db.chargers.update_one(
+                    {"id": charger["id"]},
+                    {"$set": {"status": new_status}}
+                )
+                updated += 1
+    
+    return {"message": f"Updated {updated} charger statuses"}
 
 # ==================== ROOT ====================
 
