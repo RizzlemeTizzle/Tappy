@@ -240,6 +240,111 @@ backend:
         -agent: "testing"
         -comment: "✅ PASSED - User session history retrieved successfully. Shows completed session with station details. Proper user-specific filtering."
 
+  - task: "Nearby Stations API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for GET /api/stations/nearby endpoint with lat/lng parameters"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Nearby stations API working correctly. Returns 27 stations within 10km of Rotterdam (lat=51.9244, lng=4.4777). Includes distance calculation, pricing summary, availability info, and connector breakdown."
+
+  - task: "Nearby Stations Connector Filter"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for GET /api/stations/nearby with connector_type filter"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Connector type filtering working correctly. CCS filter returns 19 stations with CCS connectors. Proper filtering by connector type implemented."
+
+  - task: "Nearby Stations Price Sorting"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for GET /api/stations/nearby with sort_by=price parameter"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Price sorting working correctly. Stations sorted by energy rate from 25 to 59 cents/kWh. Proper ascending sort by price implemented."
+
+  - task: "Nearby Stations Available Only Filter"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for GET /api/stations/nearby with available_only=true parameter"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Available only filter working correctly. Returns 26 stations with available chargers. Proper filtering for stations with available_count > 0."
+
+  - task: "Individual Station Details API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for GET /api/stations/{stationId} endpoint"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Station details API working correctly. Returns complete station info for station-001 (Rotterdam Centraal) with 3 chargers and pricing data."
+
+  - task: "Availability Simulator API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for POST /api/simulate/availability endpoint"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Availability simulator working correctly. Successfully updated 12 charger statuses randomly. Proper simulation functionality implemented."
+
+  - task: "Map User Registration for Testing"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "testing"
+        -comment: "Testing required for mapuser@test.com registration and payment method setup"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Map user registration working correctly. Successfully registered mapuser@test.com and added payment method (card ending in 4242)."
+
 frontend: []
 
 metadata:
