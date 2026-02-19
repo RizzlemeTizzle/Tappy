@@ -590,12 +590,12 @@ async def stop_session(session_id: str, user: dict = Depends(get_current_user)):
     station = await db.stations.find_one({"id": final_session["station_id"]})
     charger = await db.chargers.find_one({"id": final_session["charger_id"]})
     
-    return {
+    return serialize_doc({
         **final_session,
         "station": station,
         "charger": charger,
         "payment": payment.dict()
-    }
+    })
 
 @api_router.get("/sessions/user/history")
 async def get_session_history(user: dict = Depends(get_current_user)):
