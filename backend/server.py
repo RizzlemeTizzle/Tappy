@@ -392,11 +392,11 @@ async def get_station(station_id: str):
     chargers = await db.chargers.find({"station_id": station_id}).to_list(100)
     pricing = await db.pricing_plans.find_one({"station_id": station_id})
     
-    return {
+    return serialize_doc({
         **station,
         "chargers": chargers,
         "pricing": pricing
-    }
+    })
 
 @api_router.get("/stations/{station_id}/pricing")
 async def get_station_pricing(station_id: str):
