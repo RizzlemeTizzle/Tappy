@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,15 +21,6 @@ import debounce from 'lodash/debounce';
 
 const { width, height } = Dimensions.get('window');
 
-// Conditionally import MapView only for native platforms
-let MapView: any = null;
-let Marker: any = null;
-if (Platform.OS !== 'web') {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-}
-
 const CONNECTOR_TYPES = ['CCS', 'CHAdeMO', 'Type2'];
 const POWER_OPTIONS = [
   { label: 'Any', value: null },
@@ -46,7 +37,6 @@ const SORT_OPTIONS = [
 
 export default function FindScreen() {
   const router = useRouter();
-  const mapRef = useRef<any>(null);
   const {
     nearbyStations,
     selectedStation,
@@ -63,7 +53,6 @@ export default function FindScreen() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [bottomSheetExpanded, setBottomSheetExpanded] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -81,29 +70,11 @@ export default function FindScreen() {
     })();
   }, []);
 
-  // Debounced region change handler
-  const debouncedFetch = useCallback(
-    debounce(() => {
-      fetchNearbyStations();
-    }, 500),
-    []
-  );
-
-  const handleRegionChange = (newRegion: any) => {
-    setRegion(newRegion);
-    debouncedFetch();
-  };
-
-  const handleMarkerPress = (station: NearbyStation) => {
-    selectStation(station);
-    setBottomSheetExpanded(true);
-  };
-
   const handleNavigate = (station: NearbyStation) => {
     const url = Platform.select({
       ios: `maps:?daddr=${station.latitude},${station.longitude}`,
       android: `geo:${station.latitude},${station.longitude}?q=${station.latitude},${station.longitude}(${encodeURIComponent(station.name)})`,
-      web: `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,
+      default: `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,
     });
 
     if (url) {
@@ -126,24 +97,23 @@ export default function FindScreen() {
     return '#4CAF50';
   };
 
-  const renderStationCard = (station: NearbyStation, index: number) => (
+  const filteredStations = nearbyStations.filter(station => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      station.name.toLowerCase().includes(query) ||
+      station.address.toLowerCase().includes(query)
+    );
+  });
+
+  const renderStationCard = (station: NearbyStation) => (
     <TouchableOpacity
       key={station.id}
       style={[
         styles.stationCard,
         selectedStation?.id === station.id && styles.stationCardSelected,
       ]}
-      onPress={() => {
-        selectStation(station);
-        if (MapView && mapRef.current) {
-          mapRef.current.animateToRegion({
-            latitude: station.latitude,
-            longitude: station.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          });
-        }
-      }}
+      onPress={() => selectStation(station)}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleRow}>
@@ -216,213 +186,10 @@ export default function FindScreen() {
     </TouchableOpacity>
   );
 
-  // Web fallback - list only view
-  if (Platform.OS === 'web') {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Search Bar */}
-        <View style={styles.webHeader}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color="#888" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search stations..."
-              placeholderTextColor="#888"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setShowFilters(!showFilters)}
-            >
-              <Ionicons
-                name="options"
-                size={20}
-                color={showFilters ? '#4CAF50' : '#888'}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Filters */}
-          {showFilters && (
-            <View style={styles.filtersContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {/* Connector Type */}
-                <View style={styles.filterGroup}>
-                  <Text style={styles.filterLabel}>Connector</Text>
-                  <View style={styles.filterChips}>
-                    <TouchableOpacity
-                      style={[
-                        styles.chip,
-                        !filters.connector_type && styles.chipActive,
-                      ]}
-                      onPress={() => setFilters({ connector_type: null })}
-                    >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          !filters.connector_type && styles.chipTextActive,
-                        ]}
-                      >
-                        All
-                      </Text>
-                    </TouchableOpacity>
-                    {CONNECTOR_TYPES.map((type) => (
-                      <TouchableOpacity
-                        key={type}
-                        style={[
-                          styles.chip,
-                          filters.connector_type === type && styles.chipActive,
-                        ]}
-                        onPress={() => setFilters({ connector_type: type })}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            filters.connector_type === type && styles.chipTextActive,
-                          ]}
-                        >
-                          {type}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* Power */}
-                <View style={styles.filterGroup}>
-                  <Text style={styles.filterLabel}>Power</Text>
-                  <View style={styles.filterChips}>
-                    {POWER_OPTIONS.map((opt) => (
-                      <TouchableOpacity
-                        key={opt.label}
-                        style={[
-                          styles.chip,
-                          filters.min_power_kw === opt.value && styles.chipActive,
-                        ]}
-                        onPress={() => setFilters({ min_power_kw: opt.value })}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            filters.min_power_kw === opt.value && styles.chipTextActive,
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* Available Only */}
-                <View style={styles.filterGroup}>
-                  <Text style={styles.filterLabel}>Status</Text>
-                  <TouchableOpacity
-                    style={[
-                      styles.chip,
-                      filters.available_only && styles.chipActive,
-                    ]}
-                    onPress={() => setFilters({ available_only: !filters.available_only })}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        filters.available_only && styles.chipTextActive,
-                      ]}
-                    >
-                      Available Now
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-
-              {/* Sort */}
-              <View style={styles.sortContainer}>
-                <Text style={styles.filterLabel}>Sort by:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {SORT_OPTIONS.map((opt) => (
-                    <TouchableOpacity
-                      key={opt.value}
-                      style={[
-                        styles.sortChip,
-                        filters.sort_by === opt.value && styles.sortChipActive,
-                      ]}
-                      onPress={() => setFilters({ sort_by: opt.value as any })}
-                    >
-                      <Text
-                        style={[
-                          styles.sortChipText,
-                          filters.sort_by === opt.value && styles.sortChipTextActive,
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          )}
-
-          <Text style={styles.webTitle}>
-            {nearbyStations.length} Charging Stations Near Rotterdam
-          </Text>
-        </View>
-
-        {/* Station List */}
-        <ScrollView style={styles.webStationList} showsVerticalScrollIndicator={false}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />
-          ) : nearbyStations.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="location-outline" size={48} color="#444" />
-              <Text style={styles.emptyText}>No stations found</Text>
-            </View>
-          ) : (
-            nearbyStations.map((station, index) => renderStationCard(station, index))
-          )}
-          <View style={styles.bottomPadding} />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  // Native Map View
   return (
-    <View style={styles.container}>
-      {/* Map */}
-      {MapView && (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={region}
-          onRegionChangeComplete={handleRegionChange}
-          showsUserLocation
-          showsMyLocationButton={false}
-        >
-          {nearbyStations.map((station) => (
-            <Marker
-              key={station.id}
-              coordinate={{
-                latitude: station.latitude,
-                longitude: station.longitude,
-              }}
-              onPress={() => handleMarkerPress(station)}
-            >
-              <View style={[styles.marker, { backgroundColor: getMarkerColor(station) }]}>
-                <Ionicons name="flash" size={16} color="#FFF" />
-                <Text style={styles.markerText}>
-                  {station.availability.available_count}
-                </Text>
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-      )}
-
-      {/* Search Bar */}
-      <SafeAreaView style={styles.searchContainer} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header with Search */}
+      <View style={styles.header}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color="#888" />
           <TextInput
@@ -448,41 +215,24 @@ export default function FindScreen() {
         {showFilters && (
           <View style={styles.filtersContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {/* Connector Type */}
               <View style={styles.filterGroup}>
                 <Text style={styles.filterLabel}>Connector</Text>
                 <View style={styles.filterChips}>
                   <TouchableOpacity
-                    style={[
-                      styles.chip,
-                      !filters.connector_type && styles.chipActive,
-                    ]}
+                    style={[styles.chip, !filters.connector_type && styles.chipActive]}
                     onPress={() => setFilters({ connector_type: null })}
                   >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        !filters.connector_type && styles.chipTextActive,
-                      ]}
-                    >
+                    <Text style={[styles.chipText, !filters.connector_type && styles.chipTextActive]}>
                       All
                     </Text>
                   </TouchableOpacity>
                   {CONNECTOR_TYPES.map((type) => (
                     <TouchableOpacity
                       key={type}
-                      style={[
-                        styles.chip,
-                        filters.connector_type === type && styles.chipActive,
-                      ]}
+                      style={[styles.chip, filters.connector_type === type && styles.chipActive]}
                       onPress={() => setFilters({ connector_type: type })}
                     >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          filters.connector_type === type && styles.chipTextActive,
-                        ]}
-                      >
+                      <Text style={[styles.chipText, filters.connector_type === type && styles.chipTextActive]}>
                         {type}
                       </Text>
                     </TouchableOpacity>
@@ -490,25 +240,16 @@ export default function FindScreen() {
                 </View>
               </View>
 
-              {/* Power */}
               <View style={styles.filterGroup}>
                 <Text style={styles.filterLabel}>Power</Text>
                 <View style={styles.filterChips}>
                   {POWER_OPTIONS.map((opt) => (
                     <TouchableOpacity
                       key={opt.label}
-                      style={[
-                        styles.chip,
-                        filters.min_power_kw === opt.value && styles.chipActive,
-                      ]}
+                      style={[styles.chip, filters.min_power_kw === opt.value && styles.chipActive]}
                       onPress={() => setFilters({ min_power_kw: opt.value })}
                     >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          filters.min_power_kw === opt.value && styles.chipTextActive,
-                        ]}
-                      >
+                      <Text style={[styles.chipText, filters.min_power_kw === opt.value && styles.chipTextActive]}>
                         {opt.label}
                       </Text>
                     </TouchableOpacity>
@@ -516,47 +257,29 @@ export default function FindScreen() {
                 </View>
               </View>
 
-              {/* Available Only */}
               <View style={styles.filterGroup}>
                 <Text style={styles.filterLabel}>Status</Text>
                 <TouchableOpacity
-                  style={[
-                    styles.chip,
-                    filters.available_only && styles.chipActive,
-                  ]}
+                  style={[styles.chip, filters.available_only && styles.chipActive]}
                   onPress={() => setFilters({ available_only: !filters.available_only })}
                 >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      filters.available_only && styles.chipTextActive,
-                    ]}
-                  >
+                  <Text style={[styles.chipText, filters.available_only && styles.chipTextActive]}>
                     Available Now
                   </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
 
-            {/* Sort */}
             <View style={styles.sortContainer}>
               <Text style={styles.filterLabel}>Sort by:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {SORT_OPTIONS.map((opt) => (
                   <TouchableOpacity
                     key={opt.value}
-                    style={[
-                      styles.sortChip,
-                      filters.sort_by === opt.value && styles.sortChipActive,
-                    ]}
+                    style={[styles.sortChip, filters.sort_by === opt.value && styles.sortChipActive]}
                     onPress={() => setFilters({ sort_by: opt.value as any })}
                   >
-                    <Text
-                      style={[
-                        styles.sortChipText,
-                        filters.sort_by === opt.value && styles.sortChipTextActive,
-                      ]}
-                    >
+                    <Text style={[styles.sortChipText, filters.sort_by === opt.value && styles.sortChipTextActive]}>
                       {opt.label}
                     </Text>
                   </TouchableOpacity>
@@ -565,66 +288,31 @@ export default function FindScreen() {
             </View>
           </View>
         )}
-      </SafeAreaView>
 
-      {/* My Location Button */}
-      <TouchableOpacity
-        style={styles.myLocationButton}
-        onPress={async () => {
-          if (userLocation && mapRef.current) {
-            mapRef.current.animateToRegion({
-              ...region,
-              latitude: userLocation.latitude,
-              longitude: userLocation.longitude,
-            });
-          }
-        }}
-      >
-        <Ionicons name="locate" size={24} color="#4CAF50" />
-      </TouchableOpacity>
-
-      {/* Bottom Sheet - Station List */}
-      <View
-        style={[
-          styles.bottomSheet,
-          bottomSheetExpanded ? styles.bottomSheetExpanded : styles.bottomSheetCollapsed,
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.bottomSheetHandle}
-          onPress={() => setBottomSheetExpanded(!bottomSheetExpanded)}
-        >
-          <View style={styles.handleBar} />
-          <Text style={styles.bottomSheetTitle}>
-            {nearbyStations.length} Stations Nearby
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>
+            {filteredStations.length} Charging Stations
           </Text>
-          <Ionicons
-            name={bottomSheetExpanded ? 'chevron-down' : 'chevron-up'}
-            size={20}
-            color="#888"
-          />
-        </TouchableOpacity>
-
-        {bottomSheetExpanded && (
-          <ScrollView
-            style={styles.stationList}
-            showsVerticalScrollIndicator={false}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />
-            ) : nearbyStations.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="location-outline" size={48} color="#444" />
-                <Text style={styles.emptyText}>No stations found nearby</Text>
-              </View>
-            ) : (
-              nearbyStations.map((station, index) => renderStationCard(station, index))
-            )}
-            <View style={styles.bottomPadding} />
-          </ScrollView>
-        )}
+          <Text style={styles.subtitle}>Near Rotterdam, NL</Text>
+        </View>
       </View>
-    </View>
+
+      {/* Station List */}
+      <ScrollView style={styles.stationList} showsVerticalScrollIndicator={false}>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />
+        ) : filteredStations.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="location-outline" size={48} color="#444" />
+            <Text style={styles.emptyText}>No stations found</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+          </View>
+        ) : (
+          filteredStations.map((station) => renderStationCard(station))
+        )}
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -633,35 +321,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0A0A0A',
   },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-  webHeader: {
+  header: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#1E1E1E',
-  },
-  webTitle: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 12,
-  },
-  webStationList: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  searchContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 8,
   },
   searchBar: {
     flexDirection: 'row',
@@ -740,87 +405,40 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontWeight: '600',
   },
-  myLocationButton: {
-    position: 'absolute',
-    right: 16,
-    bottom: height * 0.45 + 16,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#1A1A1A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+  titleRow: {
+    marginTop: 12,
   },
-  marker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  markerText: {
+  title: {
     color: '#FFF',
-    fontSize: 12,
+    fontSize: 20,
     fontWeight: '700',
-    marginLeft: 4,
   },
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#0A0A0A',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  bottomSheetExpanded: {
-    height: height * 0.45,
-  },
-  bottomSheetCollapsed: {
-    height: 60,
-  },
-  bottomSheetHandle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  handleBar: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#444',
-    borderRadius: 2,
-    position: 'absolute',
-    top: 8,
-    left: '50%',
-    marginLeft: -20,
-  },
-  bottomSheetTitle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+  subtitle: {
+    color: '#888',
+    fontSize: 14,
+    marginTop: 2,
   },
   stationList: {
     flex: 1,
     paddingHorizontal: 16,
+    paddingTop: 12,
   },
   loader: {
-    marginTop: 32,
+    marginTop: 40,
   },
   emptyState: {
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 60,
   },
   emptyText: {
     color: '#666',
-    fontSize: 16,
-    marginTop: 12,
+    fontSize: 18,
+    marginTop: 16,
+  },
+  emptySubtext: {
+    color: '#555',
+    fontSize: 14,
+    marginTop: 4,
   },
   stationCard: {
     backgroundColor: '#1E1E1E',
