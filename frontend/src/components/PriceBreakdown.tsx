@@ -76,7 +76,7 @@ export default function PriceBreakdown({
               • Grace period: {penalty.grace_minutes} minutes after charge completes
             </Text>
             <Text style={styles.penaltyText}>
-              • Rate: {formatCentsPerMinute(penalty.cents_per_minute || penalty.penalty_cents_per_minute)} after grace period
+              • Rate: {formatCentsPerMinute(penalty.penalty_cents_per_minute)} after grace period
             </Text>
             {penalty.daily_cap_cents && (
               <Text style={styles.penaltyText}>
@@ -87,8 +87,8 @@ export default function PriceBreakdown({
               <Text style={styles.exampleTitle}>Example:</Text>
               <Text style={styles.exampleText}>
                 If you stay plugged 45 min after charging completes,{"\n"}
-                penalty = (45 - {penalty.grace_minutes}) × {formatCentsPerMinute(penalty.cents_per_minute || penalty.penalty_cents_per_minute)}
-                = {formatCents((45 - penalty.grace_minutes) * (penalty.cents_per_minute || penalty.penalty_cents_per_minute))}
+                penalty = (45 - {penalty.grace_minutes}) × {formatCentsPerMinute(penalty.penalty_cents_per_minute)}
+                = {formatCents((45 - penalty.grace_minutes) * penalty.penalty_cents_per_minute)}
               </Text>
             </View>
           </View>
