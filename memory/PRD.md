@@ -64,6 +64,30 @@ ChargeTap is a mobile EV charging application built with React Native (Expo) fro
    - UI for token setup
    - Requires native Android testing
 
+8. **Notification System** ✅ COMPLETED (Dec 2025)
+   - **Backend**:
+     - Device registration/deregistration endpoints
+     - Notification preferences endpoints (GET/PUT)
+     - Notification log storage
+     - Event-driven notification sending on session lifecycle
+     - Scheduled penalty notifications (prealert + started)
+     - All 11 notification types implemented
+     - Mocked FCM push (logs only, ready for Firebase integration)
+   - **Frontend**:
+     - expo-notifications integration
+     - Notification Settings screen with toggles
+     - Permission flow
+     - Local notification scheduling
+     - Deep link handling structure
+   - **Notification Types**:
+     - SESSION_STARTED, SESSION_START_FAILED, SESSION_STOPPED, SESSION_INTERRUPTED
+     - CHARGING_COMPLETE
+     - PENALTY_STARTS_SOON, PENALTY_STARTED, PENALTY_CAP_REACHED
+     - PAYMENT_SUCCEEDED, PAYMENT_FAILED
+     - COST_MILESTONE (optional)
+   - **i18n**: All 10 languages supported for notification content
+   - **Guest Mode**: Local notifications work for guests, push requires login
+
 ### In Progress / Upcoming
 - [ ] **HCE Frontend Integration** - Connect frontend to backend NFC APIs
 - [ ] **Stripe Payment Integration** - Currently mocked
