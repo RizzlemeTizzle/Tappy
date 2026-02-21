@@ -11,10 +11,11 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
+import { InlineLoginWall } from '../../src/components/LoginWall';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isGuest, isAuthenticated } = useAuthStore();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -64,6 +65,18 @@ export default function ProfileScreen() {
       )}
     </TouchableOpacity>
   );
+
+  // Show login wall for guests
+  if (isGuest) {
+    return (
+      <View style={styles.container}>
+        <InlineLoginWall
+          actionType="view_profile"
+          showBrowseLink={false}
+        />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
