@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } fr
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 export default function Onboarding() {
   const router = useRouter();
   const { continueAsGuest } = useAuthStore();
+  const { t } = useTranslation();
 
   const handleGuestMode = async () => {
     await continueAsGuest();
@@ -23,8 +25,8 @@ export default function Onboarding() {
           <View style={styles.logoContainer}>
             <Ionicons name="flash" size={60} color="#4CAF50" />
           </View>
-          <Text style={styles.title}>ChargeTap</Text>
-          <Text style={styles.subtitle}>EV Charging Made Simple</Text>
+          <Text style={styles.title}>{t('onboarding.title')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
         </View>
 
         {/* Features */}
@@ -34,8 +36,8 @@ export default function Onboarding() {
               <Ionicons name="phone-portrait" size={28} color="#4CAF50" />
             </View>
             <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>Tap to Start</Text>
-              <Text style={styles.featureDesc}>Just tap your phone on the charger</Text>
+              <Text style={styles.featureTitle}>{t('onboarding.feature1Title')}</Text>
+              <Text style={styles.featureDesc}>{t('onboarding.feature1Desc')}</Text>
             </View>
           </View>
 
@@ -44,8 +46,8 @@ export default function Onboarding() {
               <Ionicons name="pricetag" size={28} color="#FFC107" />
             </View>
             <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>Transparent Pricing</Text>
-              <Text style={styles.featureDesc}>See all fees before you start</Text>
+              <Text style={styles.featureTitle}>{t('onboarding.feature2Title')}</Text>
+              <Text style={styles.featureDesc}>{t('onboarding.feature2Desc')}</Text>
             </View>
           </View>
 
@@ -54,8 +56,8 @@ export default function Onboarding() {
               <Ionicons name="analytics" size={28} color="#2196F3" />
             </View>
             <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>Real-time Tracking</Text>
-              <Text style={styles.featureDesc}>Watch your costs as you charge</Text>
+              <Text style={styles.featureTitle}>{t('onboarding.feature3Title')}</Text>
+              <Text style={styles.featureDesc}>{t('onboarding.feature3Desc')}</Text>
             </View>
           </View>
         </View>
@@ -67,7 +69,7 @@ export default function Onboarding() {
             onPress={() => router.push('/register')}
             data-testid="get-started-btn"
           >
-            <Text style={styles.primaryButtonText}>Get Started</Text>
+            <Text style={styles.primaryButtonText}>{t('onboarding.getStarted')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#000" />
           </TouchableOpacity>
 
@@ -76,7 +78,7 @@ export default function Onboarding() {
             onPress={() => router.push('/login')}
             data-testid="sign-in-btn"
           >
-            <Text style={styles.secondaryButtonText}>Already have an account? Sign In</Text>
+            <Text style={styles.secondaryButtonText}>{t('auth.alreadyHaveAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -85,7 +87,7 @@ export default function Onboarding() {
             data-testid="browse-guest-btn"
           >
             <Ionicons name="eye-outline" size={18} color="#888" />
-            <Text style={styles.guestButtonText}>Browse without logging in</Text>
+            <Text style={styles.guestButtonText}>{t('onboarding.browseWithoutLogin')}</Text>
           </TouchableOpacity>
         </View>
       </View>

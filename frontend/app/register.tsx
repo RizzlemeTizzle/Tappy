@@ -15,10 +15,12 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const router = useRouter();
   const { register } = useAuthStore();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,12 +29,12 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('errors.generic'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      Alert.alert(t('common.error'), t('errors.generic'));
       return;
     }
 
@@ -41,7 +43,7 @@ export default function Register() {
       await register(email.trim(), password, name.trim());
       router.replace('/(tabs)/tap');
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Registration failed');
+      Alert.alert(t('common.error'), error.response?.data?.detail || t('auth.registrationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +61,8 @@ export default function Register() {
         >
           <View style={styles.header}>
             <Ionicons name="flash" size={48} color="#4CAF50" />
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join ChargeTap today</Text>
+            <Text style={styles.title}>{t('auth.createAccount')}</Text>
+            <Text style={styles.subtitle}>{t('onboarding.title')}</Text>
           </View>
 
           <View style={styles.form}>
@@ -68,7 +70,7 @@ export default function Register() {
               <Ionicons name="person" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Full name"
+                placeholder={t('auth.name')}
                 placeholderTextColor="#666"
                 value={name}
                 onChangeText={setName}
@@ -80,7 +82,7 @@ export default function Register() {
               <Ionicons name="mail" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Email address"
+                placeholder={t('auth.email')}
                 placeholderTextColor="#666"
                 value={email}
                 onChangeText={setEmail}
@@ -94,7 +96,7 @@ export default function Register() {
               <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Password (min 6 characters)"
+                placeholder={t('auth.password')}
                 placeholderTextColor="#666"
                 value={password}
                 onChangeText={setPassword}
@@ -117,7 +119,7 @@ export default function Register() {
               {isLoading ? (
                 <ActivityIndicator color="#000" />
               ) : (
-                <Text style={styles.buttonText}>Create Account</Text>
+                <Text style={styles.buttonText}>{t('auth.createAccount')}</Text>
               )}
             </TouchableOpacity>
 
@@ -125,8 +127,8 @@ export default function Register() {
               style={styles.linkButton}
               onPress={() => router.push('/login')}
             >
-              <Text style={styles.linkText}>Already have an account? </Text>
-              <Text style={styles.linkTextBold}>Sign In</Text>
+              <Text style={styles.linkText}>{t('auth.alreadyHaveAccount').split('?')[0]}? </Text>
+              <Text style={styles.linkTextBold}>{t('auth.signIn')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

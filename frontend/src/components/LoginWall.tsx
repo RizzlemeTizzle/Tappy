@@ -9,6 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
 
 interface LoginWallProps {
   visible: boolean;
@@ -20,32 +21,35 @@ interface LoginWallProps {
   pendingData?: any;
 }
 
-const ACTION_MESSAGES: Record<string, { title: string; message: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  start_session: {
-    title: 'Inloggen om te laden',
-    message: 'Om een laadsessie te starten heb je een account nodig. Dit is vereist voor betalingsautorisatie en om je bonnetje te ontvangen.',
-    icon: 'flash',
-  },
-  view_history: {
-    title: 'Inloggen voor sessiegeschiedenis',
-    message: 'Je laadgeschiedenis en bonnetjes zijn gekoppeld aan je account. Log in om ze te bekijken.',
-    icon: 'time',
-  },
-  manage_payment: {
-    title: 'Inloggen voor betalingen',
-    message: 'Om een betaalmethode toe te voegen of te beheren heb je een account nodig.',
-    icon: 'card',
-  },
-  view_profile: {
-    title: 'Inloggen voor profiel',
-    message: 'Je profielinstellingen zijn gekoppeld aan je account.',
-    icon: 'person',
-  },
-  generic: {
-    title: 'Inloggen vereist',
-    message: 'Deze functie is alleen beschikbaar voor ingelogde gebruikers.',
-    icon: 'lock-closed',
-  },
+const getActionInfo = (actionType: string, t: (key: string) => string) => {
+  const messages: Record<string, { title: string; message: string; icon: keyof typeof Ionicons.glyphMap }> = {
+    start_session: {
+      title: t('guest.loginToCharge'),
+      message: t('guest.loginToChargeDesc'),
+      icon: 'flash',
+    },
+    view_history: {
+      title: t('guest.loginForHistory'),
+      message: t('guest.loginForHistoryDesc'),
+      icon: 'time',
+    },
+    manage_payment: {
+      title: t('guest.loginForPayment'),
+      message: t('guest.loginForPaymentDesc'),
+      icon: 'card',
+    },
+    view_profile: {
+      title: t('guest.loginForProfile'),
+      message: t('guest.loginForProfileDesc'),
+      icon: 'person',
+    },
+    generic: {
+      title: t('guest.loginRequired'),
+      message: t('errors.unauthorized'),
+      icon: 'lock-closed',
+    },
+  };
+  return messages[actionType] || messages.generic;
 };
 
 export function LoginWall({
@@ -59,13 +63,13 @@ export function LoginWall({
 }: LoginWallProps) {
   const router = useRouter();
   const { setPendingAction } = useAuthStore();
+  const { t } = useTranslation();
   
-  const actionInfo = ACTION_MESSAGES[actionType];
+  const actionInfo = getActionInfo(actionType, t);
   const displayTitle = title || actionInfo.title;
   const displayMessage = message || actionInfo.message;
 
   const handleSignIn = () => {
-    // Store pending action so we can resume after login
     if (returnTo || pendingData) {
       setPendingAction({
         type: actionType,
@@ -114,28 +118,28 @@ export function LoginWall({
           <View style={styles.benefitsList}>
             <View style={styles.benefitItem}>
               <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
-              <Text style={styles.benefitText}>Veilige betalingen</Text>
+              <Text style={styles.benefitText}>{t('guest.whySignInPayment')}</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="receipt" size={20} color="#4CAF50" />
-              <Text style={styles.benefitText}>Digitale bonnetjes</Text>
+              <Text style={styles.benefitText}>{t('guest.whySignInReceipts')}</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="time" size={20} color="#4CAF50" />
-              <Text style={styles.benefitText}>Laadgeschiedenis</Text>
+              <Text style={styles.benefitText}>{t('guest.whySignInHistory')}</Text>
             </View>
           </View>
 
           <TouchableOpacity style={styles.primaryButton} onPress={handleSignIn}>
-            <Text style={styles.primaryButtonText}>Inloggen</Text>
+            <Text style={styles.primaryButtonText}>{t('auth.signIn')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.secondaryButton} onPress={handleCreateAccount}>
-            <Text style={styles.secondaryButtonText}>Account aanmaken</Text>
+            <Text style={styles.secondaryButtonText}>{t('auth.createAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.linkButton} onPress={onClose}>
-            <Text style={styles.linkButtonText}>Verder browsen</Text>
+            <Text style={styles.linkButtonText}>{t('guest.continueBrowsing')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -154,8 +158,9 @@ export function InlineLoginWall({
 }: Omit<LoginWallProps, 'visible' | 'onClose'> & { showBrowseLink?: boolean }) {
   const router = useRouter();
   const { setPendingAction } = useAuthStore();
+  const { t } = useTranslation();
   
-  const actionInfo = ACTION_MESSAGES[actionType];
+  const actionInfo = getActionInfo(actionType, t);
   const displayTitle = title || actionInfo.title;
   const displayMessage = message || actionInfo.message;
 
@@ -191,16 +196,16 @@ export function InlineLoginWall({
       <Text style={styles.message}>{displayMessage}</Text>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleSignIn}>
-        <Text style={styles.primaryButtonText}>Inloggen</Text>
+        <Text style={styles.primaryButtonText}>{t('auth.signIn')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryButton} onPress={handleCreateAccount}>
-        <Text style={styles.secondaryButtonText}>Account aanmaken</Text>
+        <Text style={styles.secondaryButtonText}>{t('auth.createAccount')}</Text>
       </TouchableOpacity>
 
       {showBrowseLink && (
         <TouchableOpacity style={styles.linkButton} onPress={() => router.back()}>
-          <Text style={styles.linkButtonText}>Terug</Text>
+          <Text style={styles.linkButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -220,6 +225,7 @@ export function GuestBlockedButton({
   style?: any;
 }) {
   const { isGuest } = useAuthStore();
+  const { t } = useTranslation();
   const [showWall, setShowWall] = React.useState(false);
 
   const handlePress = () => {
@@ -234,7 +240,7 @@ export function GuestBlockedButton({
     <>
       <TouchableOpacity style={[styles.guestButton, style]} onPress={handlePress}>
         <Text style={styles.guestButtonText}>
-          {isGuest ? 'Inloggen om te starten' : label}
+          {isGuest ? t('session.startCharging') : label}
         </Text>
         {isGuest && <Ionicons name="lock-closed" size={16} color="#0A0A0A" style={{ marginLeft: 8 }} />}
       </TouchableOpacity>
