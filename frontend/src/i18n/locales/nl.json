@@ -274,6 +274,68 @@
     "step3": "Wacht op bevestiging en begin met laden!",
     "screenOffNote": "Je scherm hoeft niet aan te staan. HCE werkt ook als je telefoon vergrendeld is."
   },
+  "notifications": {
+    "title": "Meldingen",
+    "sessionUpdates": "Sessie Updates",
+    "sessionUpdatesDesc": "Ontvang meldingen wanneer je sessie start, voltooid is of eindigt",
+    "penaltyAlerts": "Wachttarief Alerts",
+    "penaltyAlertsDesc": "Ontvang waarschuwingen voor en wanneer wachttarief begint",
+    "paymentReceipts": "Betalingen & Bonnetjes",
+    "paymentReceiptsDesc": "Ontvang meldingen over betalingsstatus en bonnetjes",
+    "costMilestones": "Kosten Mijlpalen",
+    "costMilestonesDesc": "Ontvang updates wanneer je sessie kostendrempels bereikt",
+    "penaltyPrealert": "Wachttarief Waarschuwingstijd",
+    "penaltyPrealertDesc": "Hoeveel minuten voor wachttarief begint",
+    "quietHours": "Stille Uren",
+    "quietHoursDesc": "Stuur geen niet-kritieke meldingen tijdens deze uren",
+    "pushRequired": "Log in om pushmeldingen op alle apparaten in te schakelen",
+    "permissionRequired": "Schakel meldingen in om laad-updates te ontvangen",
+    "enableNotifications": "Meldingen Inschakelen",
+    "sessionStarted": {
+      "title": "Laden Gestart",
+      "body": "Je laadsessie bij {{station_name}} is begonnen."
+    },
+    "sessionStartFailed": {
+      "title": "Laden Mislukt",
+      "body": "Kon niet beginnen met laden bij {{station_name}}."
+    },
+    "chargingComplete": {
+      "title": "Laden Voltooid",
+      "body": "Je voertuig is volledig opgeladen! Totaal: {{total}}. ({{energy}} kWh)"
+    },
+    "penaltyStartsSoon": {
+      "title": "Wachttarief Waarschuwing",
+      "body": "Wachttarief begint over {{minutes}} min bij {{station_name}}. Tarief: {{rate}}/min."
+    },
+    "penaltyStarted": {
+      "title": "Wachttarief Actief",
+      "body": "Wachttarief is nu actief bij {{station_name}}. {{rate}}/min. Verplaats je voertuig."
+    },
+    "penaltyCapReached": {
+      "title": "Wachttarief Maximum",
+      "body": "Maximum wachttarief van {{max_fee}} bereikt bij {{station_name}}."
+    },
+    "sessionStopped": {
+      "title": "Sessie Beëindigd",
+      "body": "Je sessie bij {{station_name}} is beëindigd. Totaal: {{total}}."
+    },
+    "sessionInterrupted": {
+      "title": "Sessie Onderbroken",
+      "body": "Je sessie bij {{station_name}} is onderbroken. Reden: {{reason}}."
+    },
+    "paymentSucceeded": {
+      "title": "Betaling Geslaagd",
+      "body": "Betaling van {{total}} voltooid. Bon beschikbaar in de app."
+    },
+    "paymentFailed": {
+      "title": "Betaling Mislukt",
+      "body": "Betaling van {{total}} mislukt. Update je betaalmethode."
+    },
+    "costMilestone": {
+      "title": "Kosten Update",
+      "body": "Je sessie heeft {{total}} bereikt. Momenteel op {{energy}} kWh."
+    }
+  },
   "tap": {
     "title": "Klaar om te Laden",
     "instruction": "Houd je telefoon tegen de NFC-lezer om te beginnen",
