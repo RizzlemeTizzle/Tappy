@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/hce_service_description"
+    android:requireDeviceUnlock="false">
+    
+    <!-- 
+    ChargeTap AID Group
+    AID: F0 43 68 61 72 67 65 54 61 70
+    F0 = Proprietary AID prefix
+    436861726765546170 = "ChargeTap" in ASCII hex
+    
+    Category: OTHER (not payment, this is for EV charging)
+    -->
+    <aid-group android:description="@string/aid_group_description"
+        android:category="other">
+        <aid-filter android:name="F0436861726765546170" />
+    </aid-group>
+</host-apdu-service>
