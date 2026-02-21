@@ -13,9 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
 import LiveCostDisplay from '../src/components/LiveCostDisplay';
+import { useTranslation } from 'react-i18next';
 
 export default function LiveSession() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
   const { currentSession, fetchSession, stopSession, isLoading } = useSessionStore();
   const [stopping, setStopping] = useState(false);
@@ -41,12 +43,12 @@ export default function LiveSession() {
 
   const handleStopCharging = () => {
     Alert.alert(
-      'Stop Charging',
-      'Are you sure you want to stop this charging session?',
+      t('session.stopCharging'),
+      t('session.confirmStop'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Stop',
+          text: t('session.stop'),
           style: 'destructive',
           onPress: async () => {
             setStopping(true);
@@ -57,7 +59,7 @@ export default function LiveSession() {
               await stopSession(sessionId!);
               router.replace({ pathname: '/receipt', params: { sessionId } });
             } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'Failed to stop session');
+              Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
               setStopping(false);
             }
           }
@@ -68,9 +70,9 @@ export default function LiveSession() {
 
   const handleGetHelp = () => {
     Alert.alert(
-      'Need Help?',
-      'Contact support at:\n\nPhone: 1-800-CHARGE\nEmail: support@chargetap.com',
-      [{ text: 'OK' }]
+      t('profile.help'),
+      t('session.helpContact'),
+      [{ text: t('common.ok') }]
     );
   };
 
@@ -79,7 +81,7 @@ export default function LiveSession() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading session...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -116,12 +118,12 @@ export default function LiveSession() {
         <View style={styles.snapshotInfo}>
           <View style={styles.snapshotHeader}>
             <Ionicons name="lock-closed" size={16} color="#4CAF50" />
-            <Text style={styles.snapshotTitle}>Locked Pricing</Text>
+            <Text style={styles.snapshotTitle}>{t('pricing.locked')}</Text>
           </View>
           <Text style={styles.snapshotText}>
-            Start: ${(currentSession.pricing_snapshot.start_fee_cents / 100).toFixed(2)} • 
-            Energy: ${(currentSession.pricing_snapshot.energy_rate_cents_per_kwh / 100).toFixed(2)}/kWh • 
-            Tax: {currentSession.pricing_snapshot.tax_percent}%
+            {t('pricing.startFee')}: ${(currentSession.pricing_snapshot.start_fee_cents / 100).toFixed(2)} • 
+            {t('pricing.energyRate')}: ${(currentSession.pricing_snapshot.energy_rate_cents_per_kwh / 100).toFixed(2)}{t('common.perKwh')} • 
+            {t('pricing.tax')}: {currentSession.pricing_snapshot.tax_percent}%
           </Text>
         </View>
       </ScrollView>
@@ -133,7 +135,7 @@ export default function LiveSession() {
           onPress={handleGetHelp}
         >
           <Ionicons name="help-circle" size={22} color="#FFFFFF" />
-          <Text style={styles.helpButtonText}>Get Help</Text>
+          <Text style={styles.helpButtonText}>{t('profile.help')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -146,7 +148,7 @@ export default function LiveSession() {
           ) : (
             <>
               <Ionicons name="stop-circle" size={22} color="#FFFFFF" />
-              <Text style={styles.stopButtonText}>Stop Charging</Text>
+              <Text style={styles.stopButtonText}>{t('session.stopCharging')}</Text>
             </>
           )}
         </TouchableOpacity>

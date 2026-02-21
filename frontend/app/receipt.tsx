@@ -13,9 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
 import { formatCents, formatKwh, formatDate, formatTime } from '../src/utils/formatters';
+import { useTranslation } from 'react-i18next';
 
 export default function Receipt() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
   const { currentSession } = useSessionStore();
 
@@ -24,12 +26,12 @@ export default function Receipt() {
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#FF5252" />
-          <Text style={styles.errorText}>Receipt not found</Text>
+          <Text style={styles.errorText}>{t('errors.sessionNotFound')}</Text>
           <TouchableOpacity
             style={styles.homeButton}
             onPress={() => router.replace('/(tabs)/tap')}
           >
-            <Text style={styles.homeButtonText}>Naar Home</Text>
+            <Text style={styles.homeButtonText}>{t('common.home')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -39,29 +41,29 @@ export default function Receipt() {
   const handleShare = async () => {
     try {
       const receiptText = `
-ChargeTap Receipt
+ChargeTap ${t('receipt.title')}
 ==================
 
-Station: ${currentSession.station?.name}
-Address: ${currentSession.station?.address}
+${t('station.details')}: ${currentSession.station?.name}
+${t('station.address')}: ${currentSession.station?.address}
 
-Session Details:
-- Start: ${formatDate(currentSession.started_at)}
-- End: ${currentSession.ended_at ? formatDate(currentSession.ended_at) : 'N/A'}
-- Energy: ${formatKwh(currentSession.delivered_kwh)}
+${t('session.details')}:
+- ${t('session.started')}: ${formatDate(currentSession.started_at)}
+- ${t('session.ended')}: ${currentSession.ended_at ? formatDate(currentSession.ended_at) : 'N/A'}
+- ${t('session.energy')}: ${formatKwh(currentSession.delivered_kwh)}
 
-Charges:
-- Start Fee: ${formatCents(currentSession.pricing_snapshot.start_fee_cents)}
-- Energy Cost: ${formatCents(currentSession.energy_cost_cents)}
-${currentSession.penalty_cost_cents > 0 ? `- Idle Penalty: ${formatCents(currentSession.penalty_cost_cents)}\n` : ''}- Tax: ${formatCents(currentSession.tax_cents)}
+${t('receipt.breakdown')}:
+- ${t('pricing.startFee')}: ${formatCents(currentSession.pricing_snapshot.start_fee_cents)}
+- ${t('session.energyCost')}: ${formatCents(currentSession.energy_cost_cents)}
+${currentSession.penalty_cost_cents > 0 ? `- ${t('pricing.idleFee')}: ${formatCents(currentSession.penalty_cost_cents)}\n` : ''}- ${t('pricing.tax')}: ${formatCents(currentSession.tax_cents)}
 
-TOTAL: ${formatCents(currentSession.total_cost_cents)}
+${t('receipt.total')}: ${formatCents(currentSession.total_cost_cents)}
 
-Thank you for using ChargeTap!
+${t('receipt.thankYou')}
 `;
       await Share.share({ message: receiptText });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share receipt');
+      Alert.alert(t('common.error'), t('errors.generic'));
     }
   };
 
@@ -73,49 +75,49 @@ Thank you for using ChargeTap!
           <View style={styles.checkCircle}>
             <Ionicons name="checkmark" size={48} color="#4CAF50" />
           </View>
-          <Text style={styles.successTitle}>Charging Complete!</Text>
+          <Text style={styles.successTitle}>{t('session.sessionCompleted')}</Text>
           <Text style={styles.totalAmount}>{formatCents(currentSession.total_cost_cents)}</Text>
-          <Text style={styles.totalLabel}>Total Charged</Text>
+          <Text style={styles.totalLabel}>{t('receipt.totalCharged')}</Text>
         </View>
 
         {/* Station Info */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="location" size={18} color="#4CAF50" />
-            <Text style={styles.sectionTitle}>Station</Text>
+            <Text style={styles.sectionTitle}>{t('station.details')}</Text>
           </View>
           <Text style={styles.stationName}>{currentSession.station?.name}</Text>
           <Text style={styles.stationAddress}>{currentSession.station?.address}</Text>
-          <Text style={styles.chargerId}>Charger ID: {currentSession.charger_id}</Text>
+          <Text style={styles.chargerId}>{t('charger.id')}: {currentSession.charger_id}</Text>
         </View>
 
         {/* Session Details */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="time" size={18} color="#2196F3" />
-            <Text style={styles.sectionTitle}>Session Details</Text>
+            <Text style={styles.sectionTitle}>{t('session.details')}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Started</Text>
+            <Text style={styles.detailLabel}>{t('session.started')}</Text>
             <Text style={styles.detailValue}>{formatDate(currentSession.started_at)}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Ended</Text>
+            <Text style={styles.detailLabel}>{t('session.ended')}</Text>
             <Text style={styles.detailValue}>
               {currentSession.ended_at ? formatDate(currentSession.ended_at) : 'N/A'}
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Energy Delivered</Text>
+            <Text style={styles.detailLabel}>{t('session.energyDelivered')}</Text>
             <Text style={styles.detailValue}>{formatKwh(currentSession.delivered_kwh)}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Meter Start</Text>
-            <Text style={styles.detailValue}>{currentSession.meter_start_kwh?.toFixed(2)} kWh</Text>
+            <Text style={styles.detailLabel}>{t('session.meterStart')}</Text>
+            <Text style={styles.detailValue}>{currentSession.meter_start_kwh?.toFixed(2)} {t('common.kwh')}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Meter End</Text>
-            <Text style={styles.detailValue}>{currentSession.meter_end_kwh?.toFixed(2)} kWh</Text>
+            <Text style={styles.detailLabel}>{t('session.meterEnd')}</Text>
+            <Text style={styles.detailValue}>{currentSession.meter_end_kwh?.toFixed(2)} {t('common.kwh')}</Text>
           </View>
         </View>
 
@@ -123,11 +125,11 @@ Thank you for using ChargeTap!
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="receipt" size={18} color="#FFC107" />
-            <Text style={styles.sectionTitle}>Cost Breakdown</Text>
+            <Text style={styles.sectionTitle}>{t('receipt.breakdown')}</Text>
           </View>
           
           <View style={styles.costRow}>
-            <Text style={styles.costLabel}>Start Fee</Text>
+            <Text style={styles.costLabel}>{t('pricing.startFee')}</Text>
             <Text style={styles.costValue}>
               {formatCents(currentSession.pricing_snapshot.start_fee_cents)}
             </Text>
@@ -135,9 +137,9 @@ Thank you for using ChargeTap!
           
           <View style={styles.costRow}>
             <View>
-              <Text style={styles.costLabel}>Energy</Text>
+              <Text style={styles.costLabel}>{t('session.energy')}</Text>
               <Text style={styles.costSubLabel}>
-                {formatKwh(currentSession.delivered_kwh)} @ ${(currentSession.pricing_snapshot.energy_rate_cents_per_kwh / 100).toFixed(2)}/kWh
+                {formatKwh(currentSession.delivered_kwh)} @ ${(currentSession.pricing_snapshot.energy_rate_cents_per_kwh / 100).toFixed(2)}{t('common.perKwh')}
               </Text>
             </View>
             <Text style={styles.costValue}>{formatCents(currentSession.energy_cost_cents)}</Text>
@@ -146,7 +148,7 @@ Thank you for using ChargeTap!
           {currentSession.penalty_cost_cents > 0 && (
             <View style={[styles.costRow, styles.penaltyRow]}>
               <View>
-                <Text style={styles.penaltyLabel}>Idle Penalty</Text>
+                <Text style={styles.penaltyLabel}>{t('pricing.idleFee')}</Text>
                 <Text style={styles.penaltySubLabel}>
                   {currentSession.penalty_minutes} min @ ${(currentSession.pricing_snapshot.penalty.penalty_cents_per_minute / 100).toFixed(2)}/min
                 </Text>
@@ -156,12 +158,12 @@ Thank you for using ChargeTap!
           )}
           
           <View style={styles.costRow}>
-            <Text style={styles.costLabel}>Tax ({currentSession.pricing_snapshot.tax_percent}%)</Text>
+            <Text style={styles.costLabel}>{t('pricing.tax')} ({currentSession.pricing_snapshot.tax_percent}%)</Text>
             <Text style={styles.costValue}>{formatCents(currentSession.tax_cents)}</Text>
           </View>
           
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalRowLabel}>{t('receipt.total')}</Text>
             <Text style={styles.totalValue}>{formatCents(currentSession.total_cost_cents)}</Text>
           </View>
         </View>
@@ -170,7 +172,7 @@ Thank you for using ChargeTap!
         <View style={styles.snapshotNotice}>
           <Ionicons name="lock-closed" size={16} color="#4CAF50" />
           <Text style={styles.snapshotText}>
-            Pricing was locked at session start: {formatDate(currentSession.pricing_snapshot.locked_at)}
+            {t('pricing.lockedAt')}: {formatDate(currentSession.pricing_snapshot.locked_at)}
           </Text>
         </View>
       </ScrollView>
@@ -179,14 +181,14 @@ Thank you for using ChargeTap!
       <View style={styles.bottomButtons}>
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
           <Ionicons name="share-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.shareButtonText}>Share Receipt</Text>
+          <Text style={styles.shareButtonText}>{t('receipt.share')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
           style={styles.doneButton}
           onPress={() => router.replace('/(tabs)/tap')}
         >
-          <Text style={styles.doneButtonText}>Klaar</Text>
+          <Text style={styles.doneButtonText}>{t('common.done')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     marginTop: 4,
   },
-  totalLabel: {
+  totalRowLabel: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',

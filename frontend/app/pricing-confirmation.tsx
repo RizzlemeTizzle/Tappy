@@ -15,9 +15,11 @@ import { useSessionStore } from '../src/store/sessionStore';
 import { useAuthStore } from '../src/store/authStore';
 import { LoginWall } from '../src/components/LoginWall';
 import PriceBreakdown from '../src/components/PriceBreakdown';
+import { useTranslation } from 'react-i18next';
 
 export default function PricingConfirmation() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { selectedStation, selectedCharger, selectedPricing, startSession, clearSelection, isLoading } = useSessionStore();
   const { isGuest, isAuthenticated, user } = useAuthStore();
   const [starting, setStarting] = useState(false);
@@ -28,12 +30,12 @@ export default function PricingConfirmation() {
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#FF5252" />
-          <Text style={styles.errorText}>No charger selected</Text>
+          <Text style={styles.errorText}>{t('errors.chargerNotAvailable')}</Text>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>{t('common.back')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -50,11 +52,11 @@ export default function PricingConfirmation() {
     // Check payment method
     if (!user?.payment_method_added) {
       Alert.alert(
-        'Betaalmethode Vereist',
-        'Je hebt een betaalmethode nodig om te laden.',
+        t('payment.cardRequired'),
+        t('errors.paymentMethodRequired'),
         [
-          { text: 'Later', style: 'cancel' },
-          { text: 'Toevoegen', onPress: () => router.push('/add-payment') }
+          { text: t('common.later'), style: 'cancel' },
+          { text: t('common.add'), onPress: () => router.push('/add-payment') }
         ]
       );
       return;
@@ -65,16 +67,16 @@ export default function PricingConfirmation() {
       const sessionId = await startSession();
       router.replace({ pathname: '/live-session', params: { sessionId } });
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to start charging session');
+      Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
     } finally {
       setStarting(false);
     }
   };
 
   const handleCancel = () => {
-    Alert.alert('Cancel', 'Are you sure you want to cancel?', [
-      { text: 'No', style: 'cancel' },
-      { text: 'Yes', onPress: () => { clearSelection(); router.back(); } }
+    Alert.alert(t('common.cancel'), t('session.confirmCancel'), [
+      { text: t('common.no'), style: 'cancel' },
+      { text: t('common.yes'), onPress: () => { clearSelection(); router.back(); } }
     ]);
   };
 
@@ -86,9 +88,9 @@ export default function PricingConfirmation() {
           <View style={styles.guestInfoBanner}>
             <Ionicons name="information-circle" size={20} color="#2196F3" />
             <View style={styles.guestInfoContent}>
-              <Text style={styles.guestInfoTitle}>Prijsinformatie</Text>
+              <Text style={styles.guestInfoTitle}>{t('pricing.title')}</Text>
               <Text style={styles.guestInfoText}>
-                Je bekijkt de prijzen als gast. Log in om een laadsessie te starten.
+                {t('guest.viewPricingAsGuest')}
               </Text>
             </View>
           </View>
@@ -108,13 +110,13 @@ export default function PricingConfirmation() {
           <View style={styles.chargerBadge}>
             <Ionicons name="flash" size={16} color="#FFC107" />
             <Text style={styles.chargerText}>
-              {selectedCharger.connector_type} • {selectedCharger.max_kw} kW Max
+              {selectedCharger.connector_type} • {selectedCharger.max_kw} {t('common.kw')} Max
             </Text>
           </View>
         </View>
 
         {/* Price Breakdown */}
-        <Text style={styles.sectionTitle}>Pricing Details</Text>
+        <Text style={styles.sectionTitle}>{t('pricing.title')}</Text>
         <PriceBreakdown
           startFeeCents={selectedPricing.start_fee_cents}
           energyRateCentsPerKwh={selectedPricing.energy_rate_cents_per_kwh}
@@ -127,25 +129,25 @@ export default function PricingConfirmation() {
         <View style={styles.noticeBox}>
           <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
           <Text style={styles.noticeText}>
-            These prices will be locked for your session. You'll see real-time costs while charging.
+            {t('pricing.lockedForSession')}
           </Text>
         </View>
 
         {/* Why Sign In - for guests */}
         {isGuest && (
           <View style={styles.whySignInBox}>
-            <Text style={styles.whySignInTitle}>Waarom inloggen?</Text>
+            <Text style={styles.whySignInTitle}>{t('guest.whySignIn')}</Text>
             <View style={styles.whySignInItem}>
               <Ionicons name="card" size={16} color="#888" />
-              <Text style={styles.whySignInText}>Veilige betalingsverwerking</Text>
+              <Text style={styles.whySignInText}>{t('guest.whySignInPayment')}</Text>
             </View>
             <View style={styles.whySignInItem}>
               <Ionicons name="receipt" size={16} color="#888" />
-              <Text style={styles.whySignInText}>Digitale bonnetjes ontvangen</Text>
+              <Text style={styles.whySignInText}>{t('guest.whySignInReceipts')}</Text>
             </View>
             <View style={styles.whySignInItem}>
               <Ionicons name="stop-circle" size={16} color="#888" />
-              <Text style={styles.whySignInText}>Sessie op afstand stoppen</Text>
+              <Text style={styles.whySignInText}>{t('guest.whySignInRemoteStop')}</Text>
             </View>
           </View>
         )}
@@ -158,7 +160,7 @@ export default function PricingConfirmation() {
           onPress={handleCancel}
           disabled={starting}
         >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+          <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -171,12 +173,12 @@ export default function PricingConfirmation() {
           ) : isGuest ? (
             <>
               <Ionicons name="log-in" size={20} color="#000" />
-              <Text style={styles.startButtonText}>Inloggen om te Laden</Text>
+              <Text style={styles.startButtonText}>{t('guest.loginToCharge')}</Text>
             </>
           ) : (
             <>
               <Ionicons name="flash" size={20} color="#000" />
-              <Text style={styles.startButtonText}>Start Charging</Text>
+              <Text style={styles.startButtonText}>{t('session.startCharging')}</Text>
             </>
           )}
         </TouchableOpacity>

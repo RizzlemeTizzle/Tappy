@@ -15,10 +15,12 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
+import { useTranslation } from 'react-i18next';
 
 export default function AddPayment() {
   const router = useRouter();
   const { addPaymentMethod, user } = useAuthStore();
+  const { t } = useTranslation();
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
@@ -41,26 +43,26 @@ export default function AddPayment() {
   const handleSubmit = async () => {
     const cleanedCard = cardNumber.replace(/\s/g, '');
     if (cleanedCard.length !== 16) {
-      Alert.alert('Error', 'Please enter a valid 16-digit card number');
+      Alert.alert(t('common.error'), t('errors.invalidCard'));
       return;
     }
     if (expiry.length !== 5) {
-      Alert.alert('Error', 'Please enter a valid expiry date (MM/YY)');
+      Alert.alert(t('common.error'), t('errors.invalidCard'));
       return;
     }
     if (cvv.length < 3) {
-      Alert.alert('Error', 'Please enter a valid CVV');
+      Alert.alert(t('common.error'), t('errors.invalidCard'));
       return;
     }
 
     setIsLoading(true);
     try {
       await addPaymentMethod(cleanedCard, expiry, cvv);
-      Alert.alert('Success', 'Payment method added successfully', [
-        { text: 'OK', onPress: () => router.replace('/ready-to-tap') }
+      Alert.alert(t('common.success'), t('payment.cardAdded'), [
+        { text: t('common.ok'), onPress: () => router.replace('/ready-to-tap') }
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to add payment method');
+      Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.paymentFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -80,19 +82,19 @@ export default function AddPayment() {
             <View style={styles.iconContainer}>
               <Ionicons name="card" size={48} color="#4CAF50" />
             </View>
-            <Text style={styles.title}>Add Payment Method</Text>
-            <Text style={styles.subtitle}>Your card will be charged after each session</Text>
+            <Text style={styles.title}>{t('payment.addCard')}</Text>
+            <Text style={styles.subtitle}>{t('payment.chargeAfterSession')}</Text>
           </View>
 
           <View style={styles.mockNotice}>
             <Ionicons name="information-circle" size={20} color="#FFC107" />
             <Text style={styles.mockText}>
-              This is a demo - enter any test card number
+              {t('payment.demoMode')}
             </Text>
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Card Number</Text>
+            <Text style={styles.label}>{t('payment.cardNumber')}</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="card-outline" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
@@ -108,7 +110,7 @@ export default function AddPayment() {
 
             <View style={styles.row}>
               <View style={styles.halfColumn}>
-                <Text style={styles.label}>Expiry Date</Text>
+                <Text style={styles.label}>{t('payment.expiryDate')}</Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
@@ -123,7 +125,7 @@ export default function AddPayment() {
               </View>
 
               <View style={styles.halfColumn}>
-                <Text style={styles.label}>CVV</Text>
+                <Text style={styles.label}>{t('payment.cvv')}</Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
@@ -149,7 +151,7 @@ export default function AddPayment() {
               ) : (
                 <>
                   <Ionicons name="shield-checkmark" size={20} color="#000" />
-                  <Text style={styles.buttonText}>Add Card</Text>
+                  <Text style={styles.buttonText}>{t('payment.addCard')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -157,7 +159,7 @@ export default function AddPayment() {
             <View style={styles.securityNote}>
               <Ionicons name="lock-closed" size={16} color="#666" />
               <Text style={styles.securityText}>
-                Your payment info is securely processed. We never store your full card details.
+                {t('payment.securePayment')}
               </Text>
             </View>
           </View>
