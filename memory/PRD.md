@@ -1,139 +1,115 @@
 # ChargeTap - Product Requirements Document
 
-## Original Problem Statement
-Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent pricing, and a live session view.
+## Project Overview
+ChargeTap is a mobile EV charging application built with React Native (Expo) frontend and Python/FastAPI/MongoDB backend. The app enables users to find charging stations, start charging sessions via NFC tap, and manage their charging history and payments.
 
 ## Core Features
 
-### Implemented ✅
-1. **Authentication System**
-   - User registration and login with JWT tokens
-   - Payment method management (mocked Stripe)
-   - **Guest Mode** - Browse without account ✅ NEW
-
+### Implemented (Completed)
+1. **User Authentication**
+   - JWT-based authentication
+   - Login/Registration flow
+   - Guest Mode (browse without account)
+   
 2. **Station Discovery**
-   - Map-based station finder with filters
-   - Nearby stations with distance calculation
-   - Viewport-based station loading
+   - Map-based station finder
+   - Station search and filtering
+   - Pricing transparency display
+   - Station details view
 
-3. **Charging Session Management**
-   - Start/stop charging sessions
-   - Live session monitoring with real-time updates
-   - Pricing snapshots locked at session start
-   - Penalty/idle fee calculation
+3. **Charging Flow**
+   - NFC tap simulation
+   - Pricing confirmation
+   - Live session tracking
+   - Receipt generation
 
-4. **NFC Tap-to-Pay** (Simulated)
-   - NFC payload resolution
-   - Charger connection via NFC tap
+4. **Profile & Settings**
+   - User profile management
+   - Payment method management (mocked)
+   - **Language Switcher (NEW)** - 10 languages supported
 
-5. **QR Code Start** ✅
-   - QR code scanning via camera
-   - Deep linking support (chargetap://start/...)
-   - QR code generation tooling
+5. **Guest Mode**
+   - Browse stations without login
+   - View pricing without login
+   - LoginWall components for gated features
 
-6. **RFID Token Support** ✅
-   - Admin API for RFID token management
-   - OCPI 2.2.1 token authorization endpoints
+6. **Internationalization (i18n)** ✅ COMPLETED (Dec 2025)
+   - Full multilingual support for 10 languages:
+     - English (en)
+     - Dutch (nl)
+     - German (de)
+     - French (fr)
+     - Italian (it)
+     - Spanish (es)
+     - Swedish (sv)
+     - Finnish (fi)
+     - Danish (da)
+     - Norwegian (nb)
+   - Automatic device locale detection
+   - In-app language switcher
+   - Localized currency, number, and date formatting
 
-7. **Phone-as-Card (HCE)** ✅
-   - Backend API endpoints for NFC token provisioning
-   - Token activation/deactivation
-   - Tap recording and usage tracking
-   - Native Android HCE module (Kotlin) - requires `expo prebuild`
-   - Frontend setup wizard with Dutch localization
+7. **Phone-as-Card (HCE)**
+   - Backend NFC token management APIs
+   - UI for token setup
+   - Requires native Android testing
 
-8. **Guest Mode** ✅ NEW
-   - "Browse without logging in" option on onboarding
-   - Full access to: map, station list, pricing, charger availability
-   - Blocked from: starting sessions, session history, profile, payments
-   - LoginWall component for gated features (Dutch localized)
-   - Guest banner on Tap screen with login prompt
-   - Capability-based permission system
+### In Progress / Upcoming
+- [ ] **HCE Frontend Integration** - Connect frontend to backend NFC APIs
+- [ ] **Stripe Payment Integration** - Currently mocked
 
-## Guest Mode Architecture
-
-### Capabilities System
-```typescript
-type Capability = 
-  | 'CAN_VIEW_PUBLIC_DATA'    // guest: true
-  | 'CAN_START_SESSION'       // guest: false
-  | 'CAN_STOP_SESSION'        // guest: false
-  | 'CAN_VIEW_HISTORY'        // guest: false
-  | 'CAN_MANAGE_PAYMENT'      // guest: false
-  | 'CAN_VIEW_PROFILE';       // guest: false
-```
-
-### Guest Mode Features
-- **Available**: Find chargers, view pricing, station details, charger status
-- **Partially Available**: Tap screen (can view pricing, cannot start session)
-- **Blocked**: Sessions history, Profile, Payment methods, Start/Stop charging
-
-### Components
-- `LoginWall.tsx` - Reusable modal for login prompts
-- `InlineLoginWall` - Embedded login wall for tabs
-- `GuestBlockedButton` - Button wrapper for auth-required actions
+### Future Tasks (Backlog)
+- [ ] Admin UI for Token Management
+- [ ] QR Code Replay Protection
+- [ ] Full Map Filters/Sorting
+- [ ] Unit Tests
 
 ## Technical Architecture
 
-### Backend (Python/FastAPI/MongoDB)
-- **Port**: 8001
-- **API Prefix**: /api
-- **Database**: MongoDB (chargetap_db)
+### Frontend
+- **Framework**: React Native with Expo
+- **Router**: Expo Router (file-based)
+- **State Management**: Zustand
+- **i18n**: i18next + react-i18next
+- **UI Components**: Custom components + Ionicons
 
-### Public Endpoints (no auth required)
-- `GET /api/stations` - List all stations
-- `GET /api/stations/nearby` - Get nearby stations
-- `GET /api/stations/{id}` - Get station details
-- `POST /api/nfc/resolve` - Resolve NFC payload
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: MongoDB
+- **Authentication**: JWT tokens
 
-### Auth-Required Endpoints
-- `POST /api/sessions/start` - Start charging
-- `POST /api/sessions/{id}/stop` - Stop charging
-- `GET /api/sessions/user/history` - Session history
-- Payment endpoints
+### Key Files
+```
+/app
+├── backend/
+│   └── app/main.py          # FastAPI routes including NFC endpoints
+├── frontend/
+│   ├── app/                  # Expo Router screens
+│   │   ├── (tabs)/           # Tab screens (find, tap, sessions, profile)
+│   │   ├── _layout.tsx       # Root layout with i18n import
+│   │   └── ...
+│   └── src/
+│       ├── i18n/
+│       │   ├── index.ts      # i18n configuration
+│       │   └── locales/      # Translation JSON files
+│       ├── components/
+│       │   └── LoginWall.tsx # Guest mode component
+│       └── store/            # Zustand stores
+```
 
-## Bug Fixes Completed (Feb 21, 2026)
+## API Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/stations` - List stations
+- `GET /api/stations/{id}` - Station details
+- `POST /api/sessions/start` - Start charging session
+- `POST /api/sessions/{id}/stop` - Stop charging session
+- `GET /api/sessions/history` - User session history
+- `POST /api/nfc-tokens` - Create NFC token
+- `PUT /api/nfc-tokens/{id}/activate` - Activate token
+- `PUT /api/nfc-tokens/{id}/deactivate` - Deactivate token
 
-### Bug 1: Receipt Done Navigation ✅
-- **Fix**: Changed navigation to `/(tabs)/tap`
-
-### Bug 2: Phone-as-Card Double Header ✅
-- **Fix**: Single header with fixed button container
-
-### Bug 3: New Account Navigation ✅
-- **Fix**: Register/Login now navigate to `/(tabs)/tap`
-
-## Test Results
-- **Backend**: 100% (16/16 tests passed)
-- **Frontend**: 100% (all guest mode features verified)
-- **Test Report**: `/app/test_reports/iteration_2.json`
-
-## Test Credentials
-- **Email**: hce-test@example.com
-- **Password**: test123
-
-## Future Tasks (Prioritized)
-
-### P1 - High Priority
-- [ ] Admin UI for token management
-- [ ] Token rotation with grace period
-- [ ] OCPI integration for HCE tokens
-
-### P2 - Medium Priority
-- [ ] QR Code replay protection (nonce+ttl)
-- [ ] Full map filters/sorting UI
-- [ ] Unit tests for critical backend logic
-
-### P3 - Low Priority
-- [ ] iOS NFC support (background tag reading)
-- [ ] Multi-language support
-- [ ] Push notifications
-- [ ] Guest favorites (local storage)
-
-## Mocked/Simulated Features
-- **Stripe payments** - Uses mock payment intents
-- **Charger behavior** - Simulated via `chargerSimulator`
-- **NFC tap** - Simulated in preview (real HCE requires native build)
-
----
-*Last Updated: February 21, 2026*
+## Notes
+- Stripe integration is MOCKED
+- HCE feature requires physical Android device with NFC for testing
+- Backend runs on Python/FastAPI/MongoDB (not Node.js as originally planned)
