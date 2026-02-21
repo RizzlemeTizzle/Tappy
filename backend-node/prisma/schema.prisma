@@ -257,6 +257,123 @@ model OcpiCpoCredential {
   lastUpdated     DateTime @default(now()) @map("last_updated")
   createdAt       DateTime @default(now()) @map("created_at")
 
+  tokenConfigs    CpoTokenConfig[]
+
   @@unique([partyId, countryCode])
   @@map("ocpi_cpo_credentials")
 }
+
+// ==================== RFID TOKEN MANAGEMENT ====================
+
+// RFID Token model - physical charging cards/tags
+model RfidToken {
+  id              String    @id @default(uuid())
+  uid             String    @unique // RFID UID from physical card (e.g., "04:A2:B3:C4:D5:E6:F7")
+  contractId      String    @unique @map("contract_id") // Human-readable ID (e.g., "CTP-NL-2025-000001")
+  visualNumber    String?   @map("visual_number") // Masked number for display
+  type            String    @default("RFID") // RFID, AD_HOC_USER, APP_USER, OTHER
+  status          String    @default("ACTIVE") // ACTIVE, BLOCKED, EXPIRED, PENDING
+  whitelist       String    @default("ALWAYS") // ALWAYS, ALLOWED, ALLOWED_OFFLINE, NEVER
+  
+  // User association
+  userId          String?   @map("user_id")
+  user            User?     @relation(fields: [userId], references: [id])
+  
+  // OCPI fields
+  issuer          String    @default("ChargeTap")
+  groupId         String?   @map("group_id") // For corporate/fleet grouping
+  language        String?   @default("nl") // ISO 639-1
+  
+  // Validity
+  validFrom       DateTime  @default(now()) @map("valid_from")
+  validUntil      DateTime? @map("valid_until") // null = no expiry
+  
+  // Metadata
+  lastUsedAt      DateTime? @map("last_used_at")
+  usageCount      Int       @default(0) @map("usage_count")
+  lastUpdated     DateTime  @default(now()) @map("last_updated")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  auditLogs       TokenAuditLog[]
+  authorizations  TokenAuthorization[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([contractId])
+  @@map("rfid_tokens")
+}
+
+// Token Audit Log - tracks all changes to tokens
+model TokenAuditLog {
+  id          String   @id @default(uuid())
+  tokenId     String   @map("token_id")
+  token       RfidToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  
+  action      String   // CREATED, UPDATED, BLOCKED, UNBLOCKED, ASSIGNED, UNASSIGNED, EXPIRED, USED
+  field       String?  // Which field was changed (for UPDATED)
+  oldValue    String?  @map("old_value")
+  newValue    String?  @map("new_value")
+  
+  performedBy String?  @map("performed_by") // Admin user or system
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  reason      String?  // Optional reason for the action
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tokenId])
+  @@index([createdAt])
+  @@map("token_audit_logs")
+}
+
+// Token Authorization - tracks authorization requests from CPOs
+model TokenAuthorization {
+  id              String   @id @default(uuid())
+  tokenId         String   @map("token_id")
+  token           RfidToken @relation(fields: [tokenId], references: [id])
+  
+  cpoPartyId      String   @map("cpo_party_id")
+  cpoCountryCode  String   @map("cpo_country_code")
+  locationId      String?  @map("location_id")
+  evseUid         String?  @map("evse_uid")
+  
+  result          String   // ALLOWED, BLOCKED, EXPIRED, NO_CREDIT, NOT_ALLOWED, UNKNOWN
+  responseTime    Int?     @map("response_time") // in milliseconds
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tokenId])
+  @@index([createdAt])
+  @@map("token_authorizations")
+}
+
+// CPO Token Configuration - per-CPO settings for token access
+model CpoTokenConfig {
+  id              String   @id @default(uuid())
+  cpoCredentialId String   @map("cpo_credential_id")
+  cpoCredential   OcpiCpoCredential @relation(fields: [cpoCredentialId], references: [id], onDelete: Cascade)
+  
+  // Allowed token types this CPO can query
+  allowedTypes    String[] @default(["RFID", "APP_USER"]) @map("allowed_types")
+  
+  // Rate limiting
+  rateLimit       Int      @default(100) @map("rate_limit") // requests per minute
+  rateLimitWindow Int      @default(60) @map("rate_limit_window") // seconds
+  
+  // IP allowlist (empty = allow all)
+  ipAllowlist     String[] @default([]) @map("ip_allowlist")
+  
+  // Feature flags
+  realTimeAuth    Boolean  @default(true) @map("real_time_auth") // Allow POST /authorize
+  pullTokens      Boolean  @default(true) @map("pull_tokens") // Allow GET /tokens
+  pushUpdates     Boolean  @default(false) @map("push_updates") // Push token updates to CPO
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([cpoCredentialId])
+  @@map("cpo_token_configs")
+}
+
