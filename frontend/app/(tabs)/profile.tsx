@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,22 +6,27 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { InlineLoginWall } from '../../src/components/LoginWall';
+import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGUAGES, changeLanguage, getCurrentLanguage, LanguageCode } from '../../src/i18n';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout, isGuest, isAuthenticated } = useAuthStore();
+  const { user, logout, isGuest } = useAuthStore();
+  const { t, i18n } = useTranslation();
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('common.logout'), t('auth.logoutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Logout',
+        text: t('common.logout'),
         style: 'destructive',
         onPress: async () => {
           await logout();
@@ -30,6 +35,15 @@ export default function ProfileScreen() {
       },
     ]);
   };
+
+  const handleLanguageSelect = async (langCode: LanguageCode) => {
+    await changeLanguage(langCode);
+    setShowLanguagePicker(false);
+  };
+
+  const currentLanguage = SUPPORTED_LANGUAGES.find(
+    (lang) => lang.code === getCurrentLanguage()
+  );
 
   const MenuItem = ({
     icon,
@@ -91,15 +105,15 @@ export default function ProfileScreen() {
 
       {/* Payment Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Betaling</Text>
+        <Text style={styles.sectionTitle}>{t('profile.payment')}</Text>
         <View style={styles.card}>
           <MenuItem
             icon="card"
-            title="Betaalmethode"
+            title={t('profile.paymentMethod')}
             subtitle={
               user?.payment_method_added
-                ? `Kaart eindigend op ${user.payment_method_last4}`
-                : 'Geen betaalmethode'
+                ? t('profile.cardEndingIn', { last4: user.payment_method_last4 })
+                : t('profile.noPaymentMethod')
             }
             onPress={() => router.push('/add-payment')}
           />
@@ -108,12 +122,12 @@ export default function ProfileScreen() {
 
       {/* NFC Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Laden</Text>
+        <Text style={styles.sectionTitle}>{t('profile.charging')}</Text>
         <View style={styles.card}>
           <MenuItem
             icon="phone-portrait"
-            title="Telefoon als Laadpas"
-            subtitle="Gebruik NFC om te laden"
+            title={t('profile.phoneAsCard')}
+            subtitle={t('profile.phoneAsCardDesc')}
             onPress={() => router.push('/phone-as-card')}
           />
         </View>
@@ -121,25 +135,25 @@ export default function ProfileScreen() {
 
       {/* Preferences Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
+        <Text style={styles.sectionTitle}>{t('profile.preferences')}</Text>
         <View style={styles.card}>
           <MenuItem
             icon="notifications"
-            title="Notifications"
-            subtitle="Manage notification settings"
-            onPress={() => Alert.alert('Coming Soon', 'Notification settings coming soon')}
+            title={t('profile.notifications')}
+            subtitle={t('profile.notifications')}
+            onPress={() => Alert.alert(t('common.loading'), t('profile.notifications'))}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="globe"
-            title="Language"
-            subtitle="English"
-            onPress={() => Alert.alert('Coming Soon', 'Language settings coming soon')}
+            title={t('profile.language')}
+            subtitle={currentLanguage?.nativeName || 'English'}
+            onPress={() => setShowLanguagePicker(true)}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="moon"
-            title="Appearance"
+            title={t('profile.about')}
             subtitle="Dark mode"
             onPress={() => Alert.alert('Info', 'Dark mode is enabled by default')}
           />
@@ -148,35 +162,35 @@ export default function ProfileScreen() {
 
       {/* Support Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Support</Text>
+        <Text style={styles.sectionTitle}>{t('profile.help')}</Text>
         <View style={styles.card}>
           <MenuItem
             icon="help-circle"
-            title="Help Center"
-            onPress={() => Alert.alert('Help', 'Contact us at support@chargetap.com')}
+            title={t('profile.faq')}
+            onPress={() => Alert.alert(t('profile.help'), 'Contact us at support@chargetap.com')}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="document-text"
-            title="Terms of Service"
-            onPress={() => Alert.alert('Info', 'Terms of Service')}
+            title={t('profile.terms')}
+            onPress={() => Alert.alert('Info', t('profile.terms'))}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="shield-checkmark"
-            title="Privacy Policy"
-            onPress={() => Alert.alert('Info', 'Privacy Policy')}
+            title={t('profile.privacy')}
+            onPress={() => Alert.alert('Info', t('profile.privacy'))}
           />
         </View>
       </View>
 
       {/* Account Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
+        <Text style={styles.sectionTitle}>{t('profile.dangerZone')}</Text>
         <View style={styles.card}>
           <MenuItem
             icon="log-out"
-            title="Logout"
+            title={t('common.logout')}
             showChevron={false}
             danger
             onPress={handleLogout}
@@ -185,7 +199,48 @@ export default function ProfileScreen() {
       </View>
 
       {/* Version */}
-      <Text style={styles.version}>ChargeTap v1.0.0</Text>
+      <Text style={styles.version}>{t('profile.version', { version: '1.0.0' })}</Text>
+
+      {/* Language Picker Modal */}
+      <Modal
+        visible={showLanguagePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowLanguagePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('profile.language')}</Text>
+              <TouchableOpacity onPress={() => setShowLanguagePicker(false)}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={SUPPORTED_LANGUAGES}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.languageItem,
+                    getCurrentLanguage() === item.code && styles.languageItemActive,
+                  ]}
+                  onPress={() => handleLanguageSelect(item.code)}
+                >
+                  <View>
+                    <Text style={styles.languageName}>{item.nativeName}</Text>
+                    <Text style={styles.languageNameSecondary}>{item.name}</Text>
+                  </View>
+                  {getCurrentLanguage() === item.code && (
+                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                  )}
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.languageList}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -279,5 +334,57 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     paddingVertical: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1A1A1A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  languageList: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  languageItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#2A2A2A',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  languageItemActive: {
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  languageName: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  languageNameSecondary: {
+    color: '#888',
+    fontSize: 13,
+    marginTop: 2,
   },
 });
