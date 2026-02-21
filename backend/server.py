@@ -1003,11 +1003,320 @@ async def simulate_availability():
     
     return {"message": f"Updated {updated} charger statuses"}
 
+# ==================== NFC HCE TOKEN MANAGEMENT ====================
+
+class NfcTokenProvision(BaseModel):
+    device_id: str
+    device_model: Optional[str] = None
+    android_version: Optional[str] = None
+    is_rooted: bool = False
+
+class NfcToken(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    uid: str  # 16-char hex for RFID compatibility
+    contract_id: str
+    visual_number: str
+    type: str = "HCE"
+    status: str = "ACTIVE"  # ACTIVE, BLOCKED, EXPIRED
+    user_id: str
+    device_id: str
+    device_model: Optional[str] = None
+    android_version: Optional[str] = None
+    hce_enabled: bool = False
+    is_active: bool = False
+    tap_count: int = 0
+    last_tap_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+def generate_nfc_uid() -> str:
+    """Generate 8-byte hex UID (16 chars) with CT prefix"""
+    prefix = bytes([0x43, 0x54])  # 'CT' in hex
+    random_bytes = os.urandom(6)
+    return (prefix + random_bytes).hex().upper()
+
+def get_nfc_contract_id(counter: int) -> str:
+    """Generate human-readable contract ID"""
+    year = datetime.utcnow().year
+    return f"CTP-NFC-{year}-{counter:06d}"
+
+def mask_uid(uid: str) -> str:
+    """Mask UID for display"""
+    if len(uid) <= 4:
+        return uid
+    return "**** " + uid[-4:]
+
+@api_router.post("/nfc/tokens/provision")
+async def provision_nfc_token(data: NfcTokenProvision, user: dict = Depends(get_current_user)):
+    """Provision a new NFC HCE token for a device"""
+    
+    # Block rooted devices
+    if data.is_rooted:
+        raise HTTPException(
+            status_code=403, 
+            detail="NFC HCE is niet beschikbaar op gerootde apparaten voor veiligheidsredenen."
+        )
+    
+    # Check payment method
+    if not user.get("payment_method_added"):
+        raise HTTPException(
+            status_code=400,
+            detail="Voeg eerst een betaalmethode toe voordat je een NFC token aanmaakt."
+        )
+    
+    # Check if device already has a token
+    existing = await db.nfc_tokens.find_one({
+        "device_id": data.device_id,
+        "user_id": user["id"],
+        "status": {"$ne": "EXPIRED"}
+    })
+    
+    if existing:
+        return serialize_doc({
+            "token_uid": existing["uid"],
+            "contract_id": existing["contract_id"],
+            "visual_number": existing["visual_number"],
+            "status": existing["status"],
+            "is_active": existing.get("is_active", False),
+            "hce_enabled": existing.get("hce_enabled", False),
+            "created_at": existing["created_at"],
+            "message": "Bestaande token gevonden"
+        })
+    
+    # Get next contract ID counter
+    last_token = await db.nfc_tokens.find_one(sort=[("created_at", -1)])
+    counter = 1
+    if last_token and "contract_id" in last_token:
+        try:
+            counter = int(last_token["contract_id"].split("-")[-1]) + 1
+        except:
+            pass
+    
+    # Generate new token
+    uid = generate_nfc_uid()
+    contract_id = get_nfc_contract_id(counter)
+    visual_number = mask_uid(uid)
+    
+    token = NfcToken(
+        uid=uid,
+        contract_id=contract_id,
+        visual_number=visual_number,
+        user_id=user["id"],
+        device_id=data.device_id,
+        device_model=data.device_model,
+        android_version=data.android_version
+    )
+    
+    await db.nfc_tokens.insert_one(token.dict())
+    
+    # Audit log
+    await db.nfc_token_logs.insert_one({
+        "token_id": token.id,
+        "action": "CREATED",
+        "device_info": f"{data.device_model or 'Unknown'} (Android {data.android_version or '?'})",
+        "created_at": datetime.utcnow()
+    })
+    
+    return {
+        "token_uid": token.uid,
+        "contract_id": token.contract_id,
+        "visual_number": token.visual_number,
+        "status": token.status,
+        "is_active": token.is_active,
+        "hce_enabled": token.hce_enabled,
+        "created_at": token.created_at.isoformat(),
+        "message": "NFC token succesvol aangemaakt",
+        "next_steps": [
+            "Schakel HCE in via de app instellingen",
+            "Test de tap functionaliteit",
+            "Gebruik bij ondersteunde laadstations"
+        ]
+    }
+
+@api_router.get("/nfc/tokens/status")
+async def get_nfc_token_status(device_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Get NFC token status for current user"""
+    
+    query = {"user_id": user["id"]}
+    if device_id:
+        query["device_id"] = device_id
+    
+    tokens = await db.nfc_tokens.find(query).sort("created_at", -1).to_list(10)
+    
+    active_token = None
+    for t in tokens:
+        if t.get("is_active") and t.get("hce_enabled"):
+            active_token = t
+            break
+    
+    return serialize_doc({
+        "tokens": [{
+            "id": t["id"],
+            "token_uid": t["uid"],
+            "contract_id": t["contract_id"],
+            "visual_number": t["visual_number"],
+            "status": t["status"],
+            "is_active": t.get("is_active", False),
+            "hce_enabled": t.get("hce_enabled", False),
+            "device_id": t["device_id"],
+            "device_model": t.get("device_model"),
+            "tap_count": t.get("tap_count", 0),
+            "last_tap_at": t.get("last_tap_at"),
+            "created_at": t["created_at"]
+        } for t in tokens],
+        "active_token": {
+            "token_uid": active_token["uid"],
+            "contract_id": active_token["contract_id"]
+        } if active_token else None,
+        "total": len(tokens)
+    })
+
+@api_router.post("/nfc/tokens/activate")
+async def activate_nfc_token(data: dict, user: dict = Depends(get_current_user)):
+    """Activate an NFC token for HCE use"""
+    
+    token_id = data.get("token_id")
+    device_id = data.get("device_id")
+    
+    if not token_id or not device_id:
+        raise HTTPException(status_code=400, detail="token_id en device_id zijn vereist")
+    
+    # Find token
+    token = await db.nfc_tokens.find_one({
+        "id": token_id,
+        "user_id": user["id"],
+        "device_id": device_id
+    })
+    
+    if not token:
+        raise HTTPException(status_code=404, detail="Token niet gevonden")
+    
+    if token["status"] != "ACTIVE":
+        raise HTTPException(status_code=400, detail=f"Token is {token['status']}")
+    
+    # Deactivate all other tokens for this user/device
+    await db.nfc_tokens.update_many(
+        {"user_id": user["id"], "device_id": device_id, "id": {"$ne": token_id}},
+        {"$set": {"is_active": False}}
+    )
+    
+    # Activate selected token
+    await db.nfc_tokens.update_one(
+        {"id": token_id},
+        {"$set": {
+            "is_active": True,
+            "hce_enabled": True,
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    # Audit log
+    await db.nfc_token_logs.insert_one({
+        "token_id": token_id,
+        "action": "ACTIVATED",
+        "created_at": datetime.utcnow()
+    })
+    
+    return {
+        "token_uid": token["uid"],
+        "contract_id": token["contract_id"],
+        "is_active": True,
+        "hce_enabled": True,
+        "message": "Token geactiveerd voor HCE"
+    }
+
+@api_router.post("/nfc/tokens/deactivate")
+async def deactivate_nfc_token(data: dict, user: dict = Depends(get_current_user)):
+    """Deactivate HCE for a token"""
+    
+    token_id = data.get("token_id")
+    device_id = data.get("device_id")
+    
+    token = await db.nfc_tokens.find_one({
+        "id": token_id,
+        "user_id": user["id"],
+        "device_id": device_id
+    })
+    
+    if not token:
+        raise HTTPException(status_code=404, detail="Token niet gevonden")
+    
+    await db.nfc_tokens.update_one(
+        {"id": token_id},
+        {"$set": {
+            "is_active": False,
+            "hce_enabled": False,
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    await db.nfc_token_logs.insert_one({
+        "token_id": token_id,
+        "action": "DEACTIVATED",
+        "created_at": datetime.utcnow()
+    })
+    
+    return {"success": True, "message": "HCE uitgeschakeld"}
+
+@api_router.get("/nfc/tokens/active-uid")
+async def get_active_nfc_uid(device_id: str, user: dict = Depends(get_current_user)):
+    """Get active token UID for HCE service"""
+    
+    token = await db.nfc_tokens.find_one({
+        "user_id": user["id"],
+        "device_id": device_id,
+        "is_active": True,
+        "hce_enabled": True,
+        "status": "ACTIVE"
+    })
+    
+    if not token:
+        return {"active": False, "token_uid": None}
+    
+    return {
+        "active": True,
+        "token_uid": token["uid"],
+        "contract_id": token["contract_id"]
+    }
+
+@api_router.post("/nfc/tokens/tap")
+async def record_nfc_tap(data: dict, user: dict = Depends(get_current_user)):
+    """Record a tap event from the HCE service"""
+    
+    token_uid = data.get("token_uid")
+    device_id = data.get("device_id")
+    location = data.get("location")
+    
+    token = await db.nfc_tokens.find_one({
+        "uid": token_uid,
+        "user_id": user["id"],
+        "device_id": device_id
+    })
+    
+    if token:
+        await db.nfc_tokens.update_one(
+            {"id": token["id"]},
+            {"$set": {
+                "last_tap_at": datetime.utcnow(),
+                "last_location": location
+            },
+            "$inc": {"tap_count": 1}}
+        )
+        
+        await db.nfc_token_logs.insert_one({
+            "token_id": token["id"],
+            "action": "TAPPED",
+            "location": location,
+            "created_at": datetime.utcnow()
+        })
+    
+    return {"success": True, "recorded": token is not None}
+
 # ==================== ROOT ====================
 
 @api_router.get("/")
 async def root():
-    return {"message": "ChargeTap API", "version": "1.0.0"}
+    return {"message": "ChargeTap API", "version": "1.1.0", "features": ["NFC HCE", "QR-Start", "Tap-to-Pay"]}
 
 @api_router.get("/health")
 async def health():
