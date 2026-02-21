@@ -203,6 +203,31 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 100,
   },
+  guestInfoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(33, 150, 243, 0.3)',
+  },
+  guestInfoContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  guestInfoTitle: {
+    color: '#2196F3',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  guestInfoText: {
+    color: '#888',
+    fontSize: 13,
+    lineHeight: 18,
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
