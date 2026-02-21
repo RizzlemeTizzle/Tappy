@@ -11,6 +11,7 @@ export default function RootLayout() {
   const { loadToken, isLoading } = useAuthStore();
   const router = useRouter();
   const navigationState = useRootNavigationState();
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadToken();
@@ -82,16 +83,16 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ title: 'Sign In', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="register" options={{ title: 'Create Account', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="add-payment" options={{ title: 'Add Payment Method', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="login" options={{ title: t('auth.signIn'), headerBackTitle: t('common.back') }} />
+        <Stack.Screen name="register" options={{ title: t('auth.createAccount'), headerBackTitle: t('common.back') }} />
+        <Stack.Screen name="add-payment" options={{ title: t('payment.addCard'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="ready-to-tap" options={{ headerShown: false }} />
-        <Stack.Screen name="pricing-confirmation" options={{ title: 'Confirm Pricing', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="live-session" options={{ title: 'Charging Session', headerBackVisible: false, gestureEnabled: false }} />
-        <Stack.Screen name="receipt" options={{ title: 'Receipt', headerBackVisible: false, gestureEnabled: false }} />
-        <Stack.Screen name="history" options={{ title: 'Charging History', headerBackTitle: 'Back' }} />
-        <Stack.Screen name="station-details" options={{ title: 'Station Details', headerBackTitle: 'Back' }} />
+        <Stack.Screen name="pricing-confirmation" options={{ title: t('pricing.title'), headerBackTitle: t('common.back') }} />
+        <Stack.Screen name="live-session" options={{ title: t('session.sessionActive'), headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen name="receipt" options={{ title: t('receipt.title'), headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen name="history" options={{ title: t('history.title'), headerBackTitle: t('common.back') }} />
+        <Stack.Screen name="station-details" options={{ title: t('station.details'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="qr-scanner" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="phone-as-card" options={{ headerShown: false }} />
       </Stack>
