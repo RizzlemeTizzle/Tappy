@@ -4,6 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Platform, Linking } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
 import * as ExpoLinking from 'expo-linking';
+import { useTranslation } from 'react-i18next';
+import '../src/i18n';
 
 export default function RootLayout() {
   const { loadToken, isLoading } = useAuthStore();
