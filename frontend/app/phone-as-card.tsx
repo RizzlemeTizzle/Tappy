@@ -95,57 +95,60 @@ export default function PhoneAsCardScreen() {
   };
 
   const renderIntroStep = () => (
-    <ScrollView 
-      style={styles.scrollContainer} 
-      contentContainerStyle={styles.stepContentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.iconContainer}>
-        <Ionicons name="phone-portrait" size={70} color="#4CAF50" />
-        <View style={styles.nfcBadge}>
-          <Ionicons name="wifi" size={20} color="#FFF" />
-        </View>
-      </View>
-      
-      <Text style={styles.stepTitle}>Telefoon als Laadpas</Text>
-      <Text style={styles.stepDescription}>
-        Gebruik je Android telefoon om te laden bij elke laadpaal die NFC ondersteunt. 
-        Gewoon je telefoon tegen de lezer houden - geen fysieke pas nodig.
-      </Text>
-
-      <View style={styles.featureList}>
-        <View style={styles.featureItem}>
-          <Ionicons name="flash" size={20} color="#4CAF50" />
-          <Text style={styles.featureText}>Direct laden met NFC tap</Text>
-        </View>
-        <View style={styles.featureItem}>
-          <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
-          <Text style={styles.featureText}>Veilig gekoppeld aan jouw account</Text>
-        </View>
-        <View style={styles.featureItem}>
-          <Ionicons name="card" size={20} color="#4CAF50" />
-          <Text style={styles.featureText}>Werkt als fysieke laadpas</Text>
-        </View>
-      </View>
-
-      {Platform.OS !== 'android' && (
-        <View style={styles.warningBox}>
-          <Ionicons name="warning" size={20} color="#FFC107" />
-          <Text style={styles.warningText}>
-            Phone-as-Card is alleen beschikbaar op Android apparaten met NFC
-          </Text>
-        </View>
-      )}
-
-      <TouchableOpacity 
-        style={styles.primaryButton}
-        onPress={handleStartSetup}
-        disabled={Platform.OS !== 'android'}
-        data-testid="start-setup-btn"
+    <View style={styles.introContainer}>
+      <ScrollView 
+        style={styles.scrollContainer} 
+        contentContainerStyle={styles.introScrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.primaryButtonText}>Start Setup</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.iconContainerSmall}>
+          <Ionicons name="phone-portrait" size={56} color="#4CAF50" />
+          <View style={styles.nfcBadgeSmall}>
+            <Ionicons name="wifi" size={16} color="#FFF" />
+          </View>
+        </View>
+        
+        <Text style={styles.stepTitle}>Telefoon als Laadpas</Text>
+        <Text style={styles.stepDescriptionCompact}>
+          Gebruik je Android telefoon om te laden bij elke laadpaal die NFC ondersteunt.
+        </Text>
+
+        <View style={styles.featureList}>
+          <View style={styles.featureItem}>
+            <Ionicons name="flash" size={18} color="#4CAF50" />
+            <Text style={styles.featureText}>Direct laden met NFC tap</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Ionicons name="shield-checkmark" size={18} color="#4CAF50" />
+            <Text style={styles.featureText}>Veilig gekoppeld aan jouw account</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Ionicons name="card" size={18} color="#4CAF50" />
+            <Text style={styles.featureText}>Werkt als fysieke laadpas</Text>
+          </View>
+        </View>
+
+        {Platform.OS !== 'android' && (
+          <View style={styles.warningBoxCompact}>
+            <Ionicons name="warning" size={18} color="#FFC107" />
+            <Text style={styles.warningTextCompact}>
+              Alleen beschikbaar op Android met NFC
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.fixedButtonContainer}>
+        <TouchableOpacity 
+          style={styles.primaryButton}
+          onPress={handleStartSetup}
+          disabled={Platform.OS !== 'android'}
+          data-testid="start-setup-btn"
+        >
+          <Text style={styles.primaryButtonText}>Start Setup</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   const renderPaymentStep = () => (
