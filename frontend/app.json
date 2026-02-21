@@ -66,6 +66,12 @@
           "locationWhenInUsePermission": "Find nearby charging stations",
           "locationAlwaysAndWhenInUsePermission": "Navigate to charging stations"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Scan QR codes to start charging"
+        }
       ]
     ],
     "experiments": {
