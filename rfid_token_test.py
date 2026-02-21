@@ -477,15 +477,28 @@ class RFIDTokenTester:
             "whitelist": "ALWAYS"
         }
         
-        result = self.make_admin_request("POST", "/admin/tokens", data, 409)
+        # Make request expecting 409 status code for duplicate
+        url = f"{BASE_URL}/admin/tokens"
+        headers = HEADERS.copy()
+        headers["Authorization"] = f"Basic {self.admin_auth}"
         
-        if result.get("status") == 409:
-            self.log("Duplicate RFID UID correctly rejected (409)")
-            if "existing_token_id" in result:
-                self.log(f"Existing token ID provided: {result['existing_token_id']}")
-            return True
-        else:
-            self.log_error("Duplicate UID not properly handled")
+        try:
+            response = requests.post(url, headers=headers, json=data, timeout=10)
+            if response.status_code == 409:
+                self.log("Duplicate RFID UID correctly rejected (409)")
+                try:
+                    data = response.json()
+                    if "existing_token_id" in data:
+                        self.log(f"Existing token ID provided: {data['existing_token_id']}")
+                    return True
+                except:
+                    self.log("Response received but not JSON")
+                    return True
+            else:
+                self.log_error(f"Expected 409 for duplicate, got {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_error(f"Request failed: {str(e)}")
             return False
 
     def run_full_test_suite(self):
