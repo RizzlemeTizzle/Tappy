@@ -1314,9 +1314,585 @@ async def record_nfc_tap(data: dict, user: dict = Depends(get_current_user)):
 
 # ==================== ROOT ====================
 
+# ==================== NOTIFICATION SYSTEM ====================
+
+# Notification Types
+class NotificationType:
+    # Session lifecycle
+    SESSION_STARTED = "SESSION_STARTED"
+    SESSION_START_FAILED = "SESSION_START_FAILED"
+    SESSION_STOPPED = "SESSION_STOPPED"
+    SESSION_INTERRUPTED = "SESSION_INTERRUPTED"
+    CHARGING_COMPLETE = "CHARGING_COMPLETE"
+    # Penalty
+    PENALTY_STARTS_SOON = "PENALTY_STARTS_SOON"
+    PENALTY_STARTED = "PENALTY_STARTED"
+    PENALTY_CAP_REACHED = "PENALTY_CAP_REACHED"
+    # Payments
+    PAYMENT_SUCCEEDED = "PAYMENT_SUCCEEDED"
+    PAYMENT_FAILED = "PAYMENT_FAILED"
+    # Optional
+    COST_MILESTONE = "COST_MILESTONE"
+
+class DeviceRegister(BaseModel):
+    device_id: str
+    platform: str  # ios, android
+    fcm_token: Optional[str] = None
+    app_version: Optional[str] = None
+    locale: str = "en"
+    timezone: Optional[str] = None
+
+class NotificationPreferenceUpdate(BaseModel):
+    session_updates_enabled: Optional[bool] = None
+    penalty_alerts_enabled: Optional[bool] = None
+    payment_enabled: Optional[bool] = None
+    cost_milestones_enabled: Optional[bool] = None
+    penalty_prealert_minutes: Optional[int] = None  # 1, 3, 5, 10
+    quiet_hours_start: Optional[str] = None  # HH:MM format
+    quiet_hours_end: Optional[str] = None
+
+class Device(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    device_id: str  # Unique device identifier
+    platform: str  # ios, android
+    fcm_token: Optional[str] = None
+    app_version: Optional[str] = None
+    locale: str = "en"
+    timezone: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_seen_at: datetime = Field(default_factory=datetime.utcnow)
+
+class NotificationPreference(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_updates_enabled: bool = True
+    penalty_alerts_enabled: bool = True
+    payment_enabled: bool = True
+    cost_milestones_enabled: bool = False
+    penalty_prealert_minutes: int = 5  # Default 5 minutes before
+    quiet_hours_start: Optional[str] = None  # HH:MM
+    quiet_hours_end: Optional[str] = None
+    cost_milestone_thresholds: List[int] = Field(default_factory=lambda: [500, 1000, 2000])  # cents
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class NotificationLog(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    device_id: Optional[str] = None
+    type: str  # NotificationType
+    title: str
+    body: str
+    payload_json: Dict[str, Any] = Field(default_factory=dict)
+    status: str = "SENT"  # SENT, DELIVERED, FAILED, SUPPRESSED
+    sent_at: datetime = Field(default_factory=datetime.utcnow)
+    error: Optional[str] = None
+
+# Scheduled notification jobs
+scheduled_jobs: Dict[str, dict] = {}
+
+def get_notification_content(notification_type: str, locale: str, params: Dict[str, Any]) -> Dict[str, str]:
+    """Get localized notification title and body based on type and locale"""
+    
+    # Notification templates by type and locale
+    templates = {
+        NotificationType.SESSION_STARTED: {
+            "en": {"title": "Charging Started", "body": "Your charging session at {station_name} has begun."},
+            "nl": {"title": "Laden Gestart", "body": "Je laadsessie bij {station_name} is begonnen."},
+            "de": {"title": "Laden Gestartet", "body": "Ihre Ladesitzung bei {station_name} hat begonnen."},
+            "fr": {"title": "Charge Démarrée", "body": "Votre session de charge à {station_name} a commencé."},
+            "it": {"title": "Ricarica Iniziata", "body": "La tua sessione di ricarica a {station_name} è iniziata."},
+            "es": {"title": "Carga Iniciada", "body": "Tu sesión de carga en {station_name} ha comenzado."},
+            "sv": {"title": "Laddning Startad", "body": "Din laddningssession vid {station_name} har börjat."},
+            "fi": {"title": "Lataus Aloitettu", "body": "Latausistuntosi paikassa {station_name} on alkanut."},
+            "da": {"title": "Opladning Startet", "body": "Din opladningssession ved {station_name} er begyndt."},
+            "nb": {"title": "Lading Startet", "body": "Din ladeøkt ved {station_name} har begynt."},
+        },
+        NotificationType.SESSION_START_FAILED: {
+            "en": {"title": "Charging Failed", "body": "Could not start charging at {station_name}. Please try again."},
+            "nl": {"title": "Laden Mislukt", "body": "Kon het laden bij {station_name} niet starten. Probeer opnieuw."},
+            "de": {"title": "Laden Fehlgeschlagen", "body": "Laden bei {station_name} konnte nicht gestartet werden."},
+            "fr": {"title": "Charge Échouée", "body": "Impossible de démarrer la charge à {station_name}."},
+            "it": {"title": "Ricarica Fallita", "body": "Impossibile avviare la ricarica a {station_name}."},
+            "es": {"title": "Carga Fallida", "body": "No se pudo iniciar la carga en {station_name}."},
+            "sv": {"title": "Laddning Misslyckades", "body": "Kunde inte starta laddning vid {station_name}."},
+            "fi": {"title": "Lataus Epäonnistui", "body": "Latausta ei voitu aloittaa paikassa {station_name}."},
+            "da": {"title": "Opladning Mislykkedes", "body": "Kunne ikke starte opladning ved {station_name}."},
+            "nb": {"title": "Lading Mislyktes", "body": "Kunne ikke starte lading ved {station_name}."},
+        },
+        NotificationType.CHARGING_COMPLETE: {
+            "en": {"title": "Charging Complete", "body": "Your vehicle is fully charged! Total: {total}. ({energy} kWh)"},
+            "nl": {"title": "Laden Voltooid", "body": "Je voertuig is volledig opgeladen! Totaal: {total}. ({energy} kWh)"},
+            "de": {"title": "Laden Abgeschlossen", "body": "Ihr Fahrzeug ist vollständig geladen! Gesamt: {total}. ({energy} kWh)"},
+            "fr": {"title": "Charge Terminée", "body": "Votre véhicule est complètement chargé! Total: {total}. ({energy} kWh)"},
+            "it": {"title": "Ricarica Completata", "body": "Il tuo veicolo è completamente carico! Totale: {total}. ({energy} kWh)"},
+            "es": {"title": "Carga Completa", "body": "¡Tu vehículo está completamente cargado! Total: {total}. ({energy} kWh)"},
+            "sv": {"title": "Laddning Klar", "body": "Ditt fordon är fulladdat! Totalt: {total}. ({energy} kWh)"},
+            "fi": {"title": "Lataus Valmis", "body": "Ajoneuvosi on täysin ladattu! Yhteensä: {total}. ({energy} kWh)"},
+            "da": {"title": "Opladning Fuldført", "body": "Dit køretøj er fuldt opladet! Total: {total}. ({energy} kWh)"},
+            "nb": {"title": "Lading Fullført", "body": "Kjøretøyet ditt er fulladet! Totalt: {total}. ({energy} kWh)"},
+        },
+        NotificationType.PENALTY_STARTS_SOON: {
+            "en": {"title": "Idle Fee Warning", "body": "Idle fee starts in {minutes} min at {station_name}. Rate: {rate}/min."},
+            "nl": {"title": "Wachttarief Waarschuwing", "body": "Wachttarief begint over {minutes} min bij {station_name}. Tarief: {rate}/min."},
+            "de": {"title": "Standgebühr Warnung", "body": "Standgebühr beginnt in {minutes} Min. bei {station_name}. Preis: {rate}/Min."},
+            "fr": {"title": "Avertissement Frais Inactivité", "body": "Frais d'inactivité dans {minutes} min à {station_name}. Tarif: {rate}/min."},
+            "it": {"title": "Avviso Tariffa Sosta", "body": "Tariffa di sosta tra {minutes} min a {station_name}. Tariffa: {rate}/min."},
+            "es": {"title": "Aviso Tarifa Inactividad", "body": "Tarifa de inactividad en {minutes} min en {station_name}. Tarifa: {rate}/min."},
+            "sv": {"title": "Viloavgift Varning", "body": "Viloavgift börjar om {minutes} min vid {station_name}. Pris: {rate}/min."},
+            "fi": {"title": "Seisontataksa Varoitus", "body": "Seisontataksa alkaa {minutes} min kuluttua paikassa {station_name}. Hinta: {rate}/min."},
+            "da": {"title": "Inaktivitetsgebyr Advarsel", "body": "Inaktivitetsgebyr starter om {minutes} min ved {station_name}. Pris: {rate}/min."},
+            "nb": {"title": "Venteavgift Advarsel", "body": "Venteavgift starter om {minutes} min ved {station_name}. Pris: {rate}/min."},
+        },
+        NotificationType.PENALTY_STARTED: {
+            "en": {"title": "Idle Fee Active", "body": "Idle fee is now active at {station_name}. {rate}/min. Please move your vehicle."},
+            "nl": {"title": "Wachttarief Actief", "body": "Wachttarief is nu actief bij {station_name}. {rate}/min. Verplaats je voertuig."},
+            "de": {"title": "Standgebühr Aktiv", "body": "Standgebühr ist jetzt aktiv bei {station_name}. {rate}/Min. Bitte Fahrzeug bewegen."},
+            "fr": {"title": "Frais Inactivité Actif", "body": "Frais d'inactivité actif à {station_name}. {rate}/min. Veuillez déplacer votre véhicule."},
+            "it": {"title": "Tariffa Sosta Attiva", "body": "Tariffa di sosta attiva a {station_name}. {rate}/min. Sposta il tuo veicolo."},
+            "es": {"title": "Tarifa Inactividad Activa", "body": "Tarifa de inactividad activa en {station_name}. {rate}/min. Mueve tu vehículo."},
+            "sv": {"title": "Viloavgift Aktiv", "body": "Viloavgift är nu aktiv vid {station_name}. {rate}/min. Flytta ditt fordon."},
+            "fi": {"title": "Seisontataksa Aktiivinen", "body": "Seisontataksa on nyt aktiivinen paikassa {station_name}. {rate}/min. Siirrä ajoneuvosi."},
+            "da": {"title": "Inaktivitetsgebyr Aktivt", "body": "Inaktivitetsgebyr er nu aktivt ved {station_name}. {rate}/min. Flyt venligst dit køretøj."},
+            "nb": {"title": "Venteavgift Aktiv", "body": "Venteavgift er nå aktiv ved {station_name}. {rate}/min. Vennligst flytt kjøretøyet."},
+        },
+        NotificationType.PENALTY_CAP_REACHED: {
+            "en": {"title": "Idle Fee Capped", "body": "Maximum idle fee of {max_fee} reached at {station_name}."},
+            "nl": {"title": "Wachttarief Maximum", "body": "Maximum wachttarief van {max_fee} bereikt bij {station_name}."},
+            "de": {"title": "Standgebühr Maximum", "body": "Maximale Standgebühr von {max_fee} erreicht bei {station_name}."},
+            "fr": {"title": "Frais Maximum Atteint", "body": "Frais d'inactivité maximum de {max_fee} atteint à {station_name}."},
+            "it": {"title": "Tariffa Massima Raggiunta", "body": "Tariffa di sosta massima di {max_fee} raggiunta a {station_name}."},
+            "es": {"title": "Tarifa Máxima Alcanzada", "body": "Tarifa máxima de inactividad de {max_fee} alcanzada en {station_name}."},
+            "sv": {"title": "Maxavgift Uppnådd", "body": "Maximal viloavgift på {max_fee} uppnådd vid {station_name}."},
+            "fi": {"title": "Enimmäismaksu Saavutettu", "body": "Enimmäisseisontataksa {max_fee} saavutettu paikassa {station_name}."},
+            "da": {"title": "Maksimumgebyr Nået", "body": "Maksimalt inaktivitetsgebyr på {max_fee} nået ved {station_name}."},
+            "nb": {"title": "Maksimumsavgift Nådd", "body": "Maksimal venteavgift på {max_fee} nådd ved {station_name}."},
+        },
+        NotificationType.SESSION_STOPPED: {
+            "en": {"title": "Session Ended", "body": "Your session at {station_name} has ended. Total: {total}."},
+            "nl": {"title": "Sessie Beëindigd", "body": "Je sessie bij {station_name} is beëindigd. Totaal: {total}."},
+            "de": {"title": "Sitzung Beendet", "body": "Ihre Sitzung bei {station_name} wurde beendet. Gesamt: {total}."},
+            "fr": {"title": "Session Terminée", "body": "Votre session à {station_name} est terminée. Total: {total}."},
+            "it": {"title": "Sessione Terminata", "body": "La tua sessione a {station_name} è terminata. Totale: {total}."},
+            "es": {"title": "Sesión Finalizada", "body": "Tu sesión en {station_name} ha terminado. Total: {total}."},
+            "sv": {"title": "Session Avslutad", "body": "Din session vid {station_name} har avslutats. Totalt: {total}."},
+            "fi": {"title": "Istunto Päättynyt", "body": "Istuntosi paikassa {station_name} on päättynyt. Yhteensä: {total}."},
+            "da": {"title": "Session Afsluttet", "body": "Din session ved {station_name} er afsluttet. Total: {total}."},
+            "nb": {"title": "Økt Avsluttet", "body": "Økten din ved {station_name} er avsluttet. Totalt: {total}."},
+        },
+        NotificationType.SESSION_INTERRUPTED: {
+            "en": {"title": "Session Interrupted", "body": "Your session at {station_name} was interrupted. Reason: {reason}."},
+            "nl": {"title": "Sessie Onderbroken", "body": "Je sessie bij {station_name} is onderbroken. Reden: {reason}."},
+            "de": {"title": "Sitzung Unterbrochen", "body": "Ihre Sitzung bei {station_name} wurde unterbrochen. Grund: {reason}."},
+            "fr": {"title": "Session Interrompue", "body": "Votre session à {station_name} a été interrompue. Raison: {reason}."},
+            "it": {"title": "Sessione Interrotta", "body": "La tua sessione a {station_name} è stata interrotta. Motivo: {reason}."},
+            "es": {"title": "Sesión Interrumpida", "body": "Tu sesión en {station_name} fue interrumpida. Razón: {reason}."},
+            "sv": {"title": "Session Avbruten", "body": "Din session vid {station_name} avbröts. Orsak: {reason}."},
+            "fi": {"title": "Istunto Keskeytetty", "body": "Istuntosi paikassa {station_name} keskeytettiin. Syy: {reason}."},
+            "da": {"title": "Session Afbrudt", "body": "Din session ved {station_name} blev afbrudt. Årsag: {reason}."},
+            "nb": {"title": "Økt Avbrutt", "body": "Økten din ved {station_name} ble avbrutt. Årsak: {reason}."},
+        },
+        NotificationType.PAYMENT_SUCCEEDED: {
+            "en": {"title": "Payment Successful", "body": "Payment of {total} completed. Receipt available in app."},
+            "nl": {"title": "Betaling Geslaagd", "body": "Betaling van {total} voltooid. Bon beschikbaar in de app."},
+            "de": {"title": "Zahlung Erfolgreich", "body": "Zahlung von {total} abgeschlossen. Beleg in der App verfügbar."},
+            "fr": {"title": "Paiement Réussi", "body": "Paiement de {total} effectué. Reçu disponible dans l'app."},
+            "it": {"title": "Pagamento Riuscito", "body": "Pagamento di {total} completato. Ricevuta disponibile nell'app."},
+            "es": {"title": "Pago Exitoso", "body": "Pago de {total} completado. Recibo disponible en la app."},
+            "sv": {"title": "Betalning Lyckades", "body": "Betalning på {total} slutförd. Kvitto tillgängligt i appen."},
+            "fi": {"title": "Maksu Onnistui", "body": "Maksu {total} suoritettu. Kuitti saatavilla sovelluksessa."},
+            "da": {"title": "Betaling Gennemført", "body": "Betaling på {total} fuldført. Kvittering tilgængelig i appen."},
+            "nb": {"title": "Betaling Vellykket", "body": "Betaling på {total} fullført. Kvittering tilgjengelig i appen."},
+        },
+        NotificationType.PAYMENT_FAILED: {
+            "en": {"title": "Payment Failed", "body": "Payment of {total} failed. Please update your payment method."},
+            "nl": {"title": "Betaling Mislukt", "body": "Betaling van {total} mislukt. Update je betaalmethode."},
+            "de": {"title": "Zahlung Fehlgeschlagen", "body": "Zahlung von {total} fehlgeschlagen. Bitte Zahlungsmethode aktualisieren."},
+            "fr": {"title": "Paiement Échoué", "body": "Paiement de {total} échoué. Veuillez mettre à jour votre méthode de paiement."},
+            "it": {"title": "Pagamento Fallito", "body": "Pagamento di {total} fallito. Aggiorna il tuo metodo di pagamento."},
+            "es": {"title": "Pago Fallido", "body": "Pago de {total} fallido. Actualiza tu método de pago."},
+            "sv": {"title": "Betalning Misslyckades", "body": "Betalning på {total} misslyckades. Uppdatera din betalningsmetod."},
+            "fi": {"title": "Maksu Epäonnistui", "body": "Maksu {total} epäonnistui. Päivitä maksutapasi."},
+            "da": {"title": "Betaling Mislykkedes", "body": "Betaling på {total} mislykkedes. Opdater venligst din betalingsmetode."},
+            "nb": {"title": "Betaling Mislyktes", "body": "Betaling på {total} mislyktes. Vennligst oppdater betalingsmetoden din."},
+        },
+        NotificationType.COST_MILESTONE: {
+            "en": {"title": "Cost Update", "body": "Your session has reached {total}. Currently at {energy} kWh."},
+            "nl": {"title": "Kosten Update", "body": "Je sessie heeft {total} bereikt. Momenteel op {energy} kWh."},
+            "de": {"title": "Kosten Update", "body": "Ihre Sitzung hat {total} erreicht. Aktuell bei {energy} kWh."},
+            "fr": {"title": "Mise à Jour Coût", "body": "Votre session a atteint {total}. Actuellement à {energy} kWh."},
+            "it": {"title": "Aggiornamento Costo", "body": "La tua sessione ha raggiunto {total}. Attualmente a {energy} kWh."},
+            "es": {"title": "Actualización de Costo", "body": "Tu sesión ha alcanzado {total}. Actualmente en {energy} kWh."},
+            "sv": {"title": "Kostnadsuppdatering", "body": "Din session har nått {total}. För närvarande på {energy} kWh."},
+            "fi": {"title": "Kustannuspäivitys", "body": "Istuntosi on saavuttanut {total}. Tällä hetkellä {energy} kWh."},
+            "da": {"title": "Omkostningsopdatering", "body": "Din session har nået {total}. I øjeblikket på {energy} kWh."},
+            "nb": {"title": "Kostnadsoppdatering", "body": "Økten din har nådd {total}. For øyeblikket på {energy} kWh."},
+        },
+    }
+    
+    # Get template for type
+    type_templates = templates.get(notification_type, {})
+    template = type_templates.get(locale, type_templates.get("en", {"title": "Notification", "body": ""}))
+    
+    # Format with params
+    title = template["title"]
+    body = template["body"].format(**params) if params else template["body"]
+    
+    return {"title": title, "body": body}
+
+def format_currency(cents: int, locale: str = "en") -> str:
+    """Format cents to currency string based on locale"""
+    value = cents / 100
+    return f"€{value:.2f}"
+
+async def send_notification_to_user(
+    user_id: str,
+    notification_type: str,
+    params: Dict[str, Any],
+    session_id: Optional[str] = None,
+    is_critical: bool = False
+):
+    """Send notification to all user devices (MOCKED - logs only)"""
+    
+    # Get user's devices
+    devices = await db.devices.find({"user_id": user_id}).to_list(10)
+    
+    if not devices:
+        logger.info(f"[NOTIFICATION] No devices registered for user {user_id}")
+        return
+    
+    # Get user's notification preferences
+    prefs = await db.notification_preferences.find_one({"user_id": user_id})
+    if not prefs:
+        prefs = NotificationPreference(user_id=user_id).dict()
+    
+    # Check if this notification type is enabled
+    type_to_pref_map = {
+        NotificationType.SESSION_STARTED: "session_updates_enabled",
+        NotificationType.SESSION_START_FAILED: "session_updates_enabled",
+        NotificationType.SESSION_STOPPED: "session_updates_enabled",
+        NotificationType.SESSION_INTERRUPTED: "session_updates_enabled",
+        NotificationType.CHARGING_COMPLETE: "session_updates_enabled",
+        NotificationType.PENALTY_STARTS_SOON: "penalty_alerts_enabled",
+        NotificationType.PENALTY_STARTED: "penalty_alerts_enabled",
+        NotificationType.PENALTY_CAP_REACHED: "penalty_alerts_enabled",
+        NotificationType.PAYMENT_SUCCEEDED: "payment_enabled",
+        NotificationType.PAYMENT_FAILED: "payment_enabled",
+        NotificationType.COST_MILESTONE: "cost_milestones_enabled",
+    }
+    
+    pref_key = type_to_pref_map.get(notification_type, "session_updates_enabled")
+    if not prefs.get(pref_key, True) and not is_critical:
+        logger.info(f"[NOTIFICATION] Type {notification_type} disabled for user {user_id}")
+        return
+    
+    # Check quiet hours (skip for critical notifications)
+    if not is_critical and prefs.get("quiet_hours_start") and prefs.get("quiet_hours_end"):
+        now = datetime.utcnow()
+        start_hour = int(prefs["quiet_hours_start"].split(":")[0])
+        end_hour = int(prefs["quiet_hours_end"].split(":")[0])
+        current_hour = now.hour
+        
+        if start_hour <= current_hour or current_hour < end_hour:
+            logger.info(f"[NOTIFICATION] Suppressed during quiet hours for user {user_id}")
+            return
+    
+    # Send to each device
+    for device in devices:
+        locale = device.get("locale", "en")
+        content = get_notification_content(notification_type, locale, params)
+        
+        # Build payload
+        payload = {
+            "type": notification_type,
+            "session_id": session_id,
+            **params
+        }
+        
+        # Log the notification (MOCKED - no actual FCM send)
+        log = NotificationLog(
+            user_id=user_id,
+            device_id=device.get("device_id"),
+            type=notification_type,
+            title=content["title"],
+            body=content["body"],
+            payload_json=payload,
+            status="SENT"  # In real implementation, this would be updated after FCM response
+        )
+        await db.notification_logs.insert_one(log.dict())
+        
+        logger.info(f"[NOTIFICATION SENT] User: {user_id}, Type: {notification_type}, Title: {content['title']}, Body: {content['body']}")
+
+async def schedule_penalty_notifications(session_id: str, user_id: str, station_name: str, penalty_config: dict, charging_complete_at: datetime):
+    """Schedule penalty prealert and penalty started notifications"""
+    
+    # Get user preferences for prealert timing
+    prefs = await db.notification_preferences.find_one({"user_id": user_id})
+    prealert_minutes = prefs.get("penalty_prealert_minutes", 5) if prefs else 5
+    
+    grace_minutes = penalty_config.get("grace_minutes", 30)
+    penalty_rate = penalty_config.get("penalty_cents_per_minute", 50)
+    rate_str = format_currency(penalty_rate)
+    
+    # Calculate when penalty starts
+    penalty_start_time = charging_complete_at + timedelta(minutes=grace_minutes)
+    prealert_time = penalty_start_time - timedelta(minutes=prealert_minutes)
+    
+    now = datetime.utcnow()
+    
+    # Schedule prealert if in the future
+    prealert_delay = (prealert_time - now).total_seconds()
+    if prealert_delay > 0:
+        job_id = f"prealert_{session_id}"
+        scheduled_jobs[job_id] = {
+            "type": "PENALTY_PREALERT",
+            "session_id": session_id,
+            "user_id": user_id,
+            "scheduled_for": prealert_time,
+            "params": {
+                "station_name": station_name,
+                "minutes": prealert_minutes,
+                "rate": rate_str
+            }
+        }
+        logger.info(f"[NOTIFICATION] Scheduled prealert for session {session_id} in {prealert_delay}s")
+    
+    # Schedule penalty started
+    penalty_delay = (penalty_start_time - now).total_seconds()
+    if penalty_delay > 0:
+        job_id = f"penalty_{session_id}"
+        scheduled_jobs[job_id] = {
+            "type": "PENALTY_STARTED",
+            "session_id": session_id,
+            "user_id": user_id,
+            "scheduled_for": penalty_start_time,
+            "params": {
+                "station_name": station_name,
+                "rate": rate_str
+            }
+        }
+        logger.info(f"[NOTIFICATION] Scheduled penalty started for session {session_id} in {penalty_delay}s")
+
+# Background task to process scheduled notifications
+async def process_scheduled_notifications():
+    """Process scheduled notifications"""
+    while True:
+        try:
+            now = datetime.utcnow()
+            jobs_to_remove = []
+            
+            for job_id, job in scheduled_jobs.items():
+                if job["scheduled_for"] <= now:
+                    # Check if session is still active
+                    session = await db.sessions.find_one({"id": job["session_id"]})
+                    if session and session["status"] != "ENDED":
+                        notification_type = NotificationType.PENALTY_STARTS_SOON if job["type"] == "PENALTY_PREALERT" else NotificationType.PENALTY_STARTED
+                        await send_notification_to_user(
+                            job["user_id"],
+                            notification_type,
+                            job["params"],
+                            job["session_id"]
+                        )
+                    jobs_to_remove.append(job_id)
+            
+            for job_id in jobs_to_remove:
+                del scheduled_jobs[job_id]
+                
+        except Exception as e:
+            logger.error(f"Error processing scheduled notifications: {e}")
+        
+        await asyncio.sleep(10)  # Check every 10 seconds
+
+# ==================== DEVICE REGISTRATION ENDPOINTS ====================
+
+@api_router.post("/devices/register")
+async def register_device(data: DeviceRegister, user: dict = Depends(get_current_user)):
+    """Register a device for push notifications"""
+    
+    # Check if device already exists for this user
+    existing = await db.devices.find_one({
+        "user_id": user["id"],
+        "device_id": data.device_id
+    })
+    
+    if existing:
+        # Update existing device
+        await db.devices.update_one(
+            {"id": existing["id"]},
+            {"$set": {
+                "fcm_token": data.fcm_token,
+                "platform": data.platform,
+                "app_version": data.app_version,
+                "locale": data.locale,
+                "timezone": data.timezone,
+                "updated_at": datetime.utcnow(),
+                "last_seen_at": datetime.utcnow()
+            }}
+        )
+        return {"message": "Device updated", "device_id": data.device_id}
+    
+    # Create new device
+    device = Device(
+        user_id=user["id"],
+        device_id=data.device_id,
+        platform=data.platform,
+        fcm_token=data.fcm_token,
+        app_version=data.app_version,
+        locale=data.locale,
+        timezone=data.timezone
+    )
+    await db.devices.insert_one(device.dict())
+    
+    # Create default notification preferences if not exists
+    existing_prefs = await db.notification_preferences.find_one({"user_id": user["id"]})
+    if not existing_prefs:
+        prefs = NotificationPreference(user_id=user["id"])
+        await db.notification_preferences.insert_one(prefs.dict())
+    
+    return {"message": "Device registered", "device_id": data.device_id}
+
+@api_router.post("/devices/deregister")
+async def deregister_device(data: dict, user: dict = Depends(get_current_user)):
+    """Deregister a device (on logout)"""
+    
+    device_id = data.get("device_id")
+    if not device_id:
+        raise HTTPException(status_code=400, detail="device_id is required")
+    
+    result = await db.devices.delete_one({
+        "user_id": user["id"],
+        "device_id": device_id
+    })
+    
+    return {"message": "Device deregistered", "deleted": result.deleted_count > 0}
+
+# ==================== NOTIFICATION PREFERENCES ENDPOINTS ====================
+
+@api_router.get("/me/notification-preferences")
+async def get_notification_preferences(user: dict = Depends(get_current_user)):
+    """Get user's notification preferences"""
+    
+    prefs = await db.notification_preferences.find_one({"user_id": user["id"]})
+    
+    if not prefs:
+        # Create default preferences
+        prefs = NotificationPreference(user_id=user["id"])
+        await db.notification_preferences.insert_one(prefs.dict())
+        prefs = prefs.dict()
+    
+    return serialize_doc({
+        "session_updates_enabled": prefs.get("session_updates_enabled", True),
+        "penalty_alerts_enabled": prefs.get("penalty_alerts_enabled", True),
+        "payment_enabled": prefs.get("payment_enabled", True),
+        "cost_milestones_enabled": prefs.get("cost_milestones_enabled", False),
+        "penalty_prealert_minutes": prefs.get("penalty_prealert_minutes", 5),
+        "quiet_hours_start": prefs.get("quiet_hours_start"),
+        "quiet_hours_end": prefs.get("quiet_hours_end"),
+        "cost_milestone_thresholds": prefs.get("cost_milestone_thresholds", [500, 1000, 2000])
+    })
+
+@api_router.put("/me/notification-preferences")
+async def update_notification_preferences(data: NotificationPreferenceUpdate, user: dict = Depends(get_current_user)):
+    """Update user's notification preferences"""
+    
+    # Build update dict
+    update_data = {"updated_at": datetime.utcnow()}
+    
+    if data.session_updates_enabled is not None:
+        update_data["session_updates_enabled"] = data.session_updates_enabled
+    if data.penalty_alerts_enabled is not None:
+        update_data["penalty_alerts_enabled"] = data.penalty_alerts_enabled
+    if data.payment_enabled is not None:
+        update_data["payment_enabled"] = data.payment_enabled
+    if data.cost_milestones_enabled is not None:
+        update_data["cost_milestones_enabled"] = data.cost_milestones_enabled
+    if data.penalty_prealert_minutes is not None:
+        if data.penalty_prealert_minutes not in [1, 3, 5, 10]:
+            raise HTTPException(status_code=400, detail="penalty_prealert_minutes must be 1, 3, 5, or 10")
+        update_data["penalty_prealert_minutes"] = data.penalty_prealert_minutes
+    if data.quiet_hours_start is not None:
+        update_data["quiet_hours_start"] = data.quiet_hours_start
+    if data.quiet_hours_end is not None:
+        update_data["quiet_hours_end"] = data.quiet_hours_end
+    
+    # Upsert preferences
+    await db.notification_preferences.update_one(
+        {"user_id": user["id"]},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Preferences updated", "updated_fields": list(update_data.keys())}
+
+@api_router.get("/me/notification-logs")
+async def get_notification_logs(limit: int = 50, user: dict = Depends(get_current_user)):
+    """Get user's notification history"""
+    
+    logs = await db.notification_logs.find({"user_id": user["id"]}).sort("sent_at", -1).to_list(limit)
+    
+    return serialize_doc(logs)
+
+# ==================== SIMULATE NOTIFICATIONS ENDPOINTS ====================
+
+@api_router.post("/simulate/notification/{notification_type}")
+async def simulate_notification(notification_type: str, session_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Simulate sending a notification (for testing)"""
+    
+    valid_types = [
+        NotificationType.SESSION_STARTED,
+        NotificationType.SESSION_START_FAILED,
+        NotificationType.CHARGING_COMPLETE,
+        NotificationType.PENALTY_STARTS_SOON,
+        NotificationType.PENALTY_STARTED,
+        NotificationType.PENALTY_CAP_REACHED,
+        NotificationType.SESSION_STOPPED,
+        NotificationType.SESSION_INTERRUPTED,
+        NotificationType.PAYMENT_SUCCEEDED,
+        NotificationType.PAYMENT_FAILED,
+        NotificationType.COST_MILESTONE,
+    ]
+    
+    if notification_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"Invalid notification type. Valid types: {valid_types}")
+    
+    # Get a sample session for params
+    session = None
+    station_name = "Test Station"
+    total_str = "€12.50"
+    energy = "25.3"
+    
+    if session_id:
+        session = await db.sessions.find_one({"id": session_id, "user_id": user["id"]})
+        if session:
+            station = await db.stations.find_one({"id": session["station_id"]})
+            station_name = station["name"] if station else "Unknown Station"
+            total_str = format_currency(session.get("total_cost_cents", 0))
+            energy = str(round(session.get("delivered_kwh", 0), 1))
+    
+    params = {
+        "station_name": station_name,
+        "total": total_str,
+        "energy": energy,
+        "minutes": "5",
+        "rate": "€0.50",
+        "max_fee": "€30.00",
+        "reason": "Charger fault detected"
+    }
+    
+    await send_notification_to_user(
+        user["id"],
+        notification_type,
+        params,
+        session_id
+    )
+    
+    return {"message": f"Notification {notification_type} simulated", "params": params}
+
 @api_router.get("/")
 async def root():
-    return {"message": "ChargeTap API", "version": "1.1.0", "features": ["NFC HCE", "QR-Start", "Tap-to-Pay"]}
+    return {"message": "ChargeTap API", "version": "1.2.0", "features": ["NFC HCE", "QR-Start", "Tap-to-Pay", "Notifications"]}
 
 @api_router.get("/health")
 async def health():
