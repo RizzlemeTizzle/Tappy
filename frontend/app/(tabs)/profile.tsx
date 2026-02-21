@@ -78,17 +78,30 @@ export default function ProfileScreen() {
 
       {/* Payment Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Payment</Text>
+        <Text style={styles.sectionTitle}>Betaling</Text>
         <View style={styles.card}>
           <MenuItem
             icon="card"
-            title="Payment Method"
+            title="Betaalmethode"
             subtitle={
               user?.payment_method_added
-                ? `Card ending in ${user.payment_method_last4}`
-                : 'No payment method'
+                ? `Kaart eindigend op ${user.payment_method_last4}`
+                : 'Geen betaalmethode'
             }
             onPress={() => router.push('/add-payment')}
+          />
+        </View>
+      </View>
+
+      {/* NFC Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Laden</Text>
+        <View style={styles.card}>
+          <MenuItem
+            icon="phone-portrait"
+            title="Telefoon als Laadpas"
+            subtitle="Gebruik NFC om te laden"
+            onPress={() => router.push('/phone-as-card')}
           />
         </View>
       </View>
