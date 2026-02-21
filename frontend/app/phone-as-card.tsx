@@ -575,6 +575,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
+  warningTextCompact: {
+    color: '#FFC107',
+    fontSize: 12,
+    marginLeft: 10,
+    flex: 1,
+  },
   infoBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -595,7 +601,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     width: '100%',
     backgroundColor: '#4CAF50',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 12,
