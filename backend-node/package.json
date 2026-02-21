@@ -1,9 +1,16 @@
 {
   "name": "backend-node",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "curl -X POST http://localhost:8001/api/seed"
   },
   "keywords": [],
   "author": "",
