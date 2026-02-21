@@ -30,7 +30,11 @@
     "minutes": "minuten",
     "hours": "uur",
     "perKwh": "/kWh",
-    "perMinute": "/min"
+    "perMinute": "/min",
+    "home": "Home",
+    "later": "Later",
+    "add": "Toevoegen",
+    "yesterday": "Gisteren"
   },
   "auth": {
     "signIn": "Inloggen",
@@ -78,8 +82,10 @@
     "whySignInReceipts": "Digitale bonnetjes",
     "whySignInHistory": "Laadgeschiedenis",
     "whySignInControl": "Sessie op afstand stoppen",
+    "whySignInRemoteStop": "Sessie op afstand stoppen",
     "continueBrowsing": "Verder browsen",
-    "viewPricing": "Bekijk Prijzen"
+    "viewPricing": "Bekijk Prijzen",
+    "viewPricingAsGuest": "Je bekijkt de prijzen als gast. Log in om een laadsessie te starten."
   },
   "map": {
     "title": "Vind Laders",
