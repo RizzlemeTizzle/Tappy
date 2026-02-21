@@ -156,7 +156,8 @@ class ChargeTapTester:
         # Rotterdam coordinates as specified
         result = self.make_request("GET", "/stations/nearby?lat=51.9244&lng=4.4777", None, 200)
         
-        if result.get("error"):
+        # Check for error from make_request function
+        if isinstance(result, dict) and result.get("error"):
             return False
             
         if isinstance(result, list) and len(result) > 0:
@@ -169,7 +170,6 @@ class ChargeTapTester:
             return True
         else:
             self.log_error(f"No nearby stations found or invalid response format. Result type: {type(result)}")
-            print(f"DEBUG - First few items: {result[:2] if isinstance(result, list) else result}")
             return False
             
     def test_cost_estimate(self) -> bool:
