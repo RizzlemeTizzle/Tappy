@@ -409,23 +409,29 @@ const styles = StyleSheet.create({
   stepContainer: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 24,
     alignItems: 'center',
   },
   scrollContainer: {
     flex: 1,
   },
+  stepContentContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
   completeContainer: {
     padding: 20,
   },
   iconContainer: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: '#1A1A1A',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   nfcBadge: {
     position: 'absolute',
