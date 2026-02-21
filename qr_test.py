@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://ev-remote-start.preview.emergentagent.com/api"
+BACKEND_URL = "https://hce-preview.preview.emergentagent.com/api"
 
 def print_test_header(title):
     print(f"\n{'='*50}")

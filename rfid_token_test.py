@@ -8,7 +8,7 @@ import sys
 from typing import Dict, Any, Optional
 
 # Test configuration - Using the external URL from frontend/.env
-BASE_URL = "https://ev-remote-start.preview.emergentagent.com/api"
+BASE_URL = "https://hce-preview.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Admin credentials
