@@ -362,4 +362,26 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+  whySignInBox: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+  },
+  whySignInTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  whySignInItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 10,
+  },
+  whySignInText: {
+    color: '#888',
+    fontSize: 14,
+  },
 });
