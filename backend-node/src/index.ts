@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import dotenv from 'dotenv';
-import { PrismaClient } from './generated/prisma/client.js';
+import { PrismaClient } from './generated/prisma/index.js';
 import authRoutes from './routes/auth.js';
 import stationRoutes from './routes/stations.js';
 import sessionRoutes from './routes/sessions.js';
@@ -19,16 +19,7 @@ const prisma = new PrismaClient();
 const chargerSimulator = new ChargerSimulator(prisma);
 
 const fastify = Fastify({
-  logger: {
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
-      },
-    },
-  },
+  logger: true,
 });
 
 // Declare module augmentation for fastify
@@ -36,6 +27,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     prisma: PrismaClient;
     chargerSimulator: ChargerSimulator;
+    authenticate: any;
   }
 }
 
@@ -96,8 +88,9 @@ async function start() {
     const port = parseInt(process.env.PORT || '8001', 10);
     
     await server.listen({ port, host: '0.0.0.0' });
-    console.log(`🚀 ChargeTap API running on port ${port}`);
+    console.log(`\n🚀 ChargeTap API running on port ${port}`);
     console.log(`📚 Stack: Node.js + Fastify + PostgreSQL + Prisma`);
+    console.log(`🔌 OCPI 2.2.1 Remote Start/Stop enabled\n`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
