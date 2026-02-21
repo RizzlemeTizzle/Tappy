@@ -22,6 +22,7 @@ model User {
   sessions            Session[]
   payments            Payment[]
   ocpiTokens          OcpiToken[]
+  rfidTokens          RfidToken[]
 
   @@map("users")
 }
