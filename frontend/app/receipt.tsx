@@ -27,9 +27,9 @@ export default function Receipt() {
           <Text style={styles.errorText}>Receipt not found</Text>
           <TouchableOpacity
             style={styles.homeButton}
-            onPress={() => router.replace('/ready-to-tap')}
+            onPress={() => router.replace('/(tabs)/tap')}
           >
-            <Text style={styles.homeButtonText}>Go to Home</Text>
+            <Text style={styles.homeButtonText}>Naar Home</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -184,9 +184,9 @@ Thank you for using ChargeTap!
         
         <TouchableOpacity
           style={styles.doneButton}
-          onPress={() => router.replace('/ready-to-tap')}
+          onPress={() => router.replace('/(tabs)/tap')}
         >
-          <Text style={styles.doneButtonText}>Done</Text>
+          <Text style={styles.doneButtonText}>Klaar</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
