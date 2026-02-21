@@ -163,7 +163,7 @@ class ChargeTapTester:
             self.log(f"Found {len(result)} nearby stations")
             # Show first station as example
             station = result[0]
-            self.log(f"  Example station: {station['name']} ({station['distance_km']}km away)")
+            self.log(f"  Example station: {station.get('name', 'Unknown')} ({station.get('distance_km', '?')}km away)")
             return True
         else:
             self.log_error("No nearby stations found or invalid response format")
