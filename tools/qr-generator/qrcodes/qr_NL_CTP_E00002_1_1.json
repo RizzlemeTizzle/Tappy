@@ -1,0 +1,16 @@
+{
+  "payload": {
+    "v": 1,
+    "evse_uid": "NL*CTP*E00002*1",
+    "connector_id": "1",
+    "loc_id": "station-002",
+    "cpo": "CTP",
+    "ts": 1771705665,
+    "nonce": "30ca506b",
+    "sig": "qXp0XvlXKR2W-5wD"
+  },
+  "deep_link": "chargetap://start?v=1&evse_uid=NL*CTP*E00002*1&connector_id=1&loc_id=station-002&cpo=CTP&ts=1771705665&nonce=30ca506b&sig=qXp0XvlXKR2W-5wD",
+  "fallback_url": "https://chargetap.app/start?v=1&evse_uid=NL*CTP*E00002*1&connector_id=1&loc_id=station-002&cpo=CTP&ts=1771705665&nonce=30ca506b&sig=qXp0XvlXKR2W-5wD",
+  "generated_at": "2026-02-21T20:27:45.717Z",
+  "replay_protection": true
+}
