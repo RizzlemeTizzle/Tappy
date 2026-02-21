@@ -15,12 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNfcStore } from '../src/store/nfcStore';
 import { useAuthStore } from '../src/store/authStore';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '../src/i18n';
 
 type SetupStep = 'intro' | 'payment' | 'provision' | 'activate' | 'complete';
 
 export default function PhoneAsCardScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const {
     tokens,
     activeToken,
@@ -49,7 +52,7 @@ export default function PhoneAsCardScreen() {
 
   useEffect(() => {
     if (error) {
-      Alert.alert('Fout', error, [{ text: 'OK', onPress: clearError }]);
+      Alert.alert(t('common.error'), error, [{ text: t('common.ok'), onPress: clearError }]);
     }
   }, [error]);
 
@@ -108,23 +111,23 @@ export default function PhoneAsCardScreen() {
           </View>
         </View>
         
-        <Text style={styles.stepTitle}>Telefoon als Laadpas</Text>
+        <Text style={styles.stepTitle}>{t('nfc.title')}</Text>
         <Text style={styles.stepDescriptionCompact}>
-          Gebruik je Android telefoon om te laden bij elke laadpaal die NFC ondersteunt.
+          {t('nfc.description')}
         </Text>
 
         <View style={styles.featureList}>
           <View style={styles.featureItem}>
             <Ionicons name="flash" size={18} color="#4CAF50" />
-            <Text style={styles.featureText}>Direct laden met NFC tap</Text>
+            <Text style={styles.featureText}>{t('nfc.feature1')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="shield-checkmark" size={18} color="#4CAF50" />
-            <Text style={styles.featureText}>Veilig gekoppeld aan jouw account</Text>
+            <Text style={styles.featureText}>{t('nfc.feature2')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="card" size={18} color="#4CAF50" />
-            <Text style={styles.featureText}>Werkt als fysieke laadpas</Text>
+            <Text style={styles.featureText}>{t('nfc.feature3')}</Text>
           </View>
         </View>
 
@@ -132,7 +135,7 @@ export default function PhoneAsCardScreen() {
           <View style={styles.warningBoxCompact}>
             <Ionicons name="warning" size={18} color="#FFC107" />
             <Text style={styles.warningTextCompact}>
-              Alleen beschikbaar op Android met NFC
+              {t('nfc.androidOnly')}
             </Text>
           </View>
         )}
@@ -145,7 +148,7 @@ export default function PhoneAsCardScreen() {
           disabled={Platform.OS !== 'android'}
           data-testid="start-setup-btn"
         >
-          <Text style={styles.primaryButtonText}>Start Setup</Text>
+          <Text style={styles.primaryButtonText}>{t('nfc.startSetup')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -157,23 +160,23 @@ export default function PhoneAsCardScreen() {
         <Ionicons name="card" size={80} color="#FFC107" />
       </View>
       
-      <Text style={styles.stepTitle}>Betaalmethode Vereist</Text>
+      <Text style={styles.stepTitle}>{t('payment.cardRequired')}</Text>
       <Text style={styles.stepDescription}>
-        Om NFC laden te gebruiken, moet je eerst een betaalmethode toevoegen aan je account.
+        {t('payment.cardRequired')}
       </Text>
 
       <TouchableOpacity 
         style={styles.primaryButton}
         onPress={() => router.push('/add-payment')}
       >
-        <Text style={styles.primaryButtonText}>Betaalmethode Toevoegen</Text>
+        <Text style={styles.primaryButtonText}>{t('profile.addPaymentMethod')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.secondaryButton}
         onPress={() => setSetupStep('intro')}
       >
-        <Text style={styles.secondaryButtonText}>Terug</Text>
+        <Text style={styles.secondaryButtonText}>{t('common.back')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -184,15 +187,15 @@ export default function PhoneAsCardScreen() {
         <Ionicons name="key" size={80} color="#2196F3" />
       </View>
       
-      <Text style={styles.stepTitle}>Virtuele Pas Aanmaken</Text>
+      <Text style={styles.stepTitle}>{t('nfc.createToken')}</Text>
       <Text style={styles.stepDescription}>
-        We gaan een unieke virtuele laadpas aanmaken die gekoppeld is aan dit apparaat en jouw account.
+        {t('nfc.createTokenDesc')}
       </Text>
 
       <View style={styles.infoBox}>
         <Ionicons name="information-circle" size={20} color="#4CAF50" />
         <Text style={styles.infoText}>
-          Deze pas werkt alleen op dit apparaat en is beveiligd met jouw account gegevens.
+          {t('nfc.feature2')}
         </Text>
       </View>
 
@@ -204,7 +207,7 @@ export default function PhoneAsCardScreen() {
         {isLoading ? (
           <ActivityIndicator color="#0A0A0A" />
         ) : (
-          <Text style={styles.primaryButtonText}>Pas Aanmaken</Text>
+          <Text style={styles.primaryButtonText}>{t('nfc.createToken')}</Text>
         )}
       </TouchableOpacity>
 
@@ -212,7 +215,7 @@ export default function PhoneAsCardScreen() {
         style={styles.secondaryButton}
         onPress={() => setSetupStep('intro')}
       >
-        <Text style={styles.secondaryButtonText}>Annuleren</Text>
+        <Text style={styles.secondaryButtonText}>{t('common.cancel')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -226,19 +229,19 @@ export default function PhoneAsCardScreen() {
           <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
         </View>
         
-        <Text style={styles.stepTitle}>Pas Aangemaakt!</Text>
+        <Text style={styles.stepTitle}>{t('nfc.tokenCreated')}</Text>
         <Text style={styles.stepDescription}>
-          Je virtuele laadpas is klaar. Activeer HCE om je telefoon als laadpas te gebruiken.
+          {t('nfc.activateHce')}
         </Text>
 
         {token && (
           <View style={styles.tokenCard}>
             <View style={styles.tokenHeader}>
-              <Text style={styles.tokenLabel}>Contract ID</Text>
+              <Text style={styles.tokenLabel}>{t('nfc.contractId')}</Text>
               <Text style={styles.tokenValue}>{token.contract_id}</Text>
             </View>
             <View style={styles.tokenHeader}>
-              <Text style={styles.tokenLabel}>Token UID</Text>
+              <Text style={styles.tokenLabel}>{t('nfc.tokenUid')}</Text>
               <Text style={styles.tokenValue}>{token.visual_number}</Text>
             </View>
           </View>
@@ -252,7 +255,7 @@ export default function PhoneAsCardScreen() {
           {isLoading ? (
             <ActivityIndicator color="#0A0A0A" />
           ) : (
-            <Text style={styles.primaryButtonText}>HCE Activeren</Text>
+            <Text style={styles.primaryButtonText}>{t('nfc.activateHce')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -269,12 +272,12 @@ export default function PhoneAsCardScreen() {
             <View style={styles.statusHeader}>
               <View style={[styles.statusIndicator, hceEnabled && styles.statusActive]} />
               <Text style={styles.statusTitle}>
-                {hceEnabled ? 'HCE Actief' : 'HCE Uitgeschakeld'}
+                {hceEnabled ? t('nfc.hceActive') : t('nfc.hceInactive')}
               </Text>
             </View>
             
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Telefoon als Laadpas</Text>
+              <Text style={styles.toggleLabel}>{t('nfc.enablePhoneAsCard')}</Text>
               <Switch
                 value={hceEnabled}
                 onValueChange={handleToggleHce}
@@ -287,12 +290,12 @@ export default function PhoneAsCardScreen() {
 
           {token && (
             <View style={styles.tokenDetailCard}>
-              <Text style={styles.cardSectionTitle}>Virtuele Laadpas</Text>
+              <Text style={styles.cardSectionTitle}>{t('nfc.title')}</Text>
               
               <View style={styles.detailRow}>
                 <Ionicons name="document-text" size={20} color="#888" />
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Contract ID</Text>
+                  <Text style={styles.detailLabel}>{t('nfc.contractId')}</Text>
                   <Text style={styles.detailValue}>{token.contract_id}</Text>
                 </View>
               </View>
@@ -300,7 +303,7 @@ export default function PhoneAsCardScreen() {
               <View style={styles.detailRow}>
                 <Ionicons name="key" size={20} color="#888" />
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Token UID</Text>
+                  <Text style={styles.detailLabel}>{t('nfc.tokenUid')}</Text>
                   <Text style={styles.detailValue}>{token.visual_number}</Text>
                 </View>
               </View>
@@ -308,7 +311,7 @@ export default function PhoneAsCardScreen() {
               <View style={styles.detailRow}>
                 <Ionicons name="flash" size={20} color="#888" />
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Aantal Taps</Text>
+                  <Text style={styles.detailLabel}>{t('nfc.tapCount')}</Text>
                   <Text style={styles.detailValue}>{token.tap_count}</Text>
                 </View>
               </View>
@@ -317,9 +320,9 @@ export default function PhoneAsCardScreen() {
                 <View style={styles.detailRow}>
                   <Ionicons name="time" size={20} color="#888" />
                   <View style={styles.detailContent}>
-                    <Text style={styles.detailLabel}>Laatste Tap</Text>
+                    <Text style={styles.detailLabel}>{t('nfc.lastTap')}</Text>
                     <Text style={styles.detailValue}>
-                      {new Date(token.last_tap_at).toLocaleString('nl-NL')}
+                      {formatDate(token.last_tap_at)}
                     </Text>
                   </View>
                 </View>
@@ -328,14 +331,14 @@ export default function PhoneAsCardScreen() {
           )}
 
           <View style={styles.instructionsCard}>
-            <Text style={styles.cardSectionTitle}>Hoe te Gebruiken</Text>
+            <Text style={styles.cardSectionTitle}>{t('nfc.howToUse')}</Text>
             
             <View style={styles.instructionItem}>
               <View style={styles.instructionNumber}>
                 <Text style={styles.instructionNumberText}>1</Text>
               </View>
               <Text style={styles.instructionText}>
-                Zorg dat NFC is ingeschakeld op je telefoon
+                {t('nfc.step1')}
               </Text>
             </View>
 
@@ -344,7 +347,7 @@ export default function PhoneAsCardScreen() {
                 <Text style={styles.instructionNumberText}>2</Text>
               </View>
               <Text style={styles.instructionText}>
-                Houd je telefoon tegen de NFC lezer van de laadpaal
+                {t('nfc.step2')}
               </Text>
             </View>
 
@@ -353,7 +356,7 @@ export default function PhoneAsCardScreen() {
                 <Text style={styles.instructionNumberText}>3</Text>
               </View>
               <Text style={styles.instructionText}>
-                Wacht op bevestiging en begin met laden!
+                {t('nfc.step3')}
               </Text>
             </View>
           </View>
@@ -361,7 +364,7 @@ export default function PhoneAsCardScreen() {
           <View style={styles.noteBox}>
             <Ionicons name="information-circle" size={20} color="#2196F3" />
             <Text style={styles.noteText}>
-              Je scherm hoeft niet aan te staan. HCE werkt ook als je telefoon vergrendeld is.
+              {t('nfc.screenOffNote')}
             </Text>
           </View>
         </View>
@@ -392,7 +395,7 @@ export default function PhoneAsCardScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Telefoon als Laadpas</Text>
+        <Text style={styles.headerTitle}>{t('nfc.title')}</Text>
         <View style={styles.placeholder} />
       </View>
       
