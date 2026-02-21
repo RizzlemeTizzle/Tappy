@@ -705,6 +705,16 @@ async def start_session(data: dict, background_tasks: BackgroundTasks, user: dic
     }
     background_tasks.add_task(simulate_charging, session.id)
     
+    # Send SESSION_STARTED notification
+    station = await db.stations.find_one({"id": charger["station_id"]})
+    background_tasks.add_task(
+        send_notification_to_user,
+        user["id"],
+        NotificationType.SESSION_STARTED,
+        {"station_name": station["name"] if station else "Unknown Station"},
+        session.id
+    )
+    
     return {
         "session_id": session.id,
         "pricing_snapshot": serialize_doc(pricing_snapshot.dict()),
