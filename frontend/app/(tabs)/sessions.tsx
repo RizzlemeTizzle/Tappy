@@ -11,15 +11,32 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../../src/store/sessionStore';
+import { useAuthStore } from '../../src/store/authStore';
+import { InlineLoginWall } from '../../src/components/LoginWall';
 import { formatCents, formatKwh, formatDate } from '../../src/utils/formatters';
 
 export default function SessionsScreen() {
   const router = useRouter();
   const { sessionHistory, fetchHistory, isLoading } = useSessionStore();
+  const { isGuest, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    fetchHistory();
-  }, []);
+    if (isAuthenticated && !isGuest) {
+      fetchHistory();
+    }
+  }, [isAuthenticated, isGuest]);
+
+  // Show login wall for guests
+  if (isGuest) {
+    return (
+      <View style={styles.container}>
+        <InlineLoginWall
+          actionType="view_history"
+          showBrowseLink={false}
+        />
+      </View>
+    );
+  }
 
   const renderSession = ({ item }: { item: any }) => {
     const isCompleted = item.status === 'ENDED';
