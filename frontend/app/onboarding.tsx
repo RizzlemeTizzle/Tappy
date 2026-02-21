@@ -2,11 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../src/store/authStore';
 
 const { width } = Dimensions.get('window');
 
 export default function Onboarding() {
   const router = useRouter();
+  const { continueAsGuest } = useAuthStore();
+
+  const handleGuestMode = async () => {
+    await continueAsGuest();
+    router.replace('/(tabs)/find');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,6 +65,7 @@ export default function Onboarding() {
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.push('/register')}
+            data-testid="get-started-btn"
           >
             <Text style={styles.primaryButtonText}>Get Started</Text>
             <Ionicons name="arrow-forward" size={20} color="#000" />
@@ -66,8 +74,18 @@ export default function Onboarding() {
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => router.push('/login')}
+            data-testid="sign-in-btn"
           >
             <Text style={styles.secondaryButtonText}>Already have an account? Sign In</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.guestButton}
+            onPress={handleGuestMode}
+            data-testid="browse-guest-btn"
+          >
+            <Ionicons name="eye-outline" size={18} color="#888" />
+            <Text style={styles.guestButtonText}>Browse without logging in</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -163,5 +181,20 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#888',
     fontSize: 15,
+  },
+  guestButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 8,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#1A1A1A',
+    paddingTop: 20,
+  },
+  guestButtonText: {
+    color: '#666',
+    fontSize: 14,
   },
 });
