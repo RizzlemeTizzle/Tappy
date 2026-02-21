@@ -34,12 +34,16 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
    - Admin API for RFID token management
    - OCPI 2.2.1 token authorization endpoints
 
-7. **Phone-as-Card (HCE)** ✅ NEW
+7. **Phone-as-Card (HCE)** ✅
    - Backend API endpoints for NFC token provisioning
    - Token activation/deactivation
    - Tap recording and usage tracking
    - Native Android HCE module (Kotlin) - requires `expo prebuild`
    - Frontend setup wizard with Dutch localization
+   - **BUG FIXED**: Single header, visible CTA button
+
+8. **Receipt Navigation** ✅
+   - **BUG FIXED**: Done button navigates to correct home screen with bottom menu
 
 ## Technical Architecture
 
@@ -66,7 +70,7 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 - `POST /api/auth/login` - User login
 - `GET /api/users/me` - Get current user
 
-### NFC HCE Tokens ✅ NEW
+### NFC HCE Tokens ✅
 - `POST /api/nfc/tokens/provision` - Create new HCE token
 - `GET /api/nfc/tokens/status` - Get token status
 - `POST /api/nfc/tokens/activate` - Activate token for HCE
@@ -84,28 +88,22 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 - `POST /api/sessions/{id}/stop` - Stop charging
 - `GET /api/sessions/{id}` - Get session status
 
-## Database Models
+## Bug Fixes Completed (Feb 21, 2026)
 
-### NfcToken (New)
-```python
-{
-  "id": "uuid",
-  "uid": "16-char-hex",  # CT + 6 random bytes
-  "contract_id": "CTP-NFC-YYYY-NNNNNN",
-  "user_id": "uuid",
-  "device_id": "string",
-  "status": "ACTIVE|BLOCKED|EXPIRED",
-  "hce_enabled": bool,
-  "is_active": bool,
-  "tap_count": int,
-  "last_tap_at": datetime
-}
-```
+### Bug 1: Receipt Done Navigation ✅
+- **Issue**: Done button navigated to old UI without bottom menu
+- **Fix**: Changed `router.replace('/ready-to-tap')` to `router.replace('/(tabs)/tap')`
+- **File**: `/app/frontend/app/receipt.tsx`
+
+### Bug 2: Phone-as-Card Double Header ✅
+- **Issue**: Two headers causing CTA button to be off-screen
+- **Fix**: Set `headerShown: false` in _layout.tsx, implemented custom header with fixed button container
+- **Files**: `/app/frontend/app/_layout.tsx`, `/app/frontend/app/phone-as-card.tsx`
 
 ## Future Tasks (Prioritized)
 
 ### P0 - Critical
-- [ ] Test HCE on physical Android device with NFC reader
+- [x] ~~Test HCE on physical Android device~~ (Requires user testing)
 
 ### P1 - High Priority
 - [ ] Admin UI for token management
@@ -127,13 +125,9 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 - **Charger behavior** - Simulated via `chargerSimulator`
 - **NFC tap** - Simulated in preview (real HCE requires native build)
 
-## Setup Notes
-
-### HCE Activation (Android Only)
-1. Run `npx expo prebuild --platform android`
-2. Copy files from `/app/frontend/android-hce-module/`
-3. Update AndroidManifest.xml with HCE service
-4. Build APK and test on physical device
+## Test Credentials
+- **Email**: hce-test@example.com
+- **Password**: test123
 
 ---
 *Last Updated: February 21, 2026*
