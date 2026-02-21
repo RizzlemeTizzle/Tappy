@@ -5,20 +5,33 @@ import { useAuthStore } from '../src/store/authStore';
 
 export default function Index() {
   const router = useRouter();
-  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const { isAuthenticated, isGuest, user, isLoading, pendingAction, clearPendingAction } = useAuthStore();
 
   useEffect(() => {
     if (isLoading) return;
 
     // Navigation logic
-    if (!isAuthenticated) {
+    if (isGuest) {
+      // Guest mode - go to find tab
+      router.replace('/(tabs)/find');
+    } else if (!isAuthenticated) {
+      // Not authenticated and not guest - show onboarding
       router.replace('/onboarding');
     } else if (!user?.payment_method_added) {
+      // Authenticated but no payment method
       router.replace('/add-payment');
     } else {
-      router.replace('/(tabs)/find');
+      // Authenticated with payment method
+      // Check for pending action to resume
+      if (pendingAction?.returnTo) {
+        const returnTo = pendingAction.returnTo;
+        clearPendingAction();
+        router.replace(returnTo as any);
+      } else {
+        router.replace('/(tabs)/find');
+      }
     }
-  }, [isAuthenticated, user, isLoading]);
+  }, [isAuthenticated, isGuest, user, isLoading]);
 
   return <View style={styles.container} />;
 }
