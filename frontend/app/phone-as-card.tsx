@@ -95,11 +95,15 @@ export default function PhoneAsCardScreen() {
   };
 
   const renderIntroStep = () => (
-    <View style={styles.stepContainer}>
+    <ScrollView 
+      style={styles.scrollContainer} 
+      contentContainerStyle={styles.stepContentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.iconContainer}>
-        <Ionicons name="phone-portrait" size={80} color="#4CAF50" />
+        <Ionicons name="phone-portrait" size={70} color="#4CAF50" />
         <View style={styles.nfcBadge}>
-          <Ionicons name="wifi" size={24} color="#FFF" />
+          <Ionicons name="wifi" size={20} color="#FFF" />
         </View>
       </View>
       
@@ -137,10 +141,11 @@ export default function PhoneAsCardScreen() {
         style={styles.primaryButton}
         onPress={handleStartSetup}
         disabled={Platform.OS !== 'android'}
+        data-testid="start-setup-btn"
       >
         <Text style={styles.primaryButtonText}>Start Setup</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 
   const renderPaymentStep = () => (
