@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend .env
-BASE_URL = "https://nfc-charge-now.preview.emergentagent.com/api"
+BASE_URL = "https://ev-remote-start.preview.emergentagent.com/api"
 
 class ChargeTapAPITester:
     def __init__(self):
