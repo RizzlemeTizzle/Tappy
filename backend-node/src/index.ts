@@ -15,7 +15,10 @@ import { ChargerSimulator } from './services/chargerSimulator.js';
 
 dotenv.config();
 
-const prisma = new PrismaClient();
+// Create PrismaClient with datasource URL from environment
+const prisma = new PrismaClient({
+  datasourceUrl: process.env.DATABASE_URL,
+});
 const chargerSimulator = new ChargerSimulator(prisma);
 
 const fastify = Fastify({
