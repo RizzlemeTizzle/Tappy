@@ -1,14 +1,262 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and payment info
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  name                String
+  passwordHash        String    @map("password_hash")
+  paymentMethodAdded  Boolean   @default(false) @map("payment_method_added")
+  paymentMethodLast4  String?   @map("payment_method_last4")
+  ocpiTokenUid        String?   @unique @map("ocpi_token_uid") // OCPI token for remote start
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  sessions            Session[]
+  payments            Payment[]
+  ocpiTokens          OcpiToken[]
+
+  @@map("users")
+}
+
+// Station model
+model Station {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  chargers     Charger[]
+  pricingPlan  PricingPlan?
+  sessions     Session[]
+
+  @@index([latitude, longitude])
+  @@map("stations")
+}
+
+// Charger model
+model Charger {
+  id              String    @id @default(uuid())
+  stationId       String    @map("station_id")
+  connectorType   String    @map("connector_type") // CCS, CHAdeMO, Type2
+  maxKw           Float     @map("max_kw")
+  status          String    @default("AVAILABLE") // AVAILABLE, CHARGING, COMPLETE, FAULTED
+  nfcPayload      String    @unique @map("nfc_payload")
+  ocpiEvseUid     String?   @unique @map("ocpi_evse_uid") // OCPI EVSE ID
+  ocpiConnectorId String?   @map("ocpi_connector_id")
+  currentSessionId String?  @map("current_session_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  station  Station   @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@map("chargers")
+}
+
+// Pricing Plan model
+model PricingPlan {
+  id                    String   @id @default(uuid())
+  stationId             String   @unique @map("station_id")
+  startFeeCents         Int      @default(100) @map("start_fee_cents")
+  energyRateCentsPerKwh Int      @default(35) @map("energy_rate_cents_per_kwh")
+  taxPercent            Float    @default(21.0) @map("tax_percent")
+
+  // Penalty/idle fee configuration
+  penaltyEnabled           Boolean @default(true) @map("penalty_enabled")
+  penaltyGraceMinutes      Int     @default(30) @map("penalty_grace_minutes")
+  penaltyCentsPerMinute    Int     @default(50) @map("penalty_cents_per_minute")
+  penaltyDailyCapCents     Int?    @map("penalty_daily_cap_cents")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  station Station @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@map("pricing_plans")
+}
+
+// Charging Session model
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  chargerId    String   @map("charger_id")
+  stationId    String   @map("station_id")
+  status       String   @default("PENDING") // PENDING, CHARGING, COMPLETE, IDLE, ENDED
+
+  // OCPI-related fields
+  ocpiSessionId   String?   @unique @map("ocpi_session_id")
+  ocpiStatus      String?   @map("ocpi_status") // OCPI session status
+  ocpiCommandId   String?   @map("ocpi_command_id")
+
+  // Pricing snapshot (locked at session start)
+  pricingStartFeeCents      Int @map("pricing_start_fee_cents")
+  pricingEnergyRateCents    Int @map("pricing_energy_rate_cents")
+  pricingTaxPercent         Float @map("pricing_tax_percent")
+  pricingPenaltyEnabled     Boolean @map("pricing_penalty_enabled")
+  pricingPenaltyGraceMin    Int @map("pricing_penalty_grace_min")
+  pricingPenaltyCentsPerMin Int @map("pricing_penalty_cents_per_min")
+  pricingPenaltyCapCents    Int? @map("pricing_penalty_cap_cents")
+
+  // Meter readings
+  meterStartKwh Float @default(0) @map("meter_start_kwh")
+  meterEndKwh   Float @default(0) @map("meter_end_kwh")
+  deliveredKwh  Float @default(0) @map("delivered_kwh")
+  currentPowerKw Float @default(0) @map("current_power_kw")
+  batteryPercent Int? @map("battery_percent")
+
+  // Timing
+  startedAt          DateTime? @map("started_at")
+  endedAt            DateTime? @map("ended_at")
+  chargingCompleteAt DateTime? @map("charging_complete_at")
+
+  // Cost calculations
+  penaltyMinutes    Int @default(0) @map("penalty_minutes")
+  penaltyCostCents  Int @default(0) @map("penalty_cost_cents")
+  energyCostCents   Int @default(0) @map("energy_cost_cents")
+  taxCents          Int @default(0) @map("tax_cents")
+  totalCostCents    Int @default(0) @map("total_cost_cents")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id])
+  charger  Charger  @relation(fields: [chargerId], references: [id])
+  station  Station  @relation(fields: [stationId], references: [id])
+  payments Payment[]
+  ocpiCdrs OcpiCdr[]
+
+  @@index([userId])
+  @@index([chargerId])
+  @@map("sessions")
+}
+
+// Payment model
+model Payment {
+  id                   String   @id @default(uuid())
+  sessionId            String   @map("session_id")
+  userId               String   @map("user_id")
+  amountCents          Int      @map("amount_cents")
+  status               String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  stripePaymentIntentId String? @map("stripe_payment_intent_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+// OCPI Token model - tokens issued to users for remote start
+model OcpiToken {
+  id            String   @id @default(uuid())
+  uid           String   @unique // Token UID for OCPI
+  type          String   @default("RFID") // RFID, APP_USER, OTHER
+  authId        String   @map("auth_id") // Reference to user
+  visualNumber  String?  @map("visual_number")
+  issuer        String   @default("ChargeTap")
+  groupId       String?  @map("group_id")
+  valid         Boolean  @default(true)
+  whitelist     String   @default("ALWAYS") // ALWAYS, ALLOWED, ALLOWED_OFFLINE, NEVER
+  lastUpdated   DateTime @default(now()) @map("last_updated")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("ocpi_tokens")
+}
+
+// OCPI Command model - tracks start/stop commands
+model OcpiCommand {
+  id              String   @id @default(uuid())
+  type            String   // START_SESSION, STOP_SESSION, RESERVE_NOW, etc.
+  locationId      String   @map("location_id")
+  evseUid         String?  @map("evse_uid")
+  connectorId     String?  @map("connector_id")
+  tokenUid        String?  @map("token_uid")
+  sessionId       String?  @map("session_id")
+  responseUrl     String?  @map("response_url")
+  status          String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, UNKNOWN, TIMEOUT
+  result          String?  // Result from CPO
+  retryCount      Int      @default(0) @map("retry_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([sessionId])
+  @@map("ocpi_commands")
+}
+
+// OCPI CDR (Charge Detail Record) - final billing record
+model OcpiCdr {
+  id              String   @id @default(uuid())
+  cdrId           String   @unique @map("cdr_id") // OCPI CDR ID
+  sessionId       String   @map("session_id")
+  startDateTime   DateTime @map("start_date_time")
+  endDateTime     DateTime @map("end_date_time")
+  totalKwh        Float    @map("total_kwh")
+  totalParkingTime Float   @map("total_parking_time") // in hours
+  totalCost       Float    @map("total_cost")
+  currency        String   @default("EUR")
+  authMethod      String   @default("AUTH_REQUEST") @map("auth_method")
+  cpoId           String   @map("cpo_id")
+  locationId      String   @map("location_id")
+  evseUid         String   @map("evse_uid")
+  connectorId     String   @map("connector_id")
+  meterId         String?  @map("meter_id")
+  rawCdr          Json?    @map("raw_cdr")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@map("ocpi_cdrs")
+}
+
+// OCPI Location cache - stores CPO location data
+model OcpiLocation {
+  id            String   @id @default(uuid())
+  locationId    String   @unique @map("location_id")
+  cpoId         String   @map("cpo_id")
+  name          String
+  address       String
+  city          String
+  country       String
+  latitude      Float
+  longitude     Float
+  evses         Json     // Array of EVSE data
+  lastUpdated   DateTime @default(now()) @map("last_updated")
+  rawLocation   Json?    @map("raw_location")
+
+  @@index([latitude, longitude])
+  @@map("ocpi_locations")
+}
+
+// CPO (Charge Point Operator) credentials
+model OcpiCpoCredential {
+  id              String   @id @default(uuid())
+  partyId         String   @map("party_id")
+  countryCode     String   @map("country_code")
+  name            String
+  businessDetails Json?    @map("business_details")
+  url             String   // Base URL for OCPI endpoints
+  token           String   // Token for authentication
+  tokenC          String?  @map("token_c") // Our token for this CPO
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE, PENDING
+  versionsUrl     String?  @map("versions_url")
+  endpoints       Json?    // Available OCPI module endpoints
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([partyId, countryCode])
+  @@map("ocpi_cpo_credentials")
 }
