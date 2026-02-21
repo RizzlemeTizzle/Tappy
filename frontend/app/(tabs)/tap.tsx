@@ -204,6 +204,13 @@ export default function TapScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Login Wall Modal */}
+      <LoginWall
+        visible={showLoginWall}
+        onClose={() => setShowLoginWall(false)}
+        actionType="start_session"
+      />
     </SafeAreaView>
   );
 }
@@ -218,6 +225,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'space-between',
     paddingBottom: 32,
+  },
+  guestBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 12,
+    gap: 8,
+  },
+  guestBannerText: {
+    color: '#FFC107',
+    fontSize: 13,
+    flex: 1,
+  },
+  guestBannerLink: {
+    color: '#4CAF50',
+    fontSize: 13,
+    fontWeight: '600',
   },
   tapSection: {
     flex: 1,
