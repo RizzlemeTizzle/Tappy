@@ -15,10 +15,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSessionStore } from '../../src/store/sessionStore';
 import { LoginWall } from '../../src/components/LoginWall';
+import { useTranslation } from 'react-i18next';
 
 export default function TapScreen() {
   const router = useRouter();
   const { user, isGuest, isAuthenticated } = useAuthStore();
+  const { t } = useTranslation();
   const {
     resolveNfc,
     fetchStations,
@@ -41,10 +43,9 @@ export default function TapScreen() {
     setIsTapping(true);
     try {
       await resolveNfc(nfcPayload);
-      // For guests, show pricing info but block session start
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to connect to charger');
+      Alert.alert(t('common.error'), err.response?.data?.detail || t('errors.chargerNotAvailable'));
     } finally {
       setIsTapping(false);
     }
@@ -56,7 +57,6 @@ export default function TapScreen() {
 
   const handleSelectCharger = (charger: any) => {
     setShowStationPicker(false);
-    // Guests can still tap and see pricing
     simulateNfcTap(charger.nfc_payload);
   };
 
@@ -68,20 +68,20 @@ export default function TapScreen() {
           <View style={styles.guestBanner}>
             <Ionicons name="eye-outline" size={18} color="#FFC107" />
             <Text style={styles.guestBannerText}>
-              Je browst als gast. Log in om te laden.
+              {t('guest.banner')}
             </Text>
             <TouchableOpacity onPress={() => setShowLoginWall(true)}>
-              <Text style={styles.guestBannerLink}>Inloggen</Text>
+              <Text style={styles.guestBannerLink}>{t('guest.signIn')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         <View style={styles.tapSection}>
-          <Text style={styles.readyText}>Ready to Charge</Text>
+          <Text style={styles.readyText}>{t('tap.title')}</Text>
           <Text style={styles.instructionText}>
             {isGuest 
-              ? 'Tik om prijzen en beschikbaarheid te bekijken'
-              : 'Tap your phone on the charger\'s NFC reader to begin'
+              ? t('tap.instructionGuest')
+              : t('tap.instruction')
             }
           </Text>
 
@@ -96,7 +96,7 @@ export default function TapScreen() {
               <>
                 <Ionicons name="phone-portrait" size={64} color="#0A0A0A" />
                 <Text style={styles.tapButtonText}>
-                  {isGuest ? 'Bekijk Prijzen' : 'Tap Here to Simulate NFC'}
+                  {isGuest ? t('guest.viewPricing') : t('tap.simulateTap')}
                 </Text>
               </>
             )}
@@ -105,7 +105,7 @@ export default function TapScreen() {
           <View style={styles.nfcNote}>
             <Ionicons name="information-circle" size={18} color="#666" />
             <Text style={styles.nfcNoteText}>
-              In production, you would tap your phone on the physical charger
+              {t('tap.productionNote')}
             </Text>
           </View>
         </View>
@@ -113,15 +113,15 @@ export default function TapScreen() {
         <View style={styles.features}>
           <View style={styles.featureItem}>
             <Ionicons name="flash" size={24} color="#4CAF50" />
-            <Text style={styles.featureText}>Instant Connection</Text>
+            <Text style={styles.featureText}>{t('onboarding.feature1Title')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="pricetag" size={24} color="#FFC107" />
-            <Text style={styles.featureText}>Transparent Pricing</Text>
+            <Text style={styles.featureText}>{t('onboarding.feature2Title')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="shield-checkmark" size={24} color="#2196F3" />
-            <Text style={styles.featureText}>Secure Payment</Text>
+            <Text style={styles.featureText}>{t('payment.processing')}</Text>
           </View>
         </View>
       </View>
@@ -136,12 +136,12 @@ export default function TapScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select a Charger</Text>
+              <Text style={styles.modalTitle}>{t('tap.selectCharger')}</Text>
               <TouchableOpacity onPress={() => setShowStationPicker(false)}>
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.modalSubtitle}>Simulating NFC tap detection</Text>
+            <Text style={styles.modalSubtitle}>{t('tap.productionNote')}</Text>
 
             {isLoading ? (
               <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />
@@ -178,13 +178,13 @@ export default function TapScreen() {
                                 styles.chargerType,
                                 charger.status !== 'AVAILABLE' && styles.chargerTypeUnavailable
                               ]}>
-                                {charger.connector_type} • {charger.max_kw} kW
+                                {charger.connector_type} • {charger.max_kw} {t('common.kw')}
                               </Text>
                               <Text style={[
                                 styles.chargerStatus,
                                 charger.status === 'AVAILABLE' ? styles.statusAvailable : styles.statusUnavailable
                               ]}>
-                                {charger.status}
+                                {charger.status === 'AVAILABLE' ? t('charger.available') : t('charger.occupied')}
                               </Text>
                             </View>
                           </View>
@@ -307,6 +307,8 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 12,
     marginTop: 6,
+    textAlign: 'center',
+    maxWidth: 80,
   },
   modalOverlay: {
     flex: 1,
