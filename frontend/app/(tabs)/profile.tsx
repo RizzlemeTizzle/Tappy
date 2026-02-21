@@ -133,7 +133,19 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Preferences Section */}
+      {/* Notifications Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('notifications.title')}</Text>
+        <View style={styles.card}>
+          <MenuItem
+            icon="notifications"
+            title={t('notifications.title')}
+            subtitle={t('notifications.sessionUpdatesDesc')}
+            onPress={() => router.push('/notification-settings')}
+          />
+        </View>
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('profile.preferences')}</Text>
         <View style={styles.card}>
