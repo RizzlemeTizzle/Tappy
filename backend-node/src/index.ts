@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import dotenv from 'dotenv';
-import { PrismaClient } from './generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.js';
 import stationRoutes from './routes/stations.js';
 import sessionRoutes from './routes/sessions.js';
@@ -15,10 +15,8 @@ import { ChargerSimulator } from './services/chargerSimulator.js';
 
 dotenv.config();
 
-// Create PrismaClient with datasource URL from environment
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+// Create PrismaClient
+const prisma = new PrismaClient();
 const chargerSimulator = new ChargerSimulator(prisma);
 
 const fastify = Fastify({
