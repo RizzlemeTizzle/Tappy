@@ -95,6 +95,7 @@ export default function RootLayout() {
         <Stack.Screen name="station-details" options={{ title: t('station.details'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="qr-scanner" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="phone-as-card" options={{ headerShown: false }} />
+        <Stack.Screen name="notification-settings" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="light" />
     </>
