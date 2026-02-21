@@ -274,6 +274,68 @@
     "step3": "Wait for confirmation and start charging!",
     "screenOffNote": "Your screen doesn't need to be on. HCE works even when your phone is locked."
   },
+  "notifications": {
+    "title": "Notifications",
+    "sessionUpdates": "Session Updates",
+    "sessionUpdatesDesc": "Get notified when your session starts, completes, or ends",
+    "penaltyAlerts": "Idle Fee Alerts",
+    "penaltyAlertsDesc": "Receive warnings before and when idle fees begin",
+    "paymentReceipts": "Payment & Receipts",
+    "paymentReceiptsDesc": "Get notified about payment status and receipts",
+    "costMilestones": "Cost Milestones",
+    "costMilestonesDesc": "Get updates when your session reaches cost thresholds",
+    "penaltyPrealert": "Idle Fee Warning Time",
+    "penaltyPrealertDesc": "How many minutes before idle fee starts",
+    "quietHours": "Quiet Hours",
+    "quietHoursDesc": "Don't send non-critical notifications during these hours",
+    "pushRequired": "Sign in to enable push notifications across devices",
+    "permissionRequired": "Enable notifications to receive charging updates",
+    "enableNotifications": "Enable Notifications",
+    "sessionStarted": {
+      "title": "Charging Started",
+      "body": "Your charging session at {{station_name}} has begun."
+    },
+    "sessionStartFailed": {
+      "title": "Charging Failed",
+      "body": "Could not start charging at {{station_name}}."
+    },
+    "chargingComplete": {
+      "title": "Charging Complete",
+      "body": "Your vehicle is fully charged! Total: {{total}}. ({{energy}} kWh)"
+    },
+    "penaltyStartsSoon": {
+      "title": "Idle Fee Warning",
+      "body": "Idle fee starts in {{minutes}} min at {{station_name}}. Rate: {{rate}}/min."
+    },
+    "penaltyStarted": {
+      "title": "Idle Fee Active",
+      "body": "Idle fee is now active at {{station_name}}. {{rate}}/min. Please move your vehicle."
+    },
+    "penaltyCapReached": {
+      "title": "Idle Fee Capped",
+      "body": "Maximum idle fee of {{max_fee}} reached at {{station_name}}."
+    },
+    "sessionStopped": {
+      "title": "Session Ended",
+      "body": "Your session at {{station_name}} has ended. Total: {{total}}."
+    },
+    "sessionInterrupted": {
+      "title": "Session Interrupted",
+      "body": "Your session at {{station_name}} was interrupted. Reason: {{reason}}."
+    },
+    "paymentSucceeded": {
+      "title": "Payment Successful",
+      "body": "Payment of {{total}} completed. Receipt available in app."
+    },
+    "paymentFailed": {
+      "title": "Payment Failed",
+      "body": "Payment of {{total}} failed. Please update your payment method."
+    },
+    "costMilestone": {
+      "title": "Cost Update",
+      "body": "Your session has reached {{total}}. Currently at {{energy}} kWh."
+    }
+  },
   "tap": {
     "title": "Ready to Charge",
     "instruction": "Tap your phone on the charger's NFC reader to begin",
