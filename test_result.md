@@ -522,6 +522,90 @@ backend:
         -agent: "testing"
         -comment: "✅ PASSED - Map user registration working correctly. Successfully registered mapuser@test.com and added payment method (card ending in 4242)."
 
+  - task: "QR Payload Generation API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/admin/qr/generate working correctly. Generates QR payload with signature, deep_link, and fallback_url for EVSE UID NL*CTP*E00001*1. Proper HMAC-SHA256 signature validation."
+
+  - task: "QR Code Resolution API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/v1/qr/resolve working correctly. Returns qr_valid:true with charger, station, tariff, and estimate data. Proper signature validation and charger lookup by OCPI EVSE UID."
+
+  - task: "QR Invalid Signature Handling"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/v1/qr/resolve correctly rejects invalid signatures. Returns INVALID_SIGNATURE error with proper security message. Timing-safe comparison implemented."
+
+  - task: "Station QR Generation API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/admin/qr/generate-station working correctly. Generates QR codes for all chargers at station-001 (3 chargers). Returns array with qr_content and fallback_url for each charger."
+
+  - task: "QR Telemetry Logging API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/v1/qr/telemetry working correctly. Successfully logs qr_scanned events with metadata. Event validation working for valid event types."
+
+  - task: "QR Telemetry Stats API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/admin/qr/telemetry working correctly. Returns stats (total_scans: 5, successful_scans: 2) and recent_events array. Proper telemetry tracking implemented."
+
+  - task: "QR Rate Limiting"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/qr.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - QR rate limiting implemented correctly. 30 requests per minute limit with proper 429 responses. In-memory tracking working (production should use Redis)."
+
 frontend: []
 
 metadata:
