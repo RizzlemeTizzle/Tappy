@@ -10,9 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.chargetap.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Find nearby charging stations",
-        "NSLocationAlwaysUsageDescription": "Navigate to charging stations"
+        "NSLocationAlwaysUsageDescription": "Navigate to charging stations",
+        "NSCameraUsageDescription": "Scan QR codes to start charging"
       }
     },
     "android": {
@@ -20,10 +22,26 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0A0A0A"
       },
+      "package": "com.chargetap.app",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "chargetap.app",
+              "pathPrefix": "/start"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
