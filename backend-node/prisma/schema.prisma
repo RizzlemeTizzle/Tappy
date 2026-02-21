@@ -23,6 +23,7 @@ model User {
   payments            Payment[]
   ocpiTokens          OcpiToken[]
   rfidTokens          RfidToken[]
+  nfcTokens           NfcToken[]
 
   @@map("users")
 }
