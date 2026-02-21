@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,130 +18,83 @@ import api from '../src/utils/api';
 
 const PREALERT_OPTIONS = [1, 3, 5, 10];
 
-interface NotificationPreferences {
-  session_updates_enabled: boolean;
-  penalty_alerts_enabled: boolean;
-  payment_enabled: boolean;
-  cost_milestones_enabled: boolean;
-  penalty_prealert_minutes: number;
-  quiet_hours_start: string | null;
-  quiet_hours_end: string | null;
-}
-
-const defaultPrefs: NotificationPreferences = {
-  session_updates_enabled: true,
-  penalty_alerts_enabled: true,
-  payment_enabled: true,
-  cost_milestones_enabled: false,
-  penalty_prealert_minutes: 5,
-  quiet_hours_start: null,
-  quiet_hours_end: null,
-};
-
 export default function NotificationSettings() {
   const router = useRouter();
   const { t } = useTranslation();
   const { isGuest, isAuthenticated } = useAuthStore();
   
-  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPrefs);
-  const [isLoading, setIsLoading] = useState(false);
+  const [sessionUpdates, setSessionUpdates] = useState(true);
+  const [penaltyAlerts, setPenaltyAlerts] = useState(true);
+  const [paymentEnabled, setPaymentEnabled] = useState(true);
+  const [costMilestones, setCostMilestones] = useState(false);
+  const [prealertMinutes, setPrealertMinutes] = useState(5);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && !isGuest) {
-      loadPreferences();
-    }
-  }, [isAuthenticated, isGuest]);
-
-  const loadPreferences = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/me/notification-preferences');
-      setPreferences(response.data);
-    } catch (error) {
-      console.log('[NotificationSettings] Failed to load preferences:', error);
-      // Use defaults on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleToggle = async (key: keyof NotificationPreferences, value: boolean) => {
-    const oldPrefs = { ...preferences };
-    const newPrefs = { ...preferences, [key]: value };
-    setPreferences(newPrefs);
-    
-    if (isGuest) {
-      // For guests, just save locally
+  const loadPreferences = useCallback(async () => {
+    if (isGuest || !isAuthenticated) {
+      setIsLoaded(true);
       return;
     }
     
     try {
-      setIsSaving(true);
-      await api.put('/me/notification-preferences', { [key]: value });
+      const response = await api.get('/me/notification-preferences');
+      const data = response.data;
+      setSessionUpdates(data.session_updates_enabled ?? true);
+      setPenaltyAlerts(data.penalty_alerts_enabled ?? true);
+      setPaymentEnabled(data.payment_enabled ?? true);
+      setCostMilestones(data.cost_milestones_enabled ?? false);
+      setPrealertMinutes(data.penalty_prealert_minutes ?? 5);
     } catch (error) {
-      // Revert on error
-      setPreferences(oldPrefs);
-      Alert.alert(t('common.error'), t('errors.generic'));
+      console.log('Failed to load preferences, using defaults');
     } finally {
-      setIsSaving(false);
+      setIsLoaded(true);
     }
-  };
+  }, [isGuest, isAuthenticated]);
 
-  const handlePrealertChange = async (minutes: number) => {
-    const oldPrefs = { ...preferences };
-    const newPrefs = { ...preferences, penalty_prealert_minutes: minutes };
-    setPreferences(newPrefs);
-    
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
+
+  const savePreference = async (key: string, value: any) => {
     if (isGuest) return;
     
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      await api.put('/me/notification-preferences', { penalty_prealert_minutes: minutes });
+      await api.put('/me/notification-preferences', { [key]: value });
     } catch (error) {
-      setPreferences(oldPrefs);
       Alert.alert(t('common.error'), t('errors.generic'));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const ToggleItem = ({
-    icon,
-    title,
-    description,
-    value,
-    onToggle,
-    disabled = false,
-  }: {
-    icon: string;
-    title: string;
-    description: string;
-    value: boolean;
-    onToggle: (value: boolean) => void;
-    disabled?: boolean;
-  }) => (
-    <View style={[styles.toggleItem, disabled && styles.toggleItemDisabled]}>
-      <View style={styles.toggleIcon}>
-        <Ionicons name={icon as any} size={22} color={disabled ? '#666' : '#4CAF50'} />
-      </View>
-      <View style={styles.toggleContent}>
-        <Text style={[styles.toggleTitle, disabled && styles.toggleTitleDisabled]}>
-          {title}
-        </Text>
-        <Text style={styles.toggleDescription}>{description}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{ false: '#3A3A3A', true: '#4CAF50' }}
-        thumbColor={value ? '#FFF' : '#888'}
-        disabled={disabled || isSaving}
-      />
-    </View>
-  );
+  const handleSessionUpdates = (value: boolean) => {
+    setSessionUpdates(value);
+    savePreference('session_updates_enabled', value);
+  };
 
-  if (isLoading) {
+  const handlePenaltyAlerts = (value: boolean) => {
+    setPenaltyAlerts(value);
+    savePreference('penalty_alerts_enabled', value);
+  };
+
+  const handlePayment = (value: boolean) => {
+    setPaymentEnabled(value);
+    savePreference('payment_enabled', value);
+  };
+
+  const handleCostMilestones = (value: boolean) => {
+    setCostMilestones(value);
+    savePreference('cost_milestones_enabled', value);
+  };
+
+  const handlePrealertChange = (minutes: number) => {
+    setPrealertMinutes(minutes);
+    savePreference('penalty_prealert_minutes', minutes);
+  };
+
+  if (!isLoaded) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.header}>
@@ -153,7 +106,6 @@ export default function NotificationSettings() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -172,7 +124,6 @@ export default function NotificationSettings() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Guest mode warning */}
         {isGuest && (
           <View style={styles.guestWarning}>
             <Ionicons name="information-circle" size={20} color="#FFC107" />
@@ -184,15 +135,23 @@ export default function NotificationSettings() {
 
         {/* Session Updates */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('session.details')}</Text>
+          <Text style={styles.sectionTitle}>{t('notifications.sessionUpdates')}</Text>
           <View style={styles.card}>
-            <ToggleItem
-              icon="flash"
-              title={t('notifications.sessionUpdates')}
-              description={t('notifications.sessionUpdatesDesc')}
-              value={preferences.session_updates_enabled}
-              onToggle={(v) => handleToggle('session_updates_enabled', v)}
-            />
+            <View style={styles.toggleItem}>
+              <View style={styles.toggleIcon}>
+                <Ionicons name="flash" size={22} color="#4CAF50" />
+              </View>
+              <View style={styles.toggleContent}>
+                <Text style={styles.toggleTitle}>{t('notifications.sessionUpdates')}</Text>
+                <Text style={styles.toggleDescription}>{t('notifications.sessionUpdatesDesc')}</Text>
+              </View>
+              <Switch
+                value={sessionUpdates}
+                onValueChange={handleSessionUpdates}
+                trackColor={{ false: '#3A3A3A', true: '#4CAF50' }}
+                thumbColor={sessionUpdates ? '#FFF' : '#888'}
+              />
+            </View>
           </View>
         </View>
 
@@ -200,44 +159,50 @@ export default function NotificationSettings() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('notifications.penaltyAlerts')}</Text>
           <View style={styles.card}>
-            <ToggleItem
-              icon="warning"
-              title={t('notifications.penaltyAlerts')}
-              description={t('notifications.penaltyAlertsDesc')}
-              value={preferences.penalty_alerts_enabled}
-              onToggle={(v) => handleToggle('penalty_alerts_enabled', v)}
-            />
-            
-            {preferences.penalty_alerts_enabled && (
-              <View style={styles.prealertSection}>
-                <View style={styles.divider} />
-                <Text style={styles.prealertLabel}>{t('notifications.penaltyPrealert')}</Text>
-                <Text style={styles.prealertDescription}>
-                  {t('notifications.penaltyPrealertDesc')}
-                </Text>
-                <View style={styles.prealertOptions}>
-                  {PREALERT_OPTIONS.map((minutes) => (
-                    <TouchableOpacity
-                      key={minutes}
-                      style={[
-                        styles.prealertOption,
-                        preferences.penalty_prealert_minutes === minutes && styles.prealertOptionActive,
-                      ]}
-                      onPress={() => handlePrealertChange(minutes)}
-                      disabled={isSaving}
-                    >
-                      <Text
-                        style={[
-                          styles.prealertOptionText,
-                          preferences.penalty_prealert_minutes === minutes && styles.prealertOptionTextActive,
-                        ]}
-                      >
-                        {minutes} min
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+            <View style={styles.toggleItem}>
+              <View style={[styles.toggleIcon, { backgroundColor: 'rgba(255, 152, 0, 0.15)' }]}>
+                <Ionicons name="warning" size={22} color="#FF9800" />
               </View>
+              <View style={styles.toggleContent}>
+                <Text style={styles.toggleTitle}>{t('notifications.penaltyAlerts')}</Text>
+                <Text style={styles.toggleDescription}>{t('notifications.penaltyAlertsDesc')}</Text>
+              </View>
+              <Switch
+                value={penaltyAlerts}
+                onValueChange={handlePenaltyAlerts}
+                trackColor={{ false: '#3A3A3A', true: '#4CAF50' }}
+                thumbColor={penaltyAlerts ? '#FFF' : '#888'}
+              />
+            </View>
+            
+            {penaltyAlerts && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.prealertSection}>
+                  <Text style={styles.prealertLabel}>{t('notifications.penaltyPrealert')}</Text>
+                  <View style={styles.prealertOptions}>
+                    {PREALERT_OPTIONS.map((minutes) => (
+                      <TouchableOpacity
+                        key={minutes}
+                        style={[
+                          styles.prealertOption,
+                          prealertMinutes === minutes && styles.prealertOptionActive,
+                        ]}
+                        onPress={() => handlePrealertChange(minutes)}
+                      >
+                        <Text
+                          style={[
+                            styles.prealertOptionText,
+                            prealertMinutes === minutes && styles.prealertOptionTextActive,
+                          ]}
+                        >
+                          {minutes} min
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
             )}
           </View>
         </View>
@@ -246,13 +211,21 @@ export default function NotificationSettings() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('notifications.paymentReceipts')}</Text>
           <View style={styles.card}>
-            <ToggleItem
-              icon="card"
-              title={t('notifications.paymentReceipts')}
-              description={t('notifications.paymentReceiptsDesc')}
-              value={preferences.payment_enabled}
-              onToggle={(v) => handleToggle('payment_enabled', v)}
-            />
+            <View style={styles.toggleItem}>
+              <View style={[styles.toggleIcon, { backgroundColor: 'rgba(33, 150, 243, 0.15)' }]}>
+                <Ionicons name="card" size={22} color="#2196F3" />
+              </View>
+              <View style={styles.toggleContent}>
+                <Text style={styles.toggleTitle}>{t('notifications.paymentReceipts')}</Text>
+                <Text style={styles.toggleDescription}>{t('notifications.paymentReceiptsDesc')}</Text>
+              </View>
+              <Switch
+                value={paymentEnabled}
+                onValueChange={handlePayment}
+                trackColor={{ false: '#3A3A3A', true: '#4CAF50' }}
+                thumbColor={paymentEnabled ? '#FFF' : '#888'}
+              />
+            </View>
           </View>
         </View>
 
@@ -260,25 +233,22 @@ export default function NotificationSettings() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('notifications.costMilestones')}</Text>
           <View style={styles.card}>
-            <ToggleItem
-              icon="trending-up"
-              title={t('notifications.costMilestones')}
-              description={t('notifications.costMilestonesDesc')}
-              value={preferences.cost_milestones_enabled}
-              onToggle={(v) => handleToggle('cost_milestones_enabled', v)}
-            />
+            <View style={styles.toggleItem}>
+              <View style={styles.toggleIcon}>
+                <Ionicons name="trending-up" size={22} color="#4CAF50" />
+              </View>
+              <View style={styles.toggleContent}>
+                <Text style={styles.toggleTitle}>{t('notifications.costMilestones')}</Text>
+                <Text style={styles.toggleDescription}>{t('notifications.costMilestonesDesc')}</Text>
+              </View>
+              <Switch
+                value={costMilestones}
+                onValueChange={handleCostMilestones}
+                trackColor={{ false: '#3A3A3A', true: '#4CAF50' }}
+                thumbColor={costMilestones ? '#FFF' : '#888'}
+              />
+            </View>
           </View>
-        </View>
-
-        {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={20} color="#2196F3" />
-          <Text style={styles.infoText}>
-            {isGuest 
-              ? t('notifications.pushRequired')
-              : t('notifications.sessionUpdatesDesc')
-            }
-          </Text>
         </View>
 
         <View style={styles.bottomPadding} />
@@ -322,11 +292,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    color: '#888',
-    fontSize: 16,
-    marginTop: 16,
-  },
   guestWarning: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -362,9 +327,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
-  toggleItemDisabled: {
-    opacity: 0.5,
-  },
   toggleIcon: {
     width: 44,
     height: 44,
@@ -384,9 +346,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 4,
   },
-  toggleTitleDisabled: {
-    color: '#666',
-  },
   toggleDescription: {
     color: '#888',
     fontSize: 13,
@@ -398,26 +357,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   prealertSection: {
-    paddingTop: 8,
+    padding: 16,
+    paddingTop: 12,
   },
   prealertLabel: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '500',
-    marginTop: 12,
-    marginHorizontal: 16,
-  },
-  prealertDescription: {
-    color: '#888',
-    fontSize: 13,
-    marginTop: 4,
-    marginHorizontal: 16,
     marginBottom: 12,
   },
   prealertOptions: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
     gap: 8,
   },
   prealertOption: {
@@ -437,21 +387,6 @@ const styles = StyleSheet.create({
   },
   prealertOptionTextActive: {
     color: '#000',
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-    padding: 14,
-    borderRadius: 12,
-    marginTop: 24,
-    gap: 10,
-  },
-  infoText: {
-    color: '#888',
-    fontSize: 13,
-    flex: 1,
-    lineHeight: 18,
   },
   bottomPadding: {
     height: 40,
