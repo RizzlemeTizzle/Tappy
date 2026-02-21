@@ -33,7 +33,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(email.trim(), password);
-      router.replace('/');
+      router.replace('/(tabs)/tap');
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Invalid email or password');
     } finally {

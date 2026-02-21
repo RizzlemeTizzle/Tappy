@@ -39,7 +39,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       await register(email.trim(), password, name.trim());
-      router.replace('/');
+      router.replace('/(tabs)/tap');
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Registration failed');
     } finally {
