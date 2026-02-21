@@ -238,12 +238,16 @@
   "payment": {
     "addCard": "Kaart Toevoegen",
     "cardNumber": "Kaartnummer",
+    "expiryDate": "Vervaldatum",
     "expiry": "Vervaldatum",
     "cvv": "CVV",
     "saveCard": "Kaart Opslaan",
-    "cardAdded": "Kaart succesvol toegevoegd",
-    "cardRequired": "Een betaalmethode is vereist om te laden",
-    "processing": "Betaling verwerken..."
+    "cardAdded": "Betaalmethode succesvol toegevoegd",
+    "cardRequired": "Betaalmethode Vereist",
+    "processing": "Betaling verwerken...",
+    "chargeAfterSession": "Je kaart wordt na elke sessie afgeschreven",
+    "demoMode": "Dit is een demo - voer een willekeurig testkaartnummer in",
+    "securePayment": "Je betalingsgegevens worden veilig verwerkt. We slaan nooit je volledige kaartgegevens op."
   },
   "nfc": {
     "title": "Telefoon als Laadpas",
