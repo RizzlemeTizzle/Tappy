@@ -17,7 +17,7 @@ const getApiUrl = (): string => {
 
   // Fallback for development - use the preview URL
   // This is the public URL that Expo Go can reach
-  return 'https://hce-preview.preview.emergentagent.com';
+  return 'https://tap-global.preview.emergentagent.com';
 };
 
 export const API_URL = getApiUrl();

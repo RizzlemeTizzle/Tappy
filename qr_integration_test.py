@@ -6,7 +6,7 @@ QR Signature Verification Integration Test
 import requests
 import json
 
-BACKEND_URL = "https://hce-preview.preview.emergentagent.com/api"
+BACKEND_URL = "https://tap-global.preview.emergentagent.com/api"
 
 def test_qr_full_integration():
     """Test complete QR generation and resolution flow"""

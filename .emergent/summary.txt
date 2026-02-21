@@ -1,141 +1,141 @@
-<analysis>
-**original_problem_statement:**
-The project is to build a ChargeTap mobile app for EV charging. It started as an MVP with NFC tap-to-pay, transparent pricing, and a live session view. It has since evolved significantly.
+<analysis>**original_problem_statement:**
+The project is to build a ChargeTap mobile app for EV charging. The core application is a React Native (Expo) frontend with a Python/FastAPI/MongoDB backend.
 
-The key features implemented or requested are:
+Key features implemented or in progress:
 1.  **Core App**: A React Native (Expo) app with a tab-based interface.
-2.  **Backend Stack**: A full migration was completed from Python/FastAPI/MongoDB to **Node.js (TypeScript), Fastify, PostgreSQL, and Prisma**.
-3.  **OCPI Remote Start/Stop**: The backend implements the OCPI 2.2.1 protocol for remote charging session management.
-4.  **QR Code Start**: Users can scan a QR code on a charger to initiate a session. This includes backend signing/validation and frontend deep linking.
-5.  **RFID Card Support**: The backend supports issuing, managing, and authorizing physical RFID cards/fobs via an admin API and OCPI Tokens endpoints for Charge Point Operators (CPOs).
-6.  **Current Request**: Implement phone-as-card functionality on Android using Host Card Emulation (HCE), allowing a user's phone to act as a virtual NFC/RFID card.
+2.  **Backend Stack**: Python/FastAPI with MongoDB. A migration to Node.js/PostgreSQL was started in a previous fork but the current active environment runs the Python stack.
+3.  **Phone-as-Card (HCE)**: An in-progress feature to allow Android phones to act as virtual NFC cards. Backend endpoints in Python have been created, and native Android module stubs (Kotlin) are in place.
+4.  **Guest Mode**: A comprehensive guest mode allowing users to browse stations and pricing without an account. Features requiring a user (like starting a charge) are gated behind a reusable Login Wall.
+5.  **Internationalization (i18n)**: A new request to add multilingual support for 10 languages (en, nl, de, fr, it, sv, fi, da, nb, es) using .
+
+PRODUCT REQUIREMENTS:
+- **Guest Mode**: Allow users to explore the app (maps, station details, pricing) without logging in. Block actions requiring a user account (starting a session, payments, history) with a clear login prompt.
+- **Multilingual Support**: Implement full i18n for the entire UI, including a language switcher, automatic locale detection, and localized formatting for numbers, currency, and dates. All hardcoded strings must be removed.
 
 **User's preferred language**: Dutch. The next agent MUST respond in Dutch.
 
 **what currently exists?**
-A full-stack application with a Node.js backend and a React Native (Expo) frontend.
--   **Backend**: A robust Node.js/Fastify/Prisma application running on PostgreSQL. It serves all application data and implements full OCPI 2.2.1 flows for commands, sessions, CDRs, and tokens. It also includes APIs for QR code management and RFID token administration.
--   **Frontend**: A functional Expo app with tab navigation for finding chargers (map), scanning QR codes, viewing session history, and managing the user profile. Deep linking for QR codes is configured.
--   **Database**: PostgreSQL managed by Prisma. The schema is well-defined and includes models for Users, Stations, Chargers, Sessions, CDRs, OCPI Credentials, and RFID Tokens. An  model was just added.
+A full-stack application with a Python/FastAPI/MongoDB backend and a React Native (Expo) frontend.
+-   **Backend**: The active backend is Python/FastAPI on port 8001. It includes endpoints for user authentication, station data, and the newly added NFC token management for the HCE feature.
+-   **Frontend**: A functional Expo app with tab-based navigation. It features a map, QR scanner, session history, and profile. A Guest Mode has been fully implemented, allowing unauthenticated browsing with clear Login Walls for protected actions. The initial setup for internationalization () has begun.
+-   **Database**: The active database is MongoDB. An  model has been added to support the HCE feature.
 
 **Last working item**:
--   **Last item agent was working**: Implementing NFC phone-as-card support using Host Card Emulation (HCE) on Android. The agent began by updating the database schema.
+-   **Last item agent was working**: Implementing full multilingual support (i18n) for the app. The agent has installed the necessary libraries (, ) and created the initial configuration file () along with the JSON translation files for all 10 required languages (, , , etc.) in .
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: backend testing agent for the API endpoints. The frontend HCE functionality requires **manual testing by the user** on a physical Android device, as it involves native code and NFC hardware interaction which cannot be automated in this environment.
+-   **Which testing method agent to use?**: frontend testing agent. The agent should verify that strings are replaced, the language switcher works, and layouts are not broken by longer text.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-There are no outstanding bugs. The primary focus is on completing the current, complex feature request.
+There are no outstanding bugs. All issues reported by the user in this session have been resolved.
 
 **In progress Task List**:
--   **Task 1**: Implement NFC phone-as-card (HCE) support (P0)
-    -   **Description**: Enable Android phones to emulate an NFC card for starting charging sessions. This involves backend changes, a new native Android module (Kotlin), and frontend UI updates.
-    -   **Where to resume**: The agent has successfully added the  model to . The immediate next step is to create and apply the database migration using . After that, proceed with building the backend API endpoints.
-    -   **What will be achieved with this?**: Android users will be able to tap their phone at a charging station to authenticate and start charging, providing a seamless alternative to QR codes or physical cards.
+-   **Task 1**: Complete the Internationalization (i18n) Implementation (P0)
+    -   **Where to resume**: The  configuration and all JSON translation files are in place. The next steps are:
+        1.  Integrate the i18n provider into the root of the application (likely in ).
+        2.  Systematically go through every component and screen ( files) and replace all hardcoded UI strings with the  function from .
+        3.  Implement the language switcher UI in the Profile screen.
+        4.  Create and apply localized formatting for currency, numbers (kWh), and dates.
+    -   **What will be achieved with this?**: The app will be fully translatable and support 10 different languages, with both automatic device locale detection and a manual in-app override.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on something**: Nothing.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks (for current HCE feature)**:
-    -   **P0**: Create and apply the database migration for the new  model.
-    -   **P0**: Build backend API endpoints for NFC token provisioning and management (e.g., ).
-    -   **P0**: Create the native Android module in Kotlin. This involves creating a new service file (e.g., ) inside  that extends .
-    -   **P1**: Configure the HCE service and its AID filter in .
-    -   **P1**: Bridge the native module to React Native to allow the app to control the HCE service (e.g., set the active token).
-    -   **P1**: Develop the frontend UI (e.g., a Phone as Card screen) with a toggle to enable/disable the feature and a setup wizard.
+-   **Upcoming Tasks**:
+    -   **P0: Complete HCE Phone-as-Card Frontend Logic**: The backend is ready, and UI/native stubs exist. The frontend needs to be connected to the backend API, and the native Kotlin module must be bridged to React Native. This will require the user to perform an - Creating native project directories (./ios and ./android) and updating .gitignore
+✔ Created native projects
+- Adding Metro bundler config
+⚠️  Skipped Metro config updates:
+› Existing Metro config found; not overwriting.
+› You will need to extend the default @expo/metro-config in your Metro config.
+  Learn more: https://docs.expo.dev/guides/customizing-metro
 
--   **Future Tasks (from previous requests)**:
-    -   **P2: Admin UI for Token Management**: Build a simple web interface (e.g., using Next.js or server-rendered pages) for administrators to manage RFID and NFC tokens, as requested in the RFID feature spec. The APIs exist, but the UI does not.
-    -   **P2: QR Code Replay Protection**: Implement nonce+ttl protection for QR codes as an optional feature flag.
-    -   **P2: Full Map Filters/Sorting**: Implement the remaining UI and logic for filtering map results by connector, power, price, and sorting by cheapest or highest power.
-    -   **P2: Unit Tests**: Add unit tests for critical backend logic (pricing, OCPI flows, etc.).
+- Updating your package.json scripts, dependencies, and main file
+- Updating your package.json scripts, dependencies, and main file
+- Updating your package.json scripts, dependencies, and main file and test on a physical Android device.
+-   **Future Tasks**:
+    -   **P2: Admin UI for Token Management**: Build a web interface for administrators to manage RFID and NFC tokens. The backend APIs exist, but the UI does not.
+    -   **P2: QR Code Replay Protection**: Implement nonce+ttl protection for QR codes.
+    -   **P2: Full Map Filters/Sorting**: Implement UI and logic for filtering map results by connector, power, price, and sorting.
+    -   **P2: Unit Tests**: Add unit tests for critical backend logic.
 
 **Completed work in this session**
--   **Backend Migration**: Fully migrated the backend from Python/FastAPI/MongoDB to Node.js/TypeScript/PostgreSQL/Prisma.
--   **OCPI Implementation**: Built out the backend for OCPI remote start/stop, sessions, and CDRs.
--   **QR Code Start Feature**:
-    -   Backend: Endpoints for generating, signing, and resolving QR codes ().
-    -   Frontend:  screen using  and deep linking via .
-    -   Tooling: A CLI script () to create QR code PNGs.
--   **RFID Token Support**:
-    -   Backend: Added  model and created admin () and OCPI () endpoints for full token lifecycle management.
-    -   Documentation: Created  for batch onboarding instructions.
+-   **HCE Backend Implementation (Python)**: Pivoted from the inactive Node.js backend to successfully implement NFC token management APIs on the active Python/FastAPI stack.
+-   **Bug Fix (Receipt Navigation)**: Fixed the Done button on the receipt screen to navigate to the correct tabbed home screen ().
+-   **Bug Fix (Double Header)**: Resolved a complex layout issue on the Phone as Card screen, ensuring a single header and that the main CTA button is always visible.
+-   **Bug Fix (Auth Navigation)**: Corrected the navigation flow after login and registration to redirect users to the new tabbed home screen.
+-   **Feature (Guest Mode)**: Fully implemented a Guest Mode allowing users to browse the app without an account, complete with a reusable  component for gated features. The feature was verified with the testing agent.
+-   **i18n Scaffolding**: Set up the entire structure for internationalization, including libraries and translation files for 10 languages.
 
 **Earlier issues found/mentioned but not fixed**
-None. The agent has successfully addressed all raised issues and completed all requested features leading up to the current task.
+None.
 
 **Known issue recurrence from previous fork**
-- The initial and most critical issue was the Architectural Mismatch (starting OCPI in Python instead of the requested Node.js). This was fully resolved by the complete backend migration and is not a recurring problem.
+-   **Architectural Mismatch**: The handoff summary specified a Node.js/PostgreSQL backend, but the live preview environment is running the original Python/FastAPI/MongoDB stack. The agent correctly identified this and pivoted to work on the active Python backend. **This is critical context for the next agent.**
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend**: React Native, Expo, Expo Router, Zustand, .
--   **Backend**: Node.js, TypeScript, Fastify, PostgreSQL, Prisma ORM.
--   **Protocols**: OCPI 2.2.1 (Commands, Tokens).
--   **Native Development**: The current task requires creating a native Android module in Kotlin for Host Card Emulation (HCE).
+-   **Frontend**: React Native, Expo, Expo Router, Zustand, , .
+-   **Backend**: Python, FastAPI, MongoDB (Pydantic models).
+-   **Authentication**: JWT-based auth with a newly added Guest Mode flow managed in a Zustand store.
+-   **Internationalization (i18n)**: Using  with JSON resource files for translation.
 
 **key DB schema**
--   **User**: uid=0(root) gid=0(root) groups=0(root), , ,  (relation),  (relation).
--   **RfidToken**: uid=0(root) gid=0(root) groups=0(root), , , , .
--   **NfcToken**: uid=0(root) gid=0(root) groups=0(root), , , . (Just added, requires migration).
--   **Station, Charger, Connector**: Models for charging infrastructure.
--   **Session, ChargeDetailRecord**: Models for tracking charging activity.
--   **OcpiCredential**: Stores credentials for communicating with CPO partners.
+-   **MongoDB  collection**: standard user fields.
+-   **MongoDB  collection**: 
 
 **changes in tech stack**
-- A native Android (Kotlin) module is being introduced to the React Native project to handle HCE, which is a significant addition to the previously JavaScript-only frontend stack.
+-   The immediate work pivoted from the documented Node.js/Prisma/PostgreSQL stack to the deployed **Python/FastAPI/MongoDB** stack due to environment constraints.
+-   ** and ** have been added to the frontend for internationalization.
 
 **All files of reference**
--   : Source of truth for the database. **Was just modified to add the  model.**
--   : Example of admin-level API for token management.
--   : OCPI-compliant endpoints for token authorization.
--   : Expo configuration file where Android permissions and intent filters for HCE will be needed.
--   : Will need to be edited to declare the HCE service.
+-   : The core configuration for the new i18n system.
+-   : Directory containing all JSON translation files.
+-   : Contains the logic for guest vs. authenticated state.
+-   : Defines capabilities for different user states (e.g., ).
+-   : The reusable UI component for gating features from guests.
+-   : Needs to be updated to implement route guards for guest mode.
+-   : Updated with the NFC token management endpoints.
 
 **Critical Info for New Agent**
 -   **Language**: Your next response to the user **must be in Dutch**.
--   **Core Task**: Focus on implementing Android Host Card Emulation (HCE). This is a complex task that goes beyond typical Expo development.
--   **Native Android Code**: You must write Kotlin code for a native Android module. This involves creating files in the  directory and editing . This is a new requirement for the project.
--   **Migration First**: Your immediate next step is to run  to apply the schema change that was just made.
--   **Testing Limitations**: HCE functionality cannot be tested automatically or in a simulator. You will need to build the feature and then clearly ask the user to test it on a physical Android device.
+-   **Environment Mismatch**: The most critical piece of information is that the active backend is **Python/MongoDB**, not Node.js/PostgreSQL as the initial handoff suggested. All backend work must be done on the Python stack.
+-   **Resume i18n Task**: Your primary task is to complete the internationalization feature. This involves replacing all hardcoded strings throughout the React Native app with  from .
+-   **HCE Requires User Testing**: The phone-as-card feature involves native Android code. It cannot be fully tested in the preview environment. Once the frontend logic is complete, you must ask the user to test it on a physical Android device.
 
-**documents created in this job**
--   : Explains how to onboard and manage RFID tokens via the API.
--   : Documents the usage of the QR code generation script.
+**documents and test reports created in this job**
+-   : Test report from testing agent verifying guest mode functionality.
+-   : Test report from testing agent verifying the bug fixes for navigation and the double header.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Msg 271)**: Confirmed implementation choices for HCE: use a Kotlin native module, implement token rotation, and provide a setup wizard. **(PENDING - This is the current task)**
-2.  **User (Msg 268)**: Requested the phone-as-card HCE feature. **(PENDING)**
-3.  **User (Msg 209)**: Confirmed implementation choices for RFID support. **(COMPLETED)**
-4.  **User (Msg 206)**: Requested RFID card/fob support via OCPI. **(COMPLETED)**
-5.  **User (Msg 129)**: Confirmed implementation choices for the QR code feature. **(COMPLETED)**
-6.  **User (Msg 126)**: Requested the QR code start feature. **(COMPLETED)**
-7.  **User (Msg 5)**: Confirmed choice to proceed with backend migration. **(COMPLETED)**
+1.  **User (Latest)**: Requested full multilingual support for 10 languages. **(IN PROGRESS)**
+2.  **User**: Requested Guest Mode for the app. **(COMPLETED)**
+3.  **User**: Confirmed to stick with the current app-based HCE approach (not Google Wallet) and reported that new account creation leads to the old home screen. **(COMPLETED)**
+4.  **User**: Asked if the NFC token should create an entry in their Google Wallet. **(ADDRESSED)**
+5.  **User**: Asked to make the icon on the phone-as-card screen larger again after the layout fix. **(COMPLETED)**
+6.  **User**: Reported that the double header issue on the phone-as-card screen was still present. **(COMPLETED)**
+7.  **User**: Reported the phone as card FE screen has a double header and the CTA button is not visible. **(COMPLETED)**
+8.  **User**: Reported that the Done button on the receipt screen navigates to an old UI. **(COMPLETED)**
 
 **Project Health Check:**
 -   **Broken**: Nothing is currently broken.
--   **Mocked**: The Stripe payment flow remains mocked, as per the original plan. The charger behavior is simulated in .
+-   **Mocked**: Stripe payment integration remains mocked. The charger behavior is simulated.
 
 **3rd Party Integrations**
--   **Stripe (Payments)**: Planned for payments, but currently mocked. Requires User API Key.
+-   **Stripe (Payments)**: Planned, but currently mocked. Requires User API Key.
 -   **react-native-maps**: Used for the map feature.
 -   **expo-barcode-scanner**: Used for the QR code scanning feature.
+-   **i18next / react-i18next**: Newly added for internationalization.
 
 **Testing status**
--   Testing agent used after significant changes: YES, the backend was successfully tested after the QR and RFID features were added.
+-   Testing agent used after significant changes: YES. The agent was used successfully to verify the Guest Mode implementation and several bug fixes.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
 -   Known regressions: []
 
-**Credentials to test flow:**
-No specific user credentials have been provided. The agent has been using test data and self-generated credentials (e.g., for OCPI partners).
-
 **What agent forgot to execute**
--   The Admin UI for token management, which was part of the RFID feature request, has not been built. The agent built the necessary backend APIs but not a user interface for them. This remains a future task.
--   No unit tests have been written, despite being mentioned as a future goal in early requirements.
-
-</analysis>
+-   The Admin UI for token management and the addition of Unit Tests, both from the original project specification, remain in the future tasks backlog.</analysis>

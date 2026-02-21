@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 OCPI_VERSION = "2.2.1"
 EMSP_COUNTRY_CODE = "NL"
 EMSP_PARTY_ID = "CTP"  # ChargeTap
-EMSP_BASE_URL = "https://hce-preview.preview.emergentagent.com/ocpi/emsp"
+EMSP_BASE_URL = "https://tap-global.preview.emergentagent.com/ocpi/emsp"
 
 
 class OcpiService:
