@@ -14,10 +14,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSessionStore } from '../../src/store/sessionStore';
+import { LoginWall } from '../../src/components/LoginWall';
 
 export default function TapScreen() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isGuest, isAuthenticated } = useAuthStore();
   const {
     resolveNfc,
     fetchStations,
@@ -28,6 +29,8 @@ export default function TapScreen() {
 
   const [showStationPicker, setShowStationPicker] = useState(false);
   const [isTapping, setIsTapping] = useState(false);
+  const [showLoginWall, setShowLoginWall] = useState(false);
+  const [pendingChargerPayload, setPendingChargerPayload] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStations();
@@ -38,6 +41,7 @@ export default function TapScreen() {
     setIsTapping(true);
     try {
       await resolveNfc(nfcPayload);
+      // For guests, show pricing info but block session start
       router.push('/pricing-confirmation');
     } catch (err: any) {
       Alert.alert('Error', err.response?.data?.detail || 'Failed to connect to charger');
@@ -52,16 +56,33 @@ export default function TapScreen() {
 
   const handleSelectCharger = (charger: any) => {
     setShowStationPicker(false);
+    // Guests can still tap and see pricing
     simulateNfcTap(charger.nfc_payload);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.content}>
+        {/* Guest mode banner */}
+        {isGuest && (
+          <View style={styles.guestBanner}>
+            <Ionicons name="eye-outline" size={18} color="#FFC107" />
+            <Text style={styles.guestBannerText}>
+              Je browst als gast. Log in om te laden.
+            </Text>
+            <TouchableOpacity onPress={() => setShowLoginWall(true)}>
+              <Text style={styles.guestBannerLink}>Inloggen</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.tapSection}>
           <Text style={styles.readyText}>Ready to Charge</Text>
           <Text style={styles.instructionText}>
-            Tap your phone on the charger's NFC reader to begin
+            {isGuest 
+              ? 'Tik om prijzen en beschikbaarheid te bekijken'
+              : 'Tap your phone on the charger\'s NFC reader to begin'
+            }
           </Text>
 
           <TouchableOpacity
@@ -74,7 +95,9 @@ export default function TapScreen() {
             ) : (
               <>
                 <Ionicons name="phone-portrait" size={64} color="#0A0A0A" />
-                <Text style={styles.tapButtonText}>Tap Here to Simulate NFC</Text>
+                <Text style={styles.tapButtonText}>
+                  {isGuest ? 'Bekijk Prijzen' : 'Tap Here to Simulate NFC'}
+                </Text>
               </>
             )}
           </TouchableOpacity>
