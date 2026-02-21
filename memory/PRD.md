@@ -9,6 +9,7 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 1. **Authentication System**
    - User registration and login with JWT tokens
    - Payment method management (mocked Stripe)
+   - **Guest Mode** - Browse without account ✅ NEW
 
 2. **Station Discovery**
    - Map-based station finder with filters
@@ -40,10 +41,37 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
    - Tap recording and usage tracking
    - Native Android HCE module (Kotlin) - requires `expo prebuild`
    - Frontend setup wizard with Dutch localization
-   - **BUG FIXED**: Single header, visible CTA button
 
-8. **Receipt Navigation** ✅
-   - **BUG FIXED**: Done button navigates to correct home screen with bottom menu
+8. **Guest Mode** ✅ NEW
+   - "Browse without logging in" option on onboarding
+   - Full access to: map, station list, pricing, charger availability
+   - Blocked from: starting sessions, session history, profile, payments
+   - LoginWall component for gated features (Dutch localized)
+   - Guest banner on Tap screen with login prompt
+   - Capability-based permission system
+
+## Guest Mode Architecture
+
+### Capabilities System
+```typescript
+type Capability = 
+  | 'CAN_VIEW_PUBLIC_DATA'    // guest: true
+  | 'CAN_START_SESSION'       // guest: false
+  | 'CAN_STOP_SESSION'        // guest: false
+  | 'CAN_VIEW_HISTORY'        // guest: false
+  | 'CAN_MANAGE_PAYMENT'      // guest: false
+  | 'CAN_VIEW_PROFILE';       // guest: false
+```
+
+### Guest Mode Features
+- **Available**: Find chargers, view pricing, station details, charger status
+- **Partially Available**: Tap screen (can view pricing, cannot start session)
+- **Blocked**: Sessions history, Profile, Payment methods, Start/Stop charging
+
+### Components
+- `LoginWall.tsx` - Reusable modal for login prompts
+- `InlineLoginWall` - Embedded login wall for tabs
+- `GuestBlockedButton` - Button wrapper for auth-required actions
 
 ## Technical Architecture
 
@@ -52,58 +80,39 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 - **API Prefix**: /api
 - **Database**: MongoDB (chargetap_db)
 
-### Frontend (React Native/Expo)
-- **Framework**: Expo with expo-router
-- **State Management**: Zustand
-- **Styling**: React Native StyleSheet (dark theme)
-
-### Key Files
-- `/app/backend/server.py` - Main API server
-- `/app/frontend/app/` - Expo Router pages
-- `/app/frontend/src/store/` - Zustand stores
-- `/app/frontend/android-hce-module/` - Native HCE code
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/users/me` - Get current user
-
-### NFC HCE Tokens ✅
-- `POST /api/nfc/tokens/provision` - Create new HCE token
-- `GET /api/nfc/tokens/status` - Get token status
-- `POST /api/nfc/tokens/activate` - Activate token for HCE
-- `POST /api/nfc/tokens/deactivate` - Disable HCE
-- `GET /api/nfc/tokens/active-uid` - Get active token UID
-- `POST /api/nfc/tokens/tap` - Record tap event
-
-### Stations & Chargers
+### Public Endpoints (no auth required)
 - `GET /api/stations` - List all stations
 - `GET /api/stations/nearby` - Get nearby stations
 - `GET /api/stations/{id}` - Get station details
+- `POST /api/nfc/resolve` - Resolve NFC payload
 
-### Sessions
+### Auth-Required Endpoints
 - `POST /api/sessions/start` - Start charging
 - `POST /api/sessions/{id}/stop` - Stop charging
-- `GET /api/sessions/{id}` - Get session status
+- `GET /api/sessions/user/history` - Session history
+- Payment endpoints
 
 ## Bug Fixes Completed (Feb 21, 2026)
 
 ### Bug 1: Receipt Done Navigation ✅
-- **Issue**: Done button navigated to old UI without bottom menu
-- **Fix**: Changed `router.replace('/ready-to-tap')` to `router.replace('/(tabs)/tap')`
-- **File**: `/app/frontend/app/receipt.tsx`
+- **Fix**: Changed navigation to `/(tabs)/tap`
 
 ### Bug 2: Phone-as-Card Double Header ✅
-- **Issue**: Two headers causing CTA button to be off-screen
-- **Fix**: Set `headerShown: false` in _layout.tsx, implemented custom header with fixed button container
-- **Files**: `/app/frontend/app/_layout.tsx`, `/app/frontend/app/phone-as-card.tsx`
+- **Fix**: Single header with fixed button container
+
+### Bug 3: New Account Navigation ✅
+- **Fix**: Register/Login now navigate to `/(tabs)/tap`
+
+## Test Results
+- **Backend**: 100% (16/16 tests passed)
+- **Frontend**: 100% (all guest mode features verified)
+- **Test Report**: `/app/test_reports/iteration_2.json`
+
+## Test Credentials
+- **Email**: hce-test@example.com
+- **Password**: test123
 
 ## Future Tasks (Prioritized)
-
-### P0 - Critical
-- [x] ~~Test HCE on physical Android device~~ (Requires user testing)
 
 ### P1 - High Priority
 - [ ] Admin UI for token management
@@ -119,15 +128,12 @@ Build a "ChargeTap" mobile app for EV charging with NFC tap-to-pay, transparent 
 - [ ] iOS NFC support (background tag reading)
 - [ ] Multi-language support
 - [ ] Push notifications
+- [ ] Guest favorites (local storage)
 
 ## Mocked/Simulated Features
 - **Stripe payments** - Uses mock payment intents
 - **Charger behavior** - Simulated via `chargerSimulator`
 - **NFC tap** - Simulated in preview (real HCE requires native build)
-
-## Test Credentials
-- **Email**: hce-test@example.com
-- **Password**: test123
 
 ---
 *Last Updated: February 21, 2026*
