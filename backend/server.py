@@ -807,6 +807,25 @@ async def stop_session(session_id: str, user: dict = Depends(get_current_user)):
     station = await db.stations.find_one({"id": final_session["station_id"]})
     charger = await db.chargers.find_one({"id": final_session["charger_id"]})
     
+    # Send SESSION_STOPPED and PAYMENT_SUCCEEDED notifications
+    total_str = format_currency(final_session.get("total_cost_cents", 0))
+    energy_str = str(round(final_session.get("delivered_kwh", 0), 1))
+    station_name = station["name"] if station else "Unknown Station"
+    
+    await send_notification_to_user(
+        user["id"],
+        NotificationType.SESSION_STOPPED,
+        {"station_name": station_name, "total": total_str},
+        session_id
+    )
+    
+    await send_notification_to_user(
+        user["id"],
+        NotificationType.PAYMENT_SUCCEEDED,
+        {"total": total_str, "energy": energy_str},
+        session_id
+    )
+    
     return serialize_doc({
         **final_session,
         "station": station,
