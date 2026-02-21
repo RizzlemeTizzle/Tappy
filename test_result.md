@@ -111,11 +111,14 @@ backend:
     file: "backend-node/src/index.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "Successfully migrated backend from Python/FastAPI/MongoDB to Node.js/Fastify/PostgreSQL/Prisma. All existing endpoints preserved."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Node.js/Fastify/PostgreSQL backend running correctly. Health check returns: ChargeTap API v2.0.0 (Node.js/Fastify/PostgreSQL). All core infrastructure operational."
 
   - task: "User Registration API (Node.js)"
     implemented: true
@@ -123,11 +126,14 @@ backend:
     file: "backend-node/src/routes/auth.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "POST /api/auth/register - Creates user with OCPI token for remote start"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - User registration working correctly. Successfully registered tester@test.nl with JWT token and OCPI token generation. Proper validation for existing users."
 
   - task: "User Login API (Node.js)"
     implemented: true
@@ -135,11 +141,14 @@ backend:
     file: "backend-node/src/routes/auth.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "POST /api/auth/login - Returns JWT token"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - User login working correctly. Returns valid JWT token with 30-day expiry. Proper authentication for registered users."
 
   - task: "Nearby Stations API (Node.js)"
     implemented: true
@@ -147,11 +156,14 @@ backend:
     file: "backend-node/src/routes/stations.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "GET /api/stations/nearby - Returns 31 stations with pricing, filters work"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Nearby stations API working correctly. Found 31 stations near Rotterdam (lat=51.9244, lng=4.4777). Distance calculation, pricing summary, and availability data all functional."
 
   - task: "OCPI Remote Start API"
     implemented: true
@@ -159,11 +171,14 @@ backend:
     file: "backend-node/src/routes/charging.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "POST /api/charging/start - OCPI 2.2.1 compliant remote start, creates command and session"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - OCPI remote start working correctly. Successfully initiated charging session for charger-002-a. Creates OCPI command, session record, and starts charger simulator."
 
   - task: "OCPI Remote Stop API"
     implemented: true
@@ -171,11 +186,14 @@ backend:
     file: "backend-node/src/routes/charging.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "POST /api/charging/stop - Stops session, creates CDR, processes payment"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - OCPI remote stop working correctly. Successfully stopped charging session, created CDR for billing, and processed MOCKED payment. Proper session cleanup."
 
   - task: "OCPI Session Status API"
     implemented: true
@@ -183,11 +201,14 @@ backend:
     file: "backend-node/src/routes/charging.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "GET /api/charging/status/:sessionId - Live session data with cost breakdown"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Session status API working correctly. Returns live charging data including power, energy delivered, battery percentage, and real-time cost calculations."
 
   - task: "OCPI Cost Estimate API"
     implemented: true
@@ -195,11 +216,14 @@ backend:
     file: "backend-node/src/routes/charging.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "GET /api/charging/estimate - Price preview before charging"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Cost estimate API working correctly. Returns pricing preview (€12.10 for 20kWh at Markthal Charging Hub). Includes breakdown of start fee, energy cost, and tax."
 
   - task: "OCPI Locations Endpoint"
     implemented: true
@@ -207,11 +231,14 @@ backend:
     file: "backend-node/src/routes/ocpi.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "GET /api/ocpi/2.2.1/locations - OCPI standard locations response"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - OCPI locations endpoint working correctly. Returns 31 OCPI-compliant location records with EVSEs and connector details. Proper OCPI 2.2.1 format."
 
   - task: "OCPI CDRs Endpoint"
     implemented: true
@@ -219,11 +246,14 @@ backend:
     file: "backend-node/src/routes/ocpi.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "GET /api/ocpi/2.2.1/cdrs - Charge Detail Records for billing"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - OCPI CDRs endpoint working correctly. Returns charge detail records in OCPI 2.2.1 format. Found 5 CDRs with proper session mapping and cost data."
 
   - task: "Charger Simulator"
     implemented: true
@@ -231,11 +261,26 @@ backend:
     file: "backend-node/src/services/chargerSimulator.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: true
         -agent: "main"
         -comment: "Simulates charging progress, battery percent, costs"
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Charger simulator working correctly. Starts/stops simulation based on charging commands. Updates session data in real-time for testing purposes."
+
+  - task: "Payment Method API (Node.js)"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/users.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Add payment method API working correctly. Successfully added card ending in 4242. MOCKED payment processing but proper data storage and validation."
 
   - task: "User Registration API"
     implemented: true
