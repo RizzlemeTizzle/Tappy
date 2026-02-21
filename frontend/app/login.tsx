@@ -15,10 +15,12 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const router = useRouter();
   const { login } = useAuthStore();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +28,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('errors.generic'));
       return;
     }
 
@@ -35,7 +37,7 @@ export default function Login() {
       await login(email.trim(), password);
       router.replace('/(tabs)/tap');
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Invalid email or password');
+      Alert.alert(t('common.error'), error.response?.data?.detail || t('auth.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
@@ -53,8 +55,8 @@ export default function Login() {
         >
           <View style={styles.header}>
             <Ionicons name="flash" size={48} color="#4CAF50" />
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to start charging</Text>
+            <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+            <Text style={styles.subtitle}>{t('auth.signInToStart')}</Text>
           </View>
 
           <View style={styles.form}>
@@ -62,7 +64,7 @@ export default function Login() {
               <Ionicons name="mail" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Email address"
+                placeholder={t('auth.email')}
                 placeholderTextColor="#666"
                 value={email}
                 onChangeText={setEmail}
@@ -76,7 +78,7 @@ export default function Login() {
               <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder={t('auth.password')}
                 placeholderTextColor="#666"
                 value={password}
                 onChangeText={setPassword}
@@ -99,7 +101,7 @@ export default function Login() {
               {isLoading ? (
                 <ActivityIndicator color="#000" />
               ) : (
-                <Text style={styles.buttonText}>Sign In</Text>
+                <Text style={styles.buttonText}>{t('auth.signIn')}</Text>
               )}
             </TouchableOpacity>
 
@@ -107,8 +109,8 @@ export default function Login() {
               style={styles.linkButton}
               onPress={() => router.push('/register')}
             >
-              <Text style={styles.linkText}>Don't have an account? </Text>
-              <Text style={styles.linkTextBold}>Sign Up</Text>
+              <Text style={styles.linkText}>{t('auth.dontHaveAccount').split('?')[0]}? </Text>
+              <Text style={styles.linkTextBold}>{t('auth.signUp')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
