@@ -146,16 +146,10 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* Preferences Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('profile.preferences')}</Text>
         <View style={styles.card}>
-          <MenuItem
-            icon="notifications"
-            title={t('profile.notifications')}
-            subtitle={t('profile.notifications')}
-            onPress={() => Alert.alert(t('common.loading'), t('profile.notifications'))}
-          />
-          <View style={styles.divider} />
           <MenuItem
             icon="globe"
             title={t('profile.language')}
