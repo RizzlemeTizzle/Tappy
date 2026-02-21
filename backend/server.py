@@ -251,6 +251,29 @@ async def simulate_charging(session_id: str):
                     {"id": session["charger_id"]},
                     {"$set": {"status": "COMPLETE"}}
                 )
+                
+                # Send CHARGING_COMPLETE notification
+                station = await db.stations.find_one({"id": session["station_id"]})
+                total_str = format_currency(total_cost_cents)
+                energy_str = str(round(delivered_kwh, 1))
+                station_name = station["name"] if station else "Unknown Station"
+                
+                await send_notification_to_user(
+                    session["user_id"],
+                    NotificationType.CHARGING_COMPLETE,
+                    {"station_name": station_name, "total": total_str, "energy": energy_str},
+                    session_id
+                )
+                
+                # Schedule penalty notifications if penalty is enabled
+                if pricing["penalty"].get("enabled", True):
+                    await schedule_penalty_notifications(
+                        session_id,
+                        session["user_id"],
+                        station_name,
+                        pricing["penalty"],
+                        charging_complete_at
+                    )
             
             if charging_complete_at:
                 # Calculate penalty if grace period passed
