@@ -102,9 +102,9 @@ export default function PhoneAsCardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.iconContainerSmall}>
-          <Ionicons name="phone-portrait" size={56} color="#4CAF50" />
+          <Ionicons name="phone-portrait" size={64} color="#4CAF50" />
           <View style={styles.nfcBadgeSmall}>
-            <Ionicons name="wifi" size={16} color="#FFF" />
+            <Ionicons name="wifi" size={20} color="#FFF" />
           </View>
         </View>
         
