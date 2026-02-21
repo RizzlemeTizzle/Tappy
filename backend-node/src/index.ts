@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/prisma/client.js';
 import authRoutes from './routes/auth.js';
 import stationRoutes from './routes/stations.js';
 import sessionRoutes from './routes/sessions.js';
