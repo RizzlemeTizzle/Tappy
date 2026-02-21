@@ -48,6 +48,16 @@ ChargeTap is a mobile EV charging application built with React Native (Expo) fro
    - Automatic device locale detection
    - In-app language switcher
    - Localized currency, number, and date formatting
+   - All screens fully translated:
+     - phone-as-card (setup, activation, complete)
+     - pricing-confirmation
+     - live-session
+     - receipt
+     - add-payment
+     - onboarding
+     - login/register
+     - profile with language switcher
+     - tap, find, sessions tabs
 
 7. **Phone-as-Card (HCE)**
    - Backend NFC token management APIs
