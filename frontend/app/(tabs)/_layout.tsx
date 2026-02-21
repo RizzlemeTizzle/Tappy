@@ -49,7 +49,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="find"
           options={{
-            title: 'Find',
+            title: t('map.title'),
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="map" size={size} color={color} />
@@ -59,7 +59,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="tap"
           options={{
-            title: 'Tap',
+            title: t('tap.title'),
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="flash" size={size} color={color} />
@@ -69,8 +69,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="sessions"
           options={{
-            title: 'Sessions',
-            headerTitle: 'Charging History',
+            title: t('history.title'),
+            headerTitle: t('history.title'),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="receipt" size={size} color={color} />
             ),
@@ -79,8 +79,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
-            headerTitle: 'Profile',
+            title: t('profile.title'),
+            headerTitle: t('profile.title'),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="person" size={size} color={color} />
             ),
