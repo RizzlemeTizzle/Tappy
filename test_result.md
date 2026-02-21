@@ -606,6 +606,90 @@ backend:
         -agent: "testing"
         -comment: "✅ PASSED - QR rate limiting implemented correctly. 30 requests per minute limit with proper 429 responses. In-memory tracking working (production should use Redis)."
 
+  - task: "Admin Token Management API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/adminTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Admin token management working correctly. POST /api/admin/tokens creates RFID tokens with Basic Auth (admin:chargetap2025). GET /api/admin/tokens lists all tokens (found 7). GET /api/admin/tokens/:id returns detailed token info with audit logs. PATCH /api/admin/tokens/:id blocks tokens successfully. All endpoints secured with Basic Auth."
+
+  - task: "Admin Token Statistics API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/adminTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/admin/tokens/stats working correctly. Returns total tokens (7), status breakdown (5 active, 2 blocked), type breakdown (7 RFID), and 24h authorizations (3 allowed, 3 blocked). Proper admin authentication required."
+
+  - task: "Admin Token CSV Import API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/adminTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/admin/tokens/import CSV import working correctly. Handles duplicate UID detection, user email lookup, and bulk token creation. Returns import results (imported: 1, skipped: 1, errors: 1). Proper CSV parsing and validation implemented."
+
+  - task: "OCPI eMSP Token Info API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/ocpiTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/ocpi/emsp/2.2.1/tokens/NL/CTP/{token_uid} working correctly. Returns OCPI-compliant token info with proper format. Token auth (test-cpo-token-12345) validated. Includes all required OCPI fields: country_code, party_id, uid, type, contract_id, valid status, whitelist."
+
+  - task: "OCPI eMSP Token Authorization API"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/ocpiTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/ocpi/emsp/2.2.1/tokens/{token_uid}/authorize working correctly. Real-time authorization working: Valid tokens return ALLOWED, unknown tokens return UNKNOWN, blocked tokens return BLOCKED. Proper OCPI response format with status_code, status_message, timestamp, and data fields. Authorization reference generated correctly."
+
+  - task: "OCPI Invalid Authentication Handling"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/ocpiTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Invalid OCPI authentication correctly handled. Returns 401 status with OCPI error code 2001 for invalid tokens. Proper security validation implemented for all OCPI eMSP endpoints."
+
+  - task: "RFID Token Duplicate Handling"
+    implemented: true
+    working: true
+    file: "backend-node/src/routes/adminTokens.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - Duplicate RFID UID handling working correctly. Returns 409 status with existing token details when duplicate UID attempted. Proper conflict resolution implemented with existing_token_id and existing_contract_id in response."
+
 frontend: []
 
 metadata:
