@@ -30,7 +30,11 @@
     "minutes": "minutes",
     "hours": "hours",
     "perKwh": "/kWh",
-    "perMinute": "/min"
+    "perMinute": "/min",
+    "home": "Home",
+    "later": "Later",
+    "add": "Add",
+    "yesterday": "Yesterday"
   },
   "auth": {
     "signIn": "Sign In",
@@ -78,8 +82,10 @@
     "whySignInReceipts": "Digital receipts",
     "whySignInHistory": "Charging history",
     "whySignInControl": "Remote session control",
+    "whySignInRemoteStop": "Stop session remotely",
     "continueBrowsing": "Continue browsing",
-    "viewPricing": "View Pricing"
+    "viewPricing": "View Pricing",
+    "viewPricingAsGuest": "You're viewing prices as a guest. Sign in to start a charging session."
   },
   "map": {
     "title": "Find Chargers",
@@ -120,7 +126,8 @@
     "unknown": "Unknown",
     "connectorType": "Connector",
     "maxPower": "Max Power",
-    "status": "Status"
+    "status": "Status",
+    "id": "Charger ID"
   },
   "pricing": {
     "title": "Pricing Details",
@@ -128,6 +135,7 @@
     "energyRate": "Energy Rate",
     "idleFee": "Idle Fee",
     "parkingFee": "Parking Fee",
+    "tax": "Tax",
     "taxIncluded": "Tax included ({{percent}}%)",
     "penaltyRule": "Penalty begins {{minutes}} min after full charge: {{rate}}/min (max {{max}})",
     "penaltyWarning": "Idle fee after {{minutes}} min: {{rate}}/min (max {{max}})",
@@ -135,33 +143,48 @@
     "pricesLocked": "These prices will be locked for your session. You'll see real-time costs while charging.",
     "pricingInfo": "Pricing Information",
     "pricingInfoGuest": "You're viewing prices as a guest. Sign in to start a charging session.",
-    "free": "Free"
+    "free": "Free",
+    "locked": "Locked Pricing",
+    "lockedAt": "Pricing locked at",
+    "lockedForSession": "These prices will be locked for your session. You'll see real-time costs while charging."
   },
   "session": {
     "startCharging": "Start Charging",
     "stopCharging": "Stop Charging",
+    "stop": "Stop",
     "charging": "Charging...",
     "sessionActive": "Session Active",
-    "sessionCompleted": "Session Completed",
+    "sessionCompleted": "Charging Complete!",
     "sessionStopped": "Session Stopped",
     "currentCost": "Current Cost",
     "energyDelivered": "Energy Delivered",
+    "energy": "Energy",
+    "energyCost": "Energy Cost",
     "duration": "Duration",
     "power": "Power",
     "startTime": "Start Time",
     "endTime": "End Time",
-    "confirmStop": "Stop charging session?",
+    "started": "Started",
+    "ended": "Ended",
+    "details": "Session Details",
+    "meterStart": "Meter Start",
+    "meterEnd": "Meter End",
+    "confirmStop": "Are you sure you want to stop charging?",
+    "confirmCancel": "Are you sure you want to cancel?",
     "confirmStopDesc": "Your session will end and you will be charged for the energy used.",
     "waitingForCharger": "Waiting for charger...",
     "connected": "Connected",
     "preparing": "Preparing",
     "finishing": "Finishing",
-    "chargingProgress": "{{percent}}% charged"
+    "chargingProgress": "{{percent}}% charged",
+    "helpContact": "Contact support at:\n\nPhone: 1-800-CHARGE\nEmail: support@chargetap.com"
   },
   "receipt": {
     "title": "Charging Receipt",
     "sessionSummary": "Session Summary",
     "totalCost": "Total Cost",
+    "total": "Total",
+    "totalCharged": "Total Charged",
     "breakdown": "Cost Breakdown",
     "energyCost": "Energy Cost",
     "startFeeCost": "Start Fee",
@@ -172,6 +195,7 @@
     "transactionId": "Transaction ID",
     "downloadReceipt": "Download Receipt",
     "emailReceipt": "Email Receipt",
+    "share": "Share Receipt",
     "goHome": "Go to Home",
     "thankYou": "Thank you for charging with ChargeTap!"
   },
@@ -214,12 +238,16 @@
   "payment": {
     "addCard": "Add Card",
     "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
     "expiry": "Expiry Date",
     "cvv": "CVV",
     "saveCard": "Save Card",
-    "cardAdded": "Card added successfully",
-    "cardRequired": "A payment method is required to start charging",
-    "processing": "Processing payment..."
+    "cardAdded": "Payment method added successfully",
+    "cardRequired": "Payment Method Required",
+    "processing": "Processing payment...",
+    "chargeAfterSession": "Your card will be charged after each session",
+    "demoMode": "This is a demo - enter any test card number",
+    "securePayment": "Your payment info is securely processed. We never store your full card details."
   },
   "nfc": {
     "title": "Phone as Card",
