@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,35 +17,23 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useMapStore, NearbyStation } from '../../src/store/mapStore';
-import debounce from 'lodash/debounce';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../../src/i18n';
 
 const { width, height } = Dimensions.get('window');
 
 const CONNECTOR_TYPES = ['CCS', 'CHAdeMO', 'Type2'];
-const POWER_OPTIONS = [
-  { label: 'Any', value: null },
-  { label: '7+ kW', value: 7 },
-  { label: '50+ kW', value: 50 },
-  { label: '150+ kW', value: 150 },
-];
-const SORT_OPTIONS = [
-  { label: 'Nearest', value: 'distance' },
-  { label: 'Cheapest', value: 'price' },
-  { label: 'Fastest', value: 'power' },
-  { label: 'Best Value', value: 'estimated_cost' },
-];
 
 export default function FindScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const {
     nearbyStations,
     selectedStation,
     userLocation,
-    region,
     filters,
     isLoading,
     setUserLocation,
-    setRegion,
     setFilters,
     selectStation,
     fetchNearbyStations,
@@ -53,6 +41,19 @@ export default function FindScreen() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const POWER_OPTIONS = [
+    { label: t('map.sortBy'), value: null },
+    { label: '7+ kW', value: 7 },
+    { label: '50+ kW', value: 50 },
+    { label: '150+ kW', value: 150 },
+  ];
+  
+  const SORT_OPTIONS = [
+    { label: t('map.sortDistance'), value: 'distance' },
+    { label: t('map.sortPrice'), value: 'price' },
+    { label: t('map.sortPower'), value: 'power' },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -79,7 +80,7 @@ export default function FindScreen() {
 
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert('Error', 'Could not open maps');
+        Alert.alert(t('common.error'), t('errors.generic'));
       });
     }
   };
@@ -88,7 +89,7 @@ export default function FindScreen() {
     router.push({ pathname: '/station-details', params: { stationId: station.id } });
   };
 
-  const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+  const formatPrice = (cents: number) => formatCurrency(cents);
 
   const getMarkerColor = (station: NearbyStation) => {
     const { available_count, total_count } = station.availability;
@@ -129,29 +130,29 @@ export default function FindScreen() {
         </View>
         <Text style={styles.cardAddress} numberOfLines={1}>{station.address}</Text>
         <View style={styles.cardMeta}>
-          <Text style={styles.cardDistance}>{station.distance_km.toFixed(1)} km</Text>
+          <Text style={styles.cardDistance}>{station.distance_km.toFixed(1)} {t('common.km')}</Text>
           <Text style={styles.cardDot}>•</Text>
-          <Text style={styles.cardPower}>{station.max_power_kw} kW max</Text>
+          <Text style={styles.cardPower}>{station.max_power_kw} {t('common.kw')} max</Text>
         </View>
       </View>
 
       <View style={styles.pricingRow}>
         <View style={styles.priceItem}>
-          <Text style={styles.priceLabel}>Start</Text>
+          <Text style={styles.priceLabel}>{t('pricing.startFee')}</Text>
           <Text style={styles.priceValue}>
             {station.pricing_summary.start_fee_cents === 0
-              ? 'Free'
+              ? t('pricing.free')
               : formatPrice(station.pricing_summary.start_fee_cents)}
           </Text>
         </View>
         <View style={styles.priceItem}>
-          <Text style={styles.priceLabel}>Rate</Text>
+          <Text style={styles.priceLabel}>{t('pricing.energyRate')}</Text>
           <Text style={styles.priceValue}>
-            {formatPrice(station.pricing_summary.energy_rate_cents_per_kwh)}/kWh
+            {formatPrice(station.pricing_summary.energy_rate_cents_per_kwh)}{t('common.perKwh')}
           </Text>
         </View>
         <View style={styles.priceItem}>
-          <Text style={styles.priceLabel}>20 kWh</Text>
+          <Text style={styles.priceLabel}>20 {t('common.kwh')}</Text>
           <Text style={styles.priceValueHighlight}>
             ~{formatPrice(station.pricing_summary.estimated_20kwh_cents)}
           </Text>
@@ -173,14 +174,14 @@ export default function FindScreen() {
           onPress={() => handleNavigate(station)}
         >
           <Ionicons name="navigate" size={18} color="#4CAF50" />
-          <Text style={styles.actionText}>Navigate</Text>
+          <Text style={styles.actionText}>{t('map.navigate')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.actionButtonPrimary]}
           onPress={() => handleViewDetails(station)}
         >
           <Ionicons name="information-circle" size={18} color="#000" />
-          <Text style={styles.actionTextPrimary}>Details</Text>
+          <Text style={styles.actionTextPrimary}>{t('map.details')}</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -194,7 +195,7 @@ export default function FindScreen() {
           <Ionicons name="search" size={20} color="#888" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search stations..."
+            placeholder={t('map.searchPlaceholder')}
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -216,14 +217,14 @@ export default function FindScreen() {
           <View style={styles.filtersContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.filterGroup}>
-                <Text style={styles.filterLabel}>Connector</Text>
+                <Text style={styles.filterLabel}>{t('map.connectorType')}</Text>
                 <View style={styles.filterChips}>
                   <TouchableOpacity
                     style={[styles.chip, !filters.connector_type && styles.chipActive]}
                     onPress={() => setFilters({ connector_type: null })}
                   >
                     <Text style={[styles.chipText, !filters.connector_type && styles.chipTextActive]}>
-                      All
+                      {t('common.filter')}
                     </Text>
                   </TouchableOpacity>
                   {CONNECTOR_TYPES.map((type) => (
@@ -241,7 +242,7 @@ export default function FindScreen() {
               </View>
 
               <View style={styles.filterGroup}>
-                <Text style={styles.filterLabel}>Power</Text>
+                <Text style={styles.filterLabel}>{t('map.minPower')}</Text>
                 <View style={styles.filterChips}>
                   {POWER_OPTIONS.map((opt) => (
                     <TouchableOpacity
@@ -264,14 +265,14 @@ export default function FindScreen() {
                   onPress={() => setFilters({ available_only: !filters.available_only })}
                 >
                   <Text style={[styles.chipText, filters.available_only && styles.chipTextActive]}>
-                    Available Now
+                    {t('map.availableOnly')}
                   </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
 
             <View style={styles.sortContainer}>
-              <Text style={styles.filterLabel}>Sort by:</Text>
+              <Text style={styles.filterLabel}>{t('map.sortBy')}:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {SORT_OPTIONS.map((opt) => (
                   <TouchableOpacity
@@ -291,9 +292,9 @@ export default function FindScreen() {
 
         <View style={styles.titleRow}>
           <Text style={styles.title}>
-            {filteredStations.length} Charging Stations
+            {t('map.stationsFound', { count: filteredStations.length })}
           </Text>
-          <Text style={styles.subtitle}>Near Rotterdam, NL</Text>
+          <Text style={styles.subtitle}>{t('map.nearBy', { location: 'Rotterdam, NL' })}</Text>
         </View>
       </View>
 
@@ -304,8 +305,8 @@ export default function FindScreen() {
         ) : filteredStations.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="location-outline" size={48} color="#444" />
-            <Text style={styles.emptyText}>No stations found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            <Text style={styles.emptyText}>{t('map.noStationsFound')}</Text>
+            <Text style={styles.emptySubtext}>{t('common.retry')}</Text>
           </View>
         ) : (
           filteredStations.map((station) => renderStationCard(station))

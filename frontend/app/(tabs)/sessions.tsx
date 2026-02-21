@@ -8,23 +8,26 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../../src/store/sessionStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { InlineLoginWall } from '../../src/components/LoginWall';
-import { formatCents, formatKwh, formatDate } from '../../src/utils/formatters';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatDate as formatDateI18n } from '../../src/i18n';
 
 export default function SessionsScreen() {
   const router = useRouter();
   const { sessionHistory, fetchHistory, isLoading } = useSessionStore();
   const { isGuest, isAuthenticated } = useAuthStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isAuthenticated && !isGuest) {
       fetchHistory();
     }
   }, [isAuthenticated, isGuest]);
+
+  const formatKwh = (kwh: number) => `${kwh.toFixed(2)} ${t('common.kwh')}`;
 
   // Show login wall for guests
   if (isGuest) {
@@ -46,7 +49,7 @@ export default function SessionsScreen() {
         <View style={styles.sessionHeader}>
           <View style={styles.stationInfo}>
             <Ionicons name="location" size={18} color="#4CAF50" />
-            <Text style={styles.stationName}>{item.station?.name || 'Unknown Station'}</Text>
+            <Text style={styles.stationName}>{item.station?.name || t('station.details')}</Text>
           </View>
           <View style={[
             styles.statusBadge,
@@ -56,12 +59,12 @@ export default function SessionsScreen() {
               styles.statusText,
               isCompleted ? styles.completedText : styles.activeText
             ]}>
-              {item.status}
+              {isCompleted ? t('session.sessionCompleted') : t('session.sessionActive')}
             </Text>
           </View>
         </View>
 
-        <Text style={styles.dateText}>{formatDate(item.started_at)}</Text>
+        <Text style={styles.dateText}>{formatDateI18n(item.started_at)}</Text>
 
         <View style={styles.sessionDetails}>
           <View style={styles.detailItem}>
@@ -71,7 +74,7 @@ export default function SessionsScreen() {
           <View style={styles.detailDivider} />
           <View style={styles.detailItem}>
             <Ionicons name="cash" size={16} color="#888" />
-            <Text style={styles.detailText}>{formatCents(item.total_cost_cents)}</Text>
+            <Text style={styles.detailText}>{formatCurrency(item.total_cost_cents)}</Text>
           </View>
           {item.penalty_cost_cents > 0 && (
             <>
@@ -79,7 +82,7 @@ export default function SessionsScreen() {
               <View style={styles.detailItem}>
                 <Ionicons name="warning" size={16} color="#FF9800" />
                 <Text style={[styles.detailText, styles.penaltyText]}>
-                  +{formatCents(item.penalty_cost_cents)} penalty
+                  +{formatCurrency(item.penalty_cost_cents)} {t('pricing.idleFee')}
                 </Text>
               </View>
             </>
@@ -94,13 +97,13 @@ export default function SessionsScreen() {
       {isLoading && sessionHistory.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading history...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       ) : sessionHistory.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="receipt-outline" size={64} color="#333" />
-          <Text style={styles.emptyTitle}>No Charging History</Text>
-          <Text style={styles.emptyText}>Your charging sessions will appear here</Text>
+          <Text style={styles.emptyTitle}>{t('history.noSessions')}</Text>
+          <Text style={styles.emptyText}>{t('history.noSessionsDesc')}</Text>
         </View>
       ) : (
         <FlatList
