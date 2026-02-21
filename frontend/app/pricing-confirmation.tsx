@@ -12,12 +12,16 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
+import { useAuthStore } from '../src/store/authStore';
+import { LoginWall } from '../src/components/LoginWall';
 import PriceBreakdown from '../src/components/PriceBreakdown';
 
 export default function PricingConfirmation() {
   const router = useRouter();
   const { selectedStation, selectedCharger, selectedPricing, startSession, clearSelection, isLoading } = useSessionStore();
+  const { isGuest, isAuthenticated, user } = useAuthStore();
   const [starting, setStarting] = useState(false);
+  const [showLoginWall, setShowLoginWall] = useState(false);
 
   if (!selectedStation || !selectedCharger || !selectedPricing) {
     return (
@@ -37,6 +41,25 @@ export default function PricingConfirmation() {
   }
 
   const handleStartCharging = async () => {
+    // Block guests
+    if (isGuest) {
+      setShowLoginWall(true);
+      return;
+    }
+
+    // Check payment method
+    if (!user?.payment_method_added) {
+      Alert.alert(
+        'Betaalmethode Vereist',
+        'Je hebt een betaalmethode nodig om te laden.',
+        [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Toevoegen', onPress: () => router.push('/add-payment') }
+        ]
+      );
+      return;
+    }
+
     setStarting(true);
     try {
       const sessionId = await startSession();
@@ -58,6 +81,19 @@ export default function PricingConfirmation() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Guest Info Banner */}
+        {isGuest && (
+          <View style={styles.guestInfoBanner}>
+            <Ionicons name="information-circle" size={20} color="#2196F3" />
+            <View style={styles.guestInfoContent}>
+              <Text style={styles.guestInfoTitle}>Prijsinformatie</Text>
+              <Text style={styles.guestInfoText}>
+                Je bekijkt de prijzen als gast. Log in om een laadsessie te starten.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Station Info */}
         <View style={styles.stationCard}>
           <View style={styles.stationHeader}>
@@ -94,6 +130,25 @@ export default function PricingConfirmation() {
             These prices will be locked for your session. You'll see real-time costs while charging.
           </Text>
         </View>
+
+        {/* Why Sign In - for guests */}
+        {isGuest && (
+          <View style={styles.whySignInBox}>
+            <Text style={styles.whySignInTitle}>Waarom inloggen?</Text>
+            <View style={styles.whySignInItem}>
+              <Ionicons name="card" size={16} color="#888" />
+              <Text style={styles.whySignInText}>Veilige betalingsverwerking</Text>
+            </View>
+            <View style={styles.whySignInItem}>
+              <Ionicons name="receipt" size={16} color="#888" />
+              <Text style={styles.whySignInText}>Digitale bonnetjes ontvangen</Text>
+            </View>
+            <View style={styles.whySignInItem}>
+              <Ionicons name="stop-circle" size={16} color="#888" />
+              <Text style={styles.whySignInText}>Sessie op afstand stoppen</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Buttons */}
@@ -113,6 +168,11 @@ export default function PricingConfirmation() {
         >
           {starting ? (
             <ActivityIndicator color="#000" />
+          ) : isGuest ? (
+            <>
+              <Ionicons name="log-in" size={20} color="#000" />
+              <Text style={styles.startButtonText}>Inloggen om te Laden</Text>
+            </>
           ) : (
             <>
               <Ionicons name="flash" size={20} color="#000" />
@@ -121,6 +181,15 @@ export default function PricingConfirmation() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Login Wall Modal */}
+      <LoginWall
+        visible={showLoginWall}
+        onClose={() => setShowLoginWall(false)}
+        actionType="start_session"
+        returnTo="/pricing-confirmation"
+        pendingData={{ stationId: selectedStation.id, chargerId: selectedCharger.id }}
+      />
     </SafeAreaView>
   );
 }
