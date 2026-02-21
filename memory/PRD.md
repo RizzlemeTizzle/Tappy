@@ -142,6 +142,12 @@ ChargeTap is a mobile EV charging application built with React Native (Expo) fro
 - `POST /api/nfc-tokens` - Create NFC token
 - `PUT /api/nfc-tokens/{id}/activate` - Activate token
 - `PUT /api/nfc-tokens/{id}/deactivate` - Deactivate token
+- `POST /api/devices/register` - Register device for notifications
+- `POST /api/devices/deregister` - Deregister device
+- `GET /api/me/notification-preferences` - Get notification preferences
+- `PUT /api/me/notification-preferences` - Update notification preferences
+- `GET /api/me/notification-logs` - Get notification history
+- `POST /api/simulate/notification/{type}` - Simulate notification (testing)
 
 ## Notes
 - Stripe integration is MOCKED
