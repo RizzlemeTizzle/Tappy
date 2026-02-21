@@ -11,6 +11,7 @@ import userRoutes from './routes/users.js';
 import seedRoutes from './routes/seed.js';
 import ocpiRoutes from './routes/ocpi.js';
 import chargingRoutes from './routes/charging.js';
+import qrRoutes from './routes/qr.js';
 import { ChargerSimulator } from './services/chargerSimulator.js';
 
 dotenv.config();
@@ -74,10 +75,16 @@ async function build() {
     api.register(seedRoutes, { prefix: '' });
     api.register(ocpiRoutes, { prefix: '/ocpi' });
     api.register(chargingRoutes, { prefix: '/charging' });
+    api.register(qrRoutes, { prefix: '' }); // QR routes at /api/v1/qr/* and /api/admin/qr/*
 
     // Health check
     api.get('/health', async () => ({ status: 'healthy' }));
-    api.get('/', async () => ({ message: 'ChargeTap API', version: '2.0.0', stack: 'Node.js/Fastify/PostgreSQL' }));
+    api.get('/', async () => ({ 
+      message: 'ChargeTap API', 
+      version: '2.1.0', 
+      stack: 'Node.js/Fastify/PostgreSQL',
+      features: ['OCPI 2.2.1', 'QR-Start', 'Remote Start/Stop']
+    }));
   }, { prefix: '/api' });
 
   return fastify;
@@ -91,7 +98,8 @@ async function start() {
     await server.listen({ port, host: '0.0.0.0' });
     console.log(`\n🚀 ChargeTap API running on port ${port}`);
     console.log(`📚 Stack: Node.js + Fastify + PostgreSQL + Prisma`);
-    console.log(`🔌 OCPI 2.2.1 Remote Start/Stop enabled\n`);
+    console.log(`🔌 OCPI 2.2.1 Remote Start/Stop enabled`);
+    console.log(`📱 QR-Start enabled\n`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
