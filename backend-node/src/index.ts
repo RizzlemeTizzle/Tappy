@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
+import formbody from '@fastify/formbody';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.js';
@@ -12,6 +13,9 @@ import seedRoutes from './routes/seed.js';
 import ocpiRoutes from './routes/ocpi.js';
 import chargingRoutes from './routes/charging.js';
 import qrRoutes from './routes/qr.js';
+import ocpiTokenRoutes from './routes/ocpiTokens.js';
+import adminTokenRoutes from './routes/adminTokens.js';
+import adminPortalRoutes from './routes/adminPortal.js';
 import { ChargerSimulator } from './services/chargerSimulator.js';
 
 dotenv.config();
@@ -41,6 +45,9 @@ declare module '@fastify/jwt' {
 }
 
 async function build() {
+  // Register form body parser (for admin forms)
+  await fastify.register(formbody);
+  
   // Register CORS
   await fastify.register(cors, {
     origin: true,
@@ -76,16 +83,21 @@ async function build() {
     api.register(ocpiRoutes, { prefix: '/ocpi' });
     api.register(chargingRoutes, { prefix: '/charging' });
     api.register(qrRoutes, { prefix: '' }); // QR routes at /api/v1/qr/* and /api/admin/qr/*
+    api.register(ocpiTokenRoutes, { prefix: '/ocpi' }); // OCPI eMSP Token endpoints
+    api.register(adminTokenRoutes, { prefix: '/admin' }); // Admin API for tokens
 
     // Health check
     api.get('/health', async () => ({ status: 'healthy' }));
     api.get('/', async () => ({ 
       message: 'ChargeTap API', 
-      version: '2.1.0', 
+      version: '2.2.0', 
       stack: 'Node.js/Fastify/PostgreSQL',
-      features: ['OCPI 2.2.1', 'QR-Start', 'Remote Start/Stop']
+      features: ['OCPI 2.2.1', 'QR-Start', 'Remote Start/Stop', 'RFID Tokens']
     }));
   }, { prefix: '/api' });
+
+  // Register admin portal (HTML pages)
+  await fastify.register(adminPortalRoutes, { prefix: '/admin' });
 
   return fastify;
 }
@@ -99,7 +111,9 @@ async function start() {
     console.log(`\n🚀 ChargeTap API running on port ${port}`);
     console.log(`📚 Stack: Node.js + Fastify + PostgreSQL + Prisma`);
     console.log(`🔌 OCPI 2.2.1 Remote Start/Stop enabled`);
-    console.log(`📱 QR-Start enabled\n`);
+    console.log(`📱 QR-Start enabled`);
+    console.log(`💳 RFID Token Management enabled`);
+    console.log(`🔑 Admin Portal: http://localhost:${port}/admin/tokens\n`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
