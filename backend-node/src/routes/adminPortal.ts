@@ -238,7 +238,7 @@ const adminPortalRoutes: FastifyPluginAsync = async (fastify) => {
         columns: true,
         skip_empty_lines: true,
         trim: true,
-      });
+      }) as Record<string, string>[];
       
       const result = { imported: 0, skipped: 0, errors: [] as any[] };
       
