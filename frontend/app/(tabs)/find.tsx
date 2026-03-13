@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import MapView, { Marker, Region } from 'react-native-maps';
+import MapView, { Marker, Region } from '../../src/mapsModule';
 import { useMapStore, NearbyStation } from '../../src/store/mapStore';
 import { useFavoriteStore } from '../../src/store/favoriteStore';
 import { useAlertStore } from '../../src/store/alertStore';
@@ -101,7 +101,7 @@ export default function FindScreen() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStation, setSelectedStation] = useState<NearbyStation | null>(null);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const cardAnim = useRef(new Animated.Value(400)).current;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
