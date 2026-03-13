@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
 import { useAuthStore } from '../src/store/authStore';
+import { useNotificationStore, NotificationType } from '../src/store/notificationStore';
 import { LoginWall } from '../src/components/LoginWall';
 import PriceBreakdown from '../src/components/PriceBreakdown';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,7 @@ export default function PricingConfirmation() {
   const { t } = useTranslation();
   const { selectedStation, selectedCharger, selectedPricing, startSession, clearSelection, isLoading } = useSessionStore();
   const { isGuest, isAuthenticated, user } = useAuthStore();
+  const { scheduleLocalNotification } = useNotificationStore();
   const [starting, setStarting] = useState(false);
   const [showLoginWall, setShowLoginWall] = useState(false);
 
@@ -65,8 +67,14 @@ export default function PricingConfirmation() {
     setStarting(true);
     try {
       const sessionId = await startSession();
+      scheduleLocalNotification(NotificationType.SESSION_STARTED, {
+        station_name: selectedStation.name,
+      }, 0);
       router.replace({ pathname: '/live-session', params: { sessionId } });
     } catch (error: any) {
+      scheduleLocalNotification(NotificationType.SESSION_START_FAILED, {
+        station_name: selectedStation.name,
+      }, 0);
       Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
     } finally {
       setStarting(false);

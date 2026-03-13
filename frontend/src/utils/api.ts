@@ -1,5 +1,8 @@
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { API_URL } from '../config/api';
 
 /**
  * Get the API base URL based on environment
@@ -32,7 +35,7 @@ export function getApiUrl(): string {
  */
 export function parseQRDeepLink(url: string): Record<string, string> | null {
   try {
-    // Handle both chargetap:// and https:// URLs
+    // Handle both tappycharge:// and https:// URLs
     let queryString = '';
     
     if (url.includes('?')) {
@@ -55,8 +58,25 @@ export function parseQRDeepLink(url: string): Record<string, string> | null {
 }
 
 /**
- * Validate that a URL is a ChargeTap QR URL
+ * Validate that a URL is a Tappy Charge QR URL
  */
-export function isChargeTapQR(url: string): boolean {
-  return url.includes('chargetap://start') || url.includes('chargetap.app/start');
+export function isTappyChargeQR(url: string): boolean {
+  return url.includes('tappycharge://start') || url.includes('tappycharge.com/start');
 }
+
+/**
+ * Pre-configured axios instance with baseURL and auth token injection
+ */
+const apiInstance = axios.create({
+  baseURL: `${API_URL}/api`,
+});
+
+apiInstance.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default apiInstance;

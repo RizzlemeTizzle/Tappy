@@ -73,10 +73,10 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       const response = await axios.get(
-        `${API_URL}/api/nfc/tokens/status?device_id=${deviceId}`,
+        `${API_URL}/api/v1/tokens/nfc/status?device_id=${deviceId}`,
         { headers }
       );
-      
+
       set({
         tokens: response.data.tokens || [],
         activeToken: response.data.active_token,
@@ -84,7 +84,7 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || 'Kon token status niet ophalen',
+        error: error.response?.data?.error || error.response?.data?.message || 'Kon token status niet ophalen',
         isLoading: false
       });
     }
@@ -97,7 +97,7 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       const response = await axios.post(
-        `${API_URL}/api/nfc/tokens/provision`,
+        `${API_URL}/api/v1/tokens/nfc/provision`,
         {
           device_id: deviceId,
           device_model: Platform.OS === 'android' ? 'Android Device' : 'iOS Device',
@@ -106,14 +106,14 @@ export const useNfcStore = create<NfcState>((set, get) => ({
         },
         { headers }
       );
-      
+
       // Refresh token list
       await get().fetchTokenStatus();
-      
+
       set({ isLoading: false });
       return response.data;
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'Kon token niet aanmaken';
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Kon token niet aanmaken';
       set({ error: errorMsg, isLoading: false });
       throw new Error(errorMsg);
     }
@@ -126,18 +126,18 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       await axios.post(
-        `${API_URL}/api/nfc/tokens/activate`,
+        `${API_URL}/api/v1/tokens/nfc/active`,
         { token_id: tokenId, device_id: deviceId },
         { headers }
       );
-      
+
       // Refresh token list
       await get().fetchTokenStatus();
-      
+
       set({ isLoading: false });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || 'Kon token niet activeren',
+        error: error.response?.data?.error || error.response?.data?.message || 'Kon token niet activeren',
         isLoading: false
       });
     }
@@ -150,18 +150,18 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       await axios.post(
-        `${API_URL}/api/nfc/tokens/deactivate`,
+        `${API_URL}/api/v1/tokens/nfc/disable`,
         { token_id: tokenId, device_id: deviceId },
         { headers }
       );
-      
+
       // Refresh token list
       await get().fetchTokenStatus();
-      
+
       set({ isLoading: false });
     } catch (error: any) {
       set({
-        error: error.response?.data?.detail || 'Kon HCE niet uitschakelen',
+        error: error.response?.data?.error || error.response?.data?.message || 'Kon HCE niet uitschakelen',
         isLoading: false
       });
     }
@@ -173,7 +173,7 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       await axios.post(
-        `${API_URL}/api/nfc/tokens/tap`,
+        `${API_URL}/api/v1/tokens/nfc/tap`,
         { token_uid: tokenUid, device_id: deviceId, location },
         { headers }
       );
@@ -189,7 +189,7 @@ export const useNfcStore = create<NfcState>((set, get) => ({
       const headers = await getAuthHeaders();
       
       const response = await axios.get(
-        `${API_URL}/api/nfc/tokens/active-uid?device_id=${deviceId}`,
+        `${API_URL}/api/v1/tokens/nfc/active-uid?device_id=${deviceId}`,
         { headers }
       );
       

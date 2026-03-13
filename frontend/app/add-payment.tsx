@@ -59,10 +59,10 @@ export default function AddPayment() {
     try {
       await addPaymentMethod(cleanedCard, expiry, cvv);
       Alert.alert(t('common.success'), t('payment.cardAdded'), [
-        { text: t('common.ok'), onPress: () => router.replace('/ready-to-tap') }
+        { text: t('common.ok'), onPress: () => router.replace('/(tabs)/profile') }
       ]);
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.paymentFailed'));
+      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('errors.paymentFailed'));
     } finally {
       setIsLoading(false);
     }

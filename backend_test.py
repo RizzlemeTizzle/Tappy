@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 BASE_URL = "https://tap-global.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
-class ChargeTapTester:
+class TappyChargeTester:
     def __init__(self):
         self.session_token = None
         self.session_id = None
@@ -323,7 +323,7 @@ class ChargeTapTester:
             
     def run_full_test_suite(self):
         """Run the complete OCPI 2.2.1 Remote Start/Stop flow test"""
-        print("🚀 ChargeTap Node.js/Fastify/PostgreSQL Backend Testing")
+        print("🚀 Tappy Charge Node.js/Fastify/PostgreSQL Backend Testing")
         print("=" * 60)
         print("Testing OCPI 2.2.1 Remote Start/Stop Flow")
         
@@ -364,14 +364,14 @@ class ChargeTapTester:
         print(f"📊 Total:  {passed + failed}")
         
         if failed == 0:
-            print("\n🎉 ALL TESTS PASSED! ChargeTap Node.js backend is working correctly.")
+            print("\n🎉 ALL TESTS PASSED! Tappy Charge Node.js backend is working correctly.")
             return True
         else:
             print(f"\n⚠️  {failed} test(s) failed. Please check the issues above.")
             return False
 
 def main():
-    tester = ChargeTapTester()
+    tester = TappyChargeTester()
     success = tester.run_full_test_suite()
     sys.exit(0 if success else 1)
 

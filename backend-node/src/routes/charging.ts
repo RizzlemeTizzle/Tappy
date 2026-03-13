@@ -11,7 +11,7 @@ const startChargingSchema = z.object({
 const chargingRoutes: FastifyPluginAsync = async (fastify) => {
   // Start charging remotely via OCPI
   fastify.post('/start', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const body = startChargingSchema.parse(request.body);
@@ -95,36 +95,49 @@ const chargingRoutes: FastifyPluginAsync = async (fastify) => {
     });
     
     // Simulate CPO accepting the command (in production, this would be async via webhook)
-    // For MVP, we simulate immediate acceptance
-    setTimeout(async () => {
-      try {
-        await fastify.prisma.ocpiCommand.update({
-          where: { id: commandId },
-          data: { status: 'ACCEPTED', result: 'Session starting' },
-        });
-        
-        const ocpiSessionId = `NL*CTP*S${Date.now()}`;
-        await fastify.prisma.session.update({
-          where: { id: session.id },
-          data: {
-            status: 'CHARGING',
-            startedAt: new Date(),
-            ocpiSessionId,
-            ocpiStatus: 'ACTIVE',
-            meterStartKwh: Math.random() * 4000 + 1000,
-          },
-        });
-        
-        await fastify.prisma.charger.update({
-          where: { id: charger.id },
-          data: { status: 'CHARGING', currentSessionId: session.id },
-        });
-        
-        // Start simulator
-        fastify.chargerSimulator.startSimulation(session.id, charger.maxKw);
-      } catch (err) {
-        console.error('Error processing OCPI command:', err);
-      }
+    // For MVP, we simulate immediate acceptance after a short delay
+    const sessionId = session.id;
+    const chargerId = charger.id;
+    const chargerMaxKw = charger.maxKw;
+    setTimeout(() => {
+      (async () => {
+        try {
+          await fastify.prisma.ocpiCommand.update({
+            where: { id: commandId },
+            data: { status: 'ACCEPTED', result: 'Session starting' },
+          });
+
+          const ocpiSessionId = `NL*CTP*S${Date.now()}`;
+          await fastify.prisma.session.update({
+            where: { id: sessionId },
+            data: {
+              status: 'CHARGING',
+              startedAt: new Date(),
+              ocpiSessionId,
+              ocpiStatus: 'ACTIVE',
+              meterStartKwh: Math.random() * 4000 + 1000,
+            },
+          });
+
+          await fastify.prisma.charger.update({
+            where: { id: chargerId },
+            data: { status: 'CHARGING', currentSessionId: sessionId },
+          });
+
+          fastify.chargerSimulator.startSimulation(sessionId, chargerMaxKw);
+        } catch (err) {
+          fastify.log.error({ err, sessionId, commandId }, 'Error processing OCPI start command — marking session FAILED');
+          // Mark session as failed so the user can retry rather than being stuck in PENDING
+          await fastify.prisma.session.update({
+            where: { id: sessionId },
+            data: { status: 'FAILED' },
+          }).catch((updateErr) => fastify.log.error({ updateErr }, 'Failed to mark session as FAILED'));
+          await fastify.prisma.ocpiCommand.update({
+            where: { id: commandId },
+            data: { status: 'REJECTED', result: 'Internal error during session start' },
+          }).catch((updateErr) => fastify.log.error({ updateErr }, 'Failed to update command status'));
+        }
+      })();
     }, 1500);
     
     return {
@@ -152,7 +165,7 @@ const chargingRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Stop charging remotely
   fastify.post('/stop', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const body = request.body as { session_id: string };
@@ -274,7 +287,7 @@ const chargingRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Get session status (with OCPI info)
   fastify.get('/status/:sessionId', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const { sessionId } = request.params as { sessionId: string };
@@ -347,7 +360,7 @@ const chargingRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Estimate cost before starting
   fastify.get('/estimate', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const query = request.query as { charger_id: string; target_kwh?: string; target_percent?: string };
     

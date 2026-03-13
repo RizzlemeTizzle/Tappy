@@ -82,7 +82,7 @@ const qrRoutes: FastifyPluginAsync = async (fastify) => {
       
       return reply.status(400).send({
         error: 'INVALID_QR_FORMAT',
-        message: 'Could not parse QR code. Please scan a valid ChargeTap QR.',
+        message: 'Could not parse QR code. Please scan a valid Tappy Charge QR.',
       });
     }
     

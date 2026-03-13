@@ -19,11 +19,16 @@ model User {
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  sessions            Session[]
-  payments            Payment[]
-  ocpiTokens          OcpiToken[]
-  rfidTokens          RfidToken[]
-  nfcTokens           NfcToken[]
+  sessions                Session[]
+  payments                Payment[]
+  ocpiTokens              OcpiToken[]
+  rfidTokens              RfidToken[]
+  nfcTokens               NfcToken[]
+  notificationPreference  NotificationPreference?
+  favorites               FavoriteStation[]
+  alertRequests           AvailabilityAlertRequest[]
+
+  expoPushToken String? @map("expo_push_token")
 
   @@map("users")
 }
@@ -38,9 +43,11 @@ model Station {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
-  chargers     Charger[]
-  pricingPlan  PricingPlan?
-  sessions     Session[]
+  chargers      Charger[]
+  pricingPlan   PricingPlan?
+  sessions      Session[]
+  favoritedBy   FavoriteStation[]
+  alertRequests AvailabilityAlertRequest[]
 
   @@index([latitude, longitude])
   @@map("stations")
@@ -167,7 +174,7 @@ model OcpiToken {
   type          String   @default("RFID") // RFID, APP_USER, OTHER
   authId        String   @map("auth_id") // Reference to user
   visualNumber  String?  @map("visual_number")
-  issuer        String   @default("ChargeTap")
+  issuer        String   @default("Tappy Charge")
   groupId       String?  @map("group_id")
   valid         Boolean  @default(true)
   whitelist     String   @default("ALWAYS") // ALWAYS, ALLOWED, ALLOWED_OFFLINE, NEVER
@@ -282,7 +289,7 @@ model RfidToken {
   user            User?     @relation(fields: [userId], references: [id])
   
   // OCPI fields
-  issuer          String    @default("ChargeTap")
+  issuer          String    @default("Tappy Charge")
   groupId         String?   @map("group_id") // For corporate/fleet grouping
   language        String?   @default("nl") // ISO 639-1
   
@@ -418,7 +425,7 @@ model NfcToken {
   lastLocation    String?   @map("last_location") // Last known tap location
   
   // OCPI fields
-  issuer          String    @default("ChargeTap")
+  issuer          String    @default("Tappy Charge")
   language        String?   @default("nl")
   
   // Timestamps
@@ -479,4 +486,48 @@ model NfcTokenAuthorization {
   @@index([tokenId])
   @@index([createdAt])
   @@map("nfc_token_authorizations")
+}
+
+// Favorite stations saved by users
+model FavoriteStation {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  stationId String   @map("station_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, stationId])
+  @@index([userId])
+  @@map("favorite_stations")
+}
+
+// One-time availability alert requests
+model AvailabilityAlertRequest {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  stationId String   @map("station_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, stationId])
+  @@index([stationId])
+  @@map("availability_alert_requests")
+}
+
+// Notification preferences per user
+model NotificationPreference {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique @map("user_id")
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionUpdatesEnabled  Boolean  @default(true) @map("session_updates_enabled")
+  penaltyAlertsEnabled   Boolean  @default(true) @map("penalty_alerts_enabled")
+  paymentEnabled         Boolean  @default(true) @map("payment_enabled")
+  costMilestonesEnabled  Boolean  @default(false) @map("cost_milestones_enabled")
+  penaltyPrealertMinutes Int      @default(5) @map("penalty_prealert_minutes")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_preferences")
 }

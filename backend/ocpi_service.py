@@ -1,5 +1,5 @@
 """
-OCPI Service Layer for ChargeTap
+OCPI Service Layer for Tappy Charge
 =================================
 Handles OCPI protocol communication with CPOs.
 Includes a mock CPO simulator for testing.
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # OCPI Configuration
 OCPI_VERSION = "2.2.1"
 EMSP_COUNTRY_CODE = "NL"
-EMSP_PARTY_ID = "CTP"  # ChargeTap
+EMSP_PARTY_ID = "CTP"  # Tappy Charge
 EMSP_BASE_URL = "https://tap-global.preview.emergentagent.com/ocpi/emsp"
 
 
@@ -80,7 +80,7 @@ class OcpiService:
             "type": "APP_USER",
             "contract_id": f"NL-CTP-{user_id[:8].upper()}",
             "visual_number": token_uid,
-            "issuer": "ChargeTap",
+            "issuer": "Tappy Charge",
             "user_id": user_id,
             "valid": True,
             "whitelist": "ALWAYS",

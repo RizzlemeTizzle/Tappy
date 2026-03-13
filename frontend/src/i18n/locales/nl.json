@@ -51,10 +51,11 @@
     "forgotPassword": "Wachtwoord vergeten?",
     "invalidCredentials": "Ongeldige e-mail of wachtwoord",
     "registrationFailed": "Registratie mislukt",
-    "logoutConfirm": "Weet je zeker dat je wilt uitloggen?"
+    "logoutConfirm": "Weet je zeker dat je wilt uitloggen?",
+    "passwordMinLength": "Wachtwoord moet minimaal 8 tekens bevatten"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "EV Laden Gemakkelijk Gemaakt",
     "feature1Title": "Tik om te Starten",
     "feature1Desc": "Houd je telefoon tegen de lader",
@@ -103,7 +104,14 @@
     "sortBy": "Sorteren op",
     "sortDistance": "Afstand",
     "sortPrice": "Prijs",
-    "sortPower": "Vermogen"
+    "sortPower": "Vermogen",
+    "all": "Alle",
+    "listView": "Lijst",
+    "mapView": "Kaart",
+    "saved": "Opgeslagen",
+    "clearFilters": "Filters wissen",
+    "updating": "Bijwerken...",
+    "status": "Status"
   },
   "station": {
     "details": "Stationdetails",
@@ -116,7 +124,25 @@
     "amenities": "Voorzieningen",
     "openingHours": "Openingstijden",
     "open24h": "24 uur open",
-    "operatedBy": "Beheerd door {{operator}}"
+    "operatedBy": "Beheerd door {{operator}}",
+    "notFound": "Station niet gevonden",
+    "availableOf": "{{available}}/{{total}} Beschikbaar",
+    "savedLabel": "Opgeslagen",
+    "saveLabel": "Opslaan",
+    "alertSet": "Melding ingesteld",
+    "notifyMe": "Meld mij",
+    "navigateTo": "Navigeer naar Station",
+    "startChargingNfc": "Start laden via NFC",
+    "noChargersAvailable": "Geen laders beschikbaar",
+    "idleFeeDetails": "Details wachttarief",
+    "penaltyGrace": "Respijtperiode: {{minutes}} minuten na voltooiing van het laden",
+    "penaltyRate": "Tarief: €{{rate}}/min terwijl aangesloten",
+    "penaltyMaxPerDay": "Maximum: €{{max}} per dag",
+    "penaltyNoCap": "Geen dagelijks maximum – koppel snel los om hoge kosten te vermijden",
+    "penaltyExampleTitle": "Voorbeeld:",
+    "penaltyExampleIntro": "Als je 45 minuten na voltooiing van het laden aangesloten blijft:",
+    "penaltyExampleCalc": "Boete = (45 - {{graceMins}}) × €{{rate}}/min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Beschikbaar",
@@ -177,7 +203,8 @@
     "preparing": "Voorbereiden",
     "finishing": "Afronden",
     "chargingProgress": "{{percent}}% geladen",
-    "helpContact": "Neem contact op met support:\n\nTelefoon: 0800-CHARGE\nE-mail: support@chargetap.com"
+    "helpContact": "Neem contact op met support:\n\nTelefoon: 0800-CHARGE\nE-mail: support@tappycharge.com",
+    "connectionLost": "Verbinding verbroken"
   },
   "receipt": {
     "title": "Laadbonnetje",
@@ -197,7 +224,7 @@
     "emailReceipt": "E-mail Bonnetje",
     "share": "Deel Bonnetje",
     "goHome": "Naar Home",
-    "thankYou": "Bedankt voor het laden met ChargeTap!"
+    "thankYou": "Bedankt voor het laden met Tappy Charge!"
   },
   "history": {
     "title": "Laadgeschiedenis",
@@ -233,7 +260,10 @@
     "about": "Over",
     "version": "Versie {{version}}",
     "dangerZone": "Gevaarlijke Zone",
-    "deleteAccount": "Account Verwijderen"
+    "deleteAccount": "Account Verwijderen",
+    "darkMode": "Donkere modus",
+    "darkModeEnabled": "Donkere modus is standaard ingeschakeld",
+    "info": "Info"
   },
   "payment": {
     "addCard": "Kaart Toevoegen",
@@ -344,7 +374,13 @@
     "connecting": "Verbinden...",
     "selectStation": "Selecteer een Station",
     "selectCharger": "Selecteer een Lader",
-    "productionNote": "In productie zou je je telefoon tegen de fysieke lader houden"
+    "productionNote": "In productie zou je je telefoon tegen de fysieke lader houden",
+    "greeting": "Hallo, {{name}}",
+    "cardInfo": "Kaart •••• {{last4}}",
+    "simulatingNfc": "NFC-detectie simuleren",
+    "instantConnection": "Directe verbinding",
+    "transparentPricing": "Transparante prijzen",
+    "securePayment": "Veilige betaling"
   },
   "errors": {
     "generic": "Er ging iets mis. Probeer het opnieuw.",
@@ -358,7 +394,132 @@
     "paymentMethodRequired": "Voeg eerst een betaalmethode toe.",
     "invalidCard": "Ongeldige kaartgegevens.",
     "sessionAlreadyActive": "Je hebt al een actieve sessie.",
-    "cannotStopSession": "Alleen het account dat deze sessie startte kan hem stoppen."
+    "cannotStopSession": "Alleen het account dat deze sessie startte kan hem stoppen.",
+    "failedToLoadStation": "Station laden mislukt",
+    "couldNotOpenMaps": "Kon kaarten niet openen",
+    "unavailable": "Niet beschikbaar",
+    "chargerCurrentlyStatus": "Deze lader is momenteel {{status}}",
+    "failedToConnectCharger": "Verbinding met lader mislukt"
+  },
+  "terms": {
+    "lastUpdated": "Laatst bijgewerkt: 1 januari 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptatie van voorwaarden",
+        "body": "Door de Tappy Charge-app te downloaden, installeren of gebruiken, gaat u akkoord met deze Servicevoorwaarden. Als u het niet eens bent met een deel van deze voorwaarden, gebruik dan onze service niet."
+      },
+      "service": {
+        "title": "2. Beschrijving van de service",
+        "body": "Tappy Charge biedt een mobiele applicatie waarmee gebruikers laadsessies voor elektrische voertuigen bij deelnemende stations kunnen vinden, openen en betalen. De service omvat accountbeheer, betalingsverwerking en sessiebewaking."
+      },
+      "accounts": {
+        "title": "3. Gebruikersaccounts",
+        "body": "U moet een account aanmaken om laadsessies te starten. U bent verantwoordelijk voor het handhaven van de vertrouwelijkheid van uw inloggegevens en voor alle activiteiten die plaatsvinden onder uw account. U moet ons onmiddellijk op de hoogte stellen van elk ongeoorloofd gebruik."
+      },
+      "payment": {
+        "title": "4. Betaling en facturering",
+        "body": "Laadsessies worden gefactureerd op basis van verbruikte energie (per kWh) en eventuele tijdskosten. Door een betaalmethode toe te voegen, machtigt u Tappy Charge om de van toepassing zijnde kosten aan het einde van elke sessie in rekening te brengen. Alle kosten zijn definitief, tenzij er sprake is van een factureringsfout."
+      },
+      "sessions": {
+        "title": "5. Laadsessies",
+        "body": "Sessies beginnen wanneer u het laden start en eindigen wanneer u de sessie stopt of het voertuig volledig is opgeladen. U bent verantwoordelijk voor het zorgen dat uw voertuig correct is aangesloten. Tappy Charge is niet aansprakelijk voor onderbrekingen veroorzaakt door netwerkproblemen, hardwarefouten of stroomstoringen buiten onze controle."
+      },
+      "prohibited": {
+        "title": "6. Verboden gebruik",
+        "body": "U mag Tappy Charge niet gebruiken voor enig onwettig doel, proberen toegang te krijgen tot het account van een andere gebruiker, de werking van de service te verstoren, de applicatie te reverse-engineeren, of toegang tot laadstations door te verkopen."
+      },
+      "liability": {
+        "title": "7. Beperking van aansprakelijkheid",
+        "body": "Voor zover wettelijk toegestaan, is Tappy Charge niet aansprakelijk voor indirecte, incidentele of gevolgschade die voortvloeit uit uw gebruik van de service. Onze totale aansprakelijkheid mag niet meer bedragen dan het bedrag dat u in de 30 dagen voorafgaand aan de claim heeft betaald."
+      },
+      "changes": {
+        "title": "8. Wijzigingen in de voorwaarden",
+        "body": "Wij kunnen deze Servicevoorwaarden van tijd tot tijd bijwerken. Voortgezet gebruik van de app na wijzigingen geldt als acceptatie van de herziene voorwaarden. Wij zullen u op de hoogte stellen van belangrijke wijzigingen via de app of e-mail."
+      },
+      "contact": {
+        "title": "9. Contact",
+        "body": "Als u vragen heeft over deze Servicevoorwaarden, neem dan contact met ons op via support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Laatst bijgewerkt: 1 januari 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Informatie die wij verzamelen",
+        "body": "Wij verzamelen informatie die u direct verstrekt (naam, e-mail, telefoonnummer), betalingsgegevens verwerkt door onze PCI-conforme aanbieder, locatiegegevens bij gebruik van de kaart, laadsessiegegevens (verbruikte energie, duur, kosten) en apparaat-ID's voor NFC-functionaliteit."
+      },
+      "usage": {
+        "title": "2. Hoe wij uw informatie gebruiken",
+        "body": "Wij gebruiken uw informatie om laadsessies en betalingen te verwerken, klantenondersteuning te bieden, sessieontvangsten en meldingen te sturen, de app te verbeteren en te voldoen aan wettelijke verplichtingen. Wij verkopen uw persoonlijke gegevens niet."
+      },
+      "sharing": {
+        "title": "3. Gegevens delen",
+        "body": "Wij delen gegevens met exploitanten van laadstations om uw sessie te faciliteren, betalingsverwerkers om transacties af te handelen en analyseproviders om onze service te verbeteren. Alle derde partijen zijn contractueel verplicht uw gegevens te beschermen en deze alleen te gebruiken zoals opgedragen."
+      },
+      "security": {
+        "title": "4. Gegevensbeveiliging",
+        "body": "Wij gebruiken industriestandaard encryptie (TLS) voor gegevens tijdens overdracht en in rust. Betalingskaartnummers worden nooit op onze servers opgeslagen — ze worden getokeniseerd door onze betalingsverwerker. Wij voeren regelmatige beveiligingsbeoordelingen van onze infrastructuur uit."
+      },
+      "retention": {
+        "title": "5. Gegevensbewaring",
+        "body": "Wij bewaren uw accountgegevens zolang uw account actief is. Sessiegeschiedenis wordt tot 3 jaar bewaard voor facturering en geschillenbeslechting. U kunt op elk moment verzoeken om verwijdering van uw account en bijbehorende gegevens."
+      },
+      "rights": {
+        "title": "6. Uw rechten",
+        "body": "Afhankelijk van uw rechtsgebied heeft u mogelijk het recht om uw persoonlijke gegevens in te zien, te corrigeren of te verwijderen, de verwerking te beperken of hiertegen bezwaar te maken, en om gegevensoverdraagbaarheid te verzoeken. Om deze rechten uit te oefenen, neem contact met ons op via privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Analyse en tracking",
+        "body": "Wij gebruiken anonieme analyses om te begrijpen hoe de app wordt gebruikt en om problemen te identificeren. Deze gegevens zijn geaggregeerd en kunnen niet worden gebruikt om individuele gebruikers te identificeren. U kunt analyses uitschakelen in uw apparaatinstellingen."
+      },
+      "changes": {
+        "title": "8. Wijzigingen in dit beleid",
+        "body": "Wij kunnen dit Privacybeleid van tijd tot tijd bijwerken. Wij zullen u op de hoogte stellen van materiële wijzigingen via de app of e-mail. Uw voortgezet gebruik van Tappy Charge nadat wijzigingen van kracht zijn geworden, geldt als acceptatie van het herziene beleid."
+      },
+      "contact": {
+        "title": "9. Neem contact met ons op",
+        "body": "Als u vragen of zorgen heeft over dit Privacybeleid of onze gegevenspraktijken, neem dan contact op met ons privacyteam via privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "categories": {
+      "gettingStarted": "Aan de slag",
+      "billing": "Facturering en betalingen",
+      "chargers": "Laders en compatibiliteit",
+      "nfc": "Telefoon als kaart (NFC)",
+      "account": "Account en beveiliging"
+    },
+    "items": {
+      "q1": "Hoe start ik een laadsessie?",
+      "a1": "Open de app, zoek een nabijgelegen station op de kaart, tik erop en druk vervolgens op \"Laden starten\". U kunt ook de QR-code op de lader scannen.",
+      "q2": "Hoe stop ik een laadsessie?",
+      "a2": "Ga naar het scherm Live sessie en tik op \"Laden stoppen\". De sessie eindigt en uw kaart wordt automatisch belast.",
+      "q3": "Heb ik een account nodig om te laden?",
+      "a3": "Nee, u kunt als gast bladeren. Maar om een sessie te starten of betaalmethoden op te slaan, moet u zich registreren.",
+      "q4": "Hoe word ik gefactureerd?",
+      "a4": "U wordt gefactureerd per verbruikte kWh plus eventuele tijdskosten. Een volledige uitsplitsing verschijnt aan het einde van elke sessie.",
+      "q5": "Welke betaalmethoden worden geaccepteerd?",
+      "a5": "Creditcards en betaalkaarten (Visa, Mastercard). U kunt uw kaart toevoegen onder Profiel → Betaalmethode.",
+      "q6": "Waar kan ik mijn laadgeschiedenis zien?",
+      "a6": "Tik op het tabblad \"Sessies\" om alle afgelopen sessies te bekijken met kosten- en energieoverzichten.",
+      "q7": "Kan ik elke lader gebruiken?",
+      "a7": "Tappy Charge werkt met stations die in de app worden vermeld. Zoek naar het Tappy Charge-logo of de QR-code op een lader.",
+      "q8": "Wat als een lader defect of niet beschikbaar is?",
+      "a8": "Probeer een ander nabijgelegen station op de kaart. Meld problemen via Profiel → Hulp en ondersteuning.",
+      "q9": "Hoe snel laadt mijn elektrisch voertuig op?",
+      "a9": "De snelheid hangt af van het vermogen van de lader en de boordlader van uw voertuig. Stationsdetails tonen het maximale vermogen in kW.",
+      "q10": "Hoe werkt Telefoon-als-kaart?",
+      "a10": "Met NFC ingeschakeld kan uw telefoon als kaart fungeren om een sessie direct bij compatibele laders te starten door te tikken — geen QR-scan nodig.",
+      "q11": "Welke apparaten ondersteunen Telefoon-als-kaart?",
+      "a11": "Elk NFC-compatibel Android- of iPhone-apparaat met de Tappy Charge-app. Schakel NFC eerst in via de instellingen van uw telefoon.",
+      "q12": "Is mijn betalingsinformatie veilig?",
+      "a12": "Ja. Wij slaan nooit volledige kaartgegevens op. Alle betalingen worden verwerkt via een PCI-conforme aanbieder.",
+      "q13": "Hoe log ik uit?",
+      "a13": "Ga naar Profiel → Gevarenzone → Uitloggen."
+    }
   },
   "format": {
     "currency": "{{value}}",

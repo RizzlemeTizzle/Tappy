@@ -2,8 +2,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import formbody from '@fastify/formbody';
+import rateLimit from '@fastify/rate-limit';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import authRoutes from './routes/auth.js';
 import stationRoutes from './routes/stations.js';
 import sessionRoutes from './routes/sessions.js';
@@ -16,7 +18,10 @@ import qrRoutes from './routes/qr.js';
 import ocpiTokenRoutes from './routes/ocpiTokens.js';
 import adminTokenRoutes from './routes/adminTokens.js';
 import adminPortalRoutes from './routes/adminPortal.js';
+import nfcTokenRoutes from './routes/nfcTokens.js';
 import { ChargerSimulator } from './services/chargerSimulator.js';
+import { startAvailabilityMonitor } from './services/availabilityMonitor.js';
+import { autoSeedIfEmpty } from './routes/seed.js';
 
 dotenv.config();
 
@@ -33,7 +38,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     prisma: PrismaClient;
     chargerSimulator: ChargerSimulator;
-    authenticate: any;
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
 
@@ -45,18 +50,34 @@ declare module '@fastify/jwt' {
 }
 
 async function build() {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+
   // Register form body parser (for admin forms)
   await fastify.register(formbody);
-  
-  // Register CORS
+
+  // Register global rate limiting (individual routes can override)
+  await fastify.register(rateLimit, {
+    max: 200,
+    timeWindow: '1 minute',
+  });
+
+  // Register CORS — allow only explicitly configured origins in production
+  const corsOrigin = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : process.env.NODE_ENV === 'production'
+      ? false
+      : true;
   await fastify.register(cors, {
-    origin: true,
+    origin: corsOrigin,
     credentials: true,
   });
 
   // Register JWT
   await fastify.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET || 'chargetap-secret-key-2025',
+    secret: jwtSecret,
   });
 
   // Decorate with prisma
@@ -64,7 +85,7 @@ async function build() {
   fastify.decorate('chargerSimulator', chargerSimulator);
 
   // Authentication decorator
-  fastify.decorate('authenticate', async function (request: any, reply: any) {
+  fastify.decorate('authenticate', async function (request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -85,11 +106,12 @@ async function build() {
     api.register(qrRoutes, { prefix: '' }); // QR routes at /api/v1/qr/* and /api/admin/qr/*
     api.register(ocpiTokenRoutes, { prefix: '/ocpi' }); // OCPI eMSP Token endpoints
     api.register(adminTokenRoutes, { prefix: '/admin' }); // Admin API for tokens
+    api.register(nfcTokenRoutes, { prefix: '' }); // NFC HCE token routes at /api/v1/tokens/nfc/*
 
     // Health check
     api.get('/health', async () => ({ status: 'healthy' }));
     api.get('/', async () => ({ 
-      message: 'ChargeTap API', 
+      message: 'Tappy Charge API',
       version: '2.2.0', 
       stack: 'Node.js/Fastify/PostgreSQL',
       features: ['OCPI 2.2.1', 'QR-Start', 'Remote Start/Stop', 'RFID Tokens']
@@ -108,7 +130,9 @@ async function start() {
     const port = parseInt(process.env.PORT || '8001', 10);
     
     await server.listen({ port, host: '0.0.0.0' });
-    console.log(`\n🚀 ChargeTap API running on port ${port}`);
+    await autoSeedIfEmpty(prisma);
+    startAvailabilityMonitor(prisma);
+    console.log(`\n🚀 Tappy Charge API running on port ${port}`);
     console.log(`📚 Stack: Node.js + Fastify + PostgreSQL + Prisma`);
     console.log(`🔌 OCPI 2.2.1 Remote Start/Stop enabled`);
     console.log(`📱 QR-Start enabled`);

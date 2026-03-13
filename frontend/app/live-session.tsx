@@ -12,6 +12,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
+import { useNotificationStore, NotificationType } from '../src/store/notificationStore';
+import { formatCents, formatCentsPerMinute } from '../src/utils/formatters';
 import LiveCostDisplay from '../src/components/LiveCostDisplay';
 import { useTranslation } from 'react-i18next';
 
@@ -19,9 +21,16 @@ export default function LiveSession() {
   const router = useRouter();
   const { t } = useTranslation();
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
-  const { currentSession, fetchSession, stopSession, isLoading } = useSessionStore();
+  const { currentSession, fetchSession, stopSession } = useSessionStore();
+  const { scheduleLocalNotification, preferences } = useNotificationStore();
   const [stopping, setStopping] = useState(false);
-  const pollInterval = useRef<NodeJS.Timeout | null>(null);
+  const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevStatusRef = useRef<string | null>(null);
+  const completeFiredRef = useRef(false);
+  const penaltyPrealertFiredRef = useRef(false);
+  const penaltyStartedFiredRef = useRef(false);
+  const lastMilestoneCentsRef = useRef(0);
+  const userInitiatedStopRef = useRef(false);
 
   useEffect(() => {
     if (sessionId) {
@@ -41,6 +50,75 @@ export default function LiveSession() {
     };
   }, [sessionId]);
 
+  // Trigger notifications when session status changes
+  useEffect(() => {
+    if (!currentSession) return;
+    const { status } = currentSession;
+
+    // Charging complete (battery full, charger stopped)
+    if (status === 'COMPLETE' && !completeFiredRef.current) {
+      completeFiredRef.current = true;
+      scheduleLocalNotification(NotificationType.CHARGING_COMPLETE, {
+        station_name: currentSession.station?.name ?? '',
+        total: formatCents(currentSession.total_cost_cents),
+        energy: currentSession.delivered_kwh.toFixed(2),
+      }, 0);
+    }
+
+    // Penalty pre-alert: countdown first drops into the user's prealert window
+    const countdown = currentSession.penalty_countdown_seconds;
+    if (
+      !penaltyPrealertFiredRef.current &&
+      countdown != null &&
+      countdown > 0 &&
+      countdown <= preferences.penalty_prealert_minutes * 60
+    ) {
+      penaltyPrealertFiredRef.current = true;
+      scheduleLocalNotification(NotificationType.PENALTY_STARTS_SOON, {
+        station_name: currentSession.station?.name ?? '',
+        minutes: String(Math.ceil(countdown / 60)),
+        rate: formatCentsPerMinute(currentSession.pricing_snapshot.penalty.penalty_cents_per_minute),
+      }, 0);
+    }
+
+    // Penalty started (status becomes IDLE)
+    if (status === 'IDLE' && prevStatusRef.current !== 'IDLE' && !penaltyStartedFiredRef.current) {
+      penaltyStartedFiredRef.current = true;
+      scheduleLocalNotification(NotificationType.PENALTY_STARTED, {
+        station_name: currentSession.station?.name ?? '',
+        rate: formatCentsPerMinute(currentSession.pricing_snapshot.penalty.penalty_cents_per_minute),
+      }, 0);
+    }
+
+    // Cost milestones: fire at every €5 increment (500 cents)
+    if (preferences.cost_milestones_enabled) {
+      const MILESTONE_CENTS = 500;
+      const currentMilestone = Math.floor(currentSession.total_cost_cents / MILESTONE_CENTS) * MILESTONE_CENTS;
+      if (currentMilestone > 0 && currentMilestone > lastMilestoneCentsRef.current) {
+        lastMilestoneCentsRef.current = currentMilestone;
+        scheduleLocalNotification(NotificationType.COST_MILESTONE, {
+          total: formatCents(currentSession.total_cost_cents),
+          energy: currentSession.delivered_kwh.toFixed(2),
+        }, 0);
+      }
+    }
+
+    // Session ended externally (cable pulled, power loss, charger fault)
+    if (
+      status === 'ENDED' &&
+      prevStatusRef.current !== 'ENDED' &&
+      !userInitiatedStopRef.current &&
+      !completeFiredRef.current
+    ) {
+      scheduleLocalNotification(NotificationType.SESSION_INTERRUPTED, {
+        station_name: currentSession.station?.name ?? '',
+        reason: t('session.connectionLost'),
+      }, 0);
+    }
+
+    prevStatusRef.current = status;
+  }, [currentSession]);
+
   const handleStopCharging = () => {
     Alert.alert(
       t('session.stopCharging'),
@@ -52,14 +130,23 @@ export default function LiveSession() {
           style: 'destructive',
           onPress: async () => {
             setStopping(true);
+            userInitiatedStopRef.current = true;
             try {
               if (pollInterval.current) {
                 clearInterval(pollInterval.current);
               }
-              await stopSession(sessionId!);
+              const stoppedSession = await stopSession(sessionId!);
+              scheduleLocalNotification(NotificationType.SESSION_STOPPED, {
+                station_name: currentSession?.station?.name ?? '',
+                total: formatCents(stoppedSession.total_cost_cents),
+              }, 0);
+              // Delay receipt notification so it fires after the user has landed on the receipt screen
+              scheduleLocalNotification(NotificationType.PAYMENT_SUCCEEDED, {
+                total: formatCents(stoppedSession.total_cost_cents),
+              }, 3);
               router.replace({ pathname: '/receipt', params: { sessionId } });
             } catch (error: any) {
-              Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
+              Alert.alert(t('common.error'), error.response?.data?.error || t('errors.generic'));
               setStopping(false);
             }
           }
@@ -70,7 +157,7 @@ export default function LiveSession() {
 
   const handleGetHelp = () => {
     Alert.alert(
-      t('profile.help'),
+      t('common.help'),
       t('session.helpContact'),
       [{ text: t('common.ok') }]
     );
@@ -135,7 +222,7 @@ export default function LiveSession() {
           onPress={handleGetHelp}
         >
           <Ionicons name="help-circle" size={22} color="#FFFFFF" />
-          <Text style={styles.helpButtonText}>{t('profile.help')}</Text>
+          <Text style={styles.helpButtonText}>{t('common.help')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity

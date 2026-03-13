@@ -10,6 +10,8 @@ import i18n from '../i18n';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -64,8 +66,6 @@ interface NotificationState {
 
 // Get localized notification content
 export const getLocalizedNotification = (type: string, params: Record<string, string>): { title: string; body: string } => {
-  const locale = i18n.language;
-  
   const templates: Record<string, { title: string; body: string }> = {
     [NotificationType.SESSION_STARTED]: {
       title: i18n.t('notifications.sessionStarted.title', 'Charging Started'),
@@ -210,9 +210,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const deviceId = await getDeviceId();
       set({ deviceId });
       
-      // Get push token if on physical device
+      // Get push token if on physical device and not running in Expo Go
+      // (Remote push notifications were removed from Expo Go in SDK 53)
       let pushToken = null;
-      if (Device.isDevice) {
+      const isExpoGo = Constants.executionEnvironment === 'storeClient';
+      if (Device.isDevice && !isExpoGo) {
         try {
           const tokenData = await Notifications.getExpoPushTokenAsync({
             projectId: Constants.expoConfig?.extra?.eas?.projectId,
@@ -271,7 +273,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   loadPreferences: async () => {
     try {
       set({ isLoading: true });
-      const response = await api.get('/me/notification-preferences');
+      const response = await api.get('/users/me/notification-preferences');
       set({ 
         preferences: response.data,
         isLoading: false 
@@ -285,7 +287,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   updatePreferences: async (prefs) => {
     try {
       set({ isLoading: true });
-      await api.put('/me/notification-preferences', prefs);
+      await api.put('/users/me/notification-preferences', prefs);
       
       set((state) => ({
         preferences: { ...state.preferences, ...prefs },
@@ -352,7 +354,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
           sound: true,
           ...(Platform.OS === 'android' && { channelId }),
         },
-        trigger: delaySeconds > 0 ? { seconds: delaySeconds } : null,
+        trigger: delaySeconds > 0 ? { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: delaySeconds } : null,
       });
       
       set((state) => ({

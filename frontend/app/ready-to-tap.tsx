@@ -15,9 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../src/store/authStore';
 import { useSessionStore } from '../src/store/sessionStore';
+import { useTranslation } from 'react-i18next';
 
 export default function ReadyToTap() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const { 
     resolveNfc, 
@@ -43,7 +45,7 @@ export default function ReadyToTap() {
       await resolveNfc(nfcPayload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to connect to charger');
+      Alert.alert(t('common.error'), err.response?.data?.detail || t('errors.failedToConnectCharger'));
     } finally {
       setIsTapping(false);
     }
@@ -60,9 +62,9 @@ export default function ReadyToTap() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: logout }
+    Alert.alert(t('common.logout'), t('auth.logoutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.logout'), style: 'destructive', onPress: logout }
     ]);
   };
 
@@ -75,8 +77,8 @@ export default function ReadyToTap() {
             <Ionicons name="person" size={20} color="#4CAF50" />
           </View>
           <View>
-            <Text style={styles.greeting}>Hello, {user?.name?.split(' ')[0]}</Text>
-            <Text style={styles.cardInfo}>Card •••• {user?.payment_method_last4}</Text>
+            <Text style={styles.greeting}>{t('tap.greeting', { name: user?.name?.split(' ')[0] })}</Text>
+            <Text style={styles.cardInfo}>{t('tap.cardInfo', { last4: user?.payment_method_last4 })}</Text>
           </View>
         </View>
         <View style={styles.headerButtons}>
@@ -98,10 +100,8 @@ export default function ReadyToTap() {
       {/* Main Content */}
       <View style={styles.content}>
         <View style={styles.tapSection}>
-          <Text style={styles.readyText}>Ready to Charge</Text>
-          <Text style={styles.instructionText}>
-            Tap your phone on the charger's NFC reader to begin
-          </Text>
+          <Text style={styles.readyText}>{t('tap.title')}</Text>
+          <Text style={styles.instructionText}>{t('tap.instruction')}</Text>
 
           {/* Tap Button */}
           <TouchableOpacity
@@ -114,16 +114,14 @@ export default function ReadyToTap() {
             ) : (
               <>
                 <Ionicons name="phone-portrait" size={64} color="#0A0A0A" />
-                <Text style={styles.tapButtonText}>Tap Here to Simulate NFC</Text>
+                <Text style={styles.tapButtonText}>{t('tap.simulateTap')}</Text>
               </>
             )}
           </TouchableOpacity>
 
           <View style={styles.nfcNote}>
             <Ionicons name="information-circle" size={18} color="#666" />
-            <Text style={styles.nfcNoteText}>
-              In production, you would tap your phone on the physical charger
-            </Text>
+            <Text style={styles.nfcNoteText}>{t('tap.productionNote')}</Text>
           </View>
         </View>
 
@@ -131,15 +129,15 @@ export default function ReadyToTap() {
         <View style={styles.features}>
           <View style={styles.featureItem}>
             <Ionicons name="flash" size={24} color="#4CAF50" />
-            <Text style={styles.featureText}>Instant Connection</Text>
+            <Text style={styles.featureText}>{t('tap.instantConnection')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="pricetag" size={24} color="#FFC107" />
-            <Text style={styles.featureText}>Transparent Pricing</Text>
+            <Text style={styles.featureText}>{t('tap.transparentPricing')}</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="shield-checkmark" size={24} color="#2196F3" />
-            <Text style={styles.featureText}>Secure Payment</Text>
+            <Text style={styles.featureText}>{t('tap.securePayment')}</Text>
           </View>
         </View>
       </View>
@@ -154,12 +152,12 @@ export default function ReadyToTap() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select a Charger</Text>
+              <Text style={styles.modalTitle}>{t('tap.selectCharger')}</Text>
               <TouchableOpacity onPress={() => setShowStationPicker(false)}>
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.modalSubtitle}>Simulating NFC tap detection</Text>
+            <Text style={styles.modalSubtitle}>{t('tap.simulatingNfc')}</Text>
 
             {isLoading ? (
               <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />

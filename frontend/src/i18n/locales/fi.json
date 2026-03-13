@@ -47,10 +47,11 @@
     "forgotPassword": "Unohtuiko salasana?",
     "invalidCredentials": "Virheellinen sähköposti tai salasana",
     "registrationFailed": "Rekisteröinti epäonnistui",
-    "logoutConfirm": "Haluatko varmasti kirjautua ulos?"
+    "logoutConfirm": "Haluatko varmasti kirjautua ulos?",
+    "passwordMinLength": "Salasanan on oltava vähintään 8 merkkiä pitkä"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "Helppo Sähköauton Lataus",
     "feature1Title": "Kosketa Aloittaaksesi",
     "feature1Desc": "Pidä puhelinta laturissa",
@@ -97,7 +98,14 @@
     "sortBy": "Lajittele",
     "sortDistance": "Etäisyys",
     "sortPrice": "Hinta",
-    "sortPower": "Teho"
+    "sortPower": "Teho",
+    "all": "Kaikki",
+    "listView": "Lista",
+    "mapView": "Kartta",
+    "saved": "Tallennettu",
+    "clearFilters": "Tyhjennä suodattimet",
+    "updating": "Päivitetään...",
+    "status": "Tila"
   },
   "station": {
     "details": "Aseman Tiedot",
@@ -110,7 +118,25 @@
     "amenities": "Palvelut",
     "openingHours": "Aukioloajat",
     "open24h": "Avoinna 24h",
-    "operatedBy": "Ylläpitäjä {{operator}}"
+    "operatedBy": "Ylläpitäjä {{operator}}",
+    "notFound": "Asemaa ei löytynyt",
+    "availableOf": "{{available}}/{{total}} Vapaana",
+    "savedLabel": "Tallennettu",
+    "saveLabel": "Tallenna",
+    "alertSet": "Hälytys asetettu",
+    "notifyMe": "Ilmoita minulle",
+    "navigateTo": "Navigoi asemalle",
+    "startChargingNfc": "Aloita lataus NFC:llä",
+    "noChargersAvailable": "Ei vapaita latureita",
+    "idleFeeDetails": "Odotusmaksun tiedot",
+    "penaltyGrace": "Lisäaika: {{minutes}} minuuttia latauksen päättymisen jälkeen",
+    "penaltyRate": "Hinta: €{{rate}}/min kytkettynä",
+    "penaltyMaxPerDay": "Enintään: €{{max}} päivässä",
+    "penaltyNoCap": "Ei päiväkattoa – irrota pistoke ajoissa välttääksesi suuret maksut",
+    "penaltyExampleTitle": "Esimerkki:",
+    "penaltyExampleIntro": "Jos pysyt kytkettynä 45 minuuttia latauksen päättymisen jälkeen:",
+    "penaltyExampleCalc": "Sakko = (45 - {{graceMins}}) × €{{rate}}/min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Vapaana",
@@ -156,7 +182,8 @@
     "connected": "Yhdistetty",
     "preparing": "Valmistellaan",
     "finishing": "Viimeistellään",
-    "chargingProgress": "{{percent}}% ladattu"
+    "chargingProgress": "{{percent}}% ladattu",
+    "connectionLost": "Yhteys katkennut"
   },
   "receipt": {
     "title": "Latauskuitti",
@@ -173,7 +200,7 @@
     "downloadReceipt": "Lataa Kuitti",
     "emailReceipt": "Lähetä Sähköpostilla",
     "goHome": "Etusivulle",
-    "thankYou": "Kiitos kun latasit ChargeTapilla!"
+    "thankYou": "Kiitos kun latasit Tappy Chargeilla!"
   },
   "history": {
     "title": "Lataushistoria",
@@ -209,7 +236,10 @@
     "about": "Tietoja",
     "version": "Versio {{version}}",
     "dangerZone": "Vaaravyöhyke",
-    "deleteAccount": "Poista Tili"
+    "deleteAccount": "Poista Tili",
+    "darkMode": "Tumma tila",
+    "darkModeEnabled": "Tumma tila on oletuksena käytössä",
+    "info": "Tiedot"
   },
   "payment": {
     "addCard": "Lisää Kortti",
@@ -254,7 +284,13 @@
     "connecting": "Yhdistetään...",
     "selectStation": "Valitse Asema",
     "selectCharger": "Valitse Laturi",
-    "productionNote": "Tuotannossa pitäisit puhelinta fyysisellä laturilla"
+    "productionNote": "Tuotannossa pitäisit puhelinta fyysisellä laturilla",
+    "greeting": "Hei, {{name}}",
+    "cardInfo": "Kortti •••• {{last4}}",
+    "simulatingNfc": "Simuloidaan NFC-napausta",
+    "instantConnection": "Välitön yhteys",
+    "transparentPricing": "Läpinäkyvät hinnat",
+    "securePayment": "Turvallinen maksu"
   },
   "errors": {
     "generic": "Jokin meni pieleen. Yritä uudelleen.",
@@ -268,7 +304,132 @@
     "paymentMethodRequired": "Lisää ensin maksutapa.",
     "invalidCard": "Virheelliset korttitiedot.",
     "sessionAlreadyActive": "Sinulla on jo aktiivinen istunto.",
-    "cannotStopSession": "Vain istunnon aloittanut tili voi lopettaa sen."
+    "cannotStopSession": "Vain istunnon aloittanut tili voi lopettaa sen.",
+    "failedToLoadStation": "Aseman lataaminen epäonnistui",
+    "couldNotOpenMaps": "Karttoja ei voitu avata",
+    "unavailable": "Ei käytettävissä",
+    "chargerCurrentlyStatus": "Tämä laturi on tällä hetkellä {{status}}",
+    "failedToConnectCharger": "Laturiin yhdistäminen epäonnistui"
+  },
+  "terms": {
+    "lastUpdated": "Viimeksi päivitetty: 1. tammikuuta 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Ehtojen hyväksyminen",
+        "body": "Lataamalla, asentamalla tai käyttämällä Tappy Charge-sovellusta hyväksyt nämä käyttöehdot. Jos et hyväksy ehtoja miltään osin, älä käytä palveluamme."
+      },
+      "service": {
+        "title": "2. Palvelun kuvaus",
+        "body": "Tappy Charge tarjoaa mobiilisovelluksen, jonka avulla käyttäjät voivat etsiä, käyttää ja maksaa sähköajoneuvojen latauksesta osallistuvilla asemilla. Palveluun sisältyy tilinhallinta, maksujen käsittely ja istuntojen seuranta."
+      },
+      "accounts": {
+        "title": "3. Käyttäjätilit",
+        "body": "Sinun on luotava tili latausistuntojen aloittamiseksi. Olet vastuussa kirjautumistietojesi luottamuksellisuudesta sekä kaikesta tilisi kautta tapahtuvasta toiminnasta. Sinun on ilmoitettava meille välittömästi kaikesta luvattomasta käytöstä."
+      },
+      "payment": {
+        "title": "4. Maksaminen ja laskutus",
+        "body": "Latausistunnot laskutetaan kulutetun energian (per kWh) ja mahdollisten aikamaksujen mukaan. Lisäämällä maksutavan valtuutat Tappy Chargein veloittamaan sovellettavat maksut kunkin istunnon päätyttyä. Kaikki veloitukset ovat lopullisia, ellei kyseessä ole laskutusvirhe."
+      },
+      "sessions": {
+        "title": "5. Latausistunnot",
+        "body": "Istunto alkaa, kun käynnistät latauksen, ja päättyy, kun lopetat istunnon tai ajoneuvo on täysin ladattu. Olet vastuussa siitä, että ajoneuvosi on kytketty oikein. Tappy Charge ei ole vastuussa häiriöistä, jotka aiheutuvat verkko-ongelmista, laitteistovioista tai toiminnastamme riippumattomista sähkökatkoista."
+      },
+      "prohibited": {
+        "title": "6. Kielletty käyttö",
+        "body": "Et saa käyttää Tappy Chargeia laittomiin tarkoituksiin, yrittää päästä toisen käyttäjän tilille, häiritä palvelun toimintaa, takaisinmallintaa sovellusta tai jälleenmyydä latauspisteiden käyttöoikeuksia."
+      },
+      "liability": {
+        "title": "7. Vastuunrajoitus",
+        "body": "Lain sallimassa laajimmassa määrin Tappy Charge ei ole vastuussa mistään välillisistä, satunnaisista tai seurauksellisista vahingoista, jotka johtuvat palvelun käytöstäsi. Kokonaisvastuumme ei ylitä summaa, jonka olet maksanut vaatimusta edeltävien 30 päivän aikana."
+      },
+      "changes": {
+        "title": "8. Ehtojen muutokset",
+        "body": "Voimme päivittää näitä käyttöehtoja ajoittain. Sovelluksen käytön jatkaminen muutosten jälkeen merkitsee tarkistettujen ehtojen hyväksymistä. Ilmoitamme merkittävistä muutoksista sovelluksen tai sähköpostin kautta."
+      },
+      "contact": {
+        "title": "9. Yhteystiedot",
+        "body": "Jos sinulla on kysyttävää näistä käyttöehdoista, ota yhteyttä osoitteeseen support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Viimeksi päivitetty: 1. tammikuuta 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Keräämämme tiedot",
+        "body": "Keräämme suoraan antamiasi tietoja (nimi, sähköposti, puhelinnumero), PCI-yhteensopivan palveluntarjoajamme käsittelemiä maksutietoja, sijaintitietoja karttaa käytettäessä, latausistuntotietoja (kulutettu energia, kesto, kustannus) sekä laitetunnisteet NFC-toiminnallisuutta varten."
+      },
+      "usage": {
+        "title": "2. Tietojesi käyttö",
+        "body": "Käytämme tietojasi latausistuntojen ja maksujen käsittelyyn, asiakastuen tarjoamiseen, istuntokuittien ja ilmoitusten lähettämiseen, sovelluksen parantamiseen sekä lakisääteisten velvoitteiden noudattamiseen. Emme myy henkilötietojasi."
+      },
+      "sharing": {
+        "title": "3. Tietojen jakaminen",
+        "body": "Jaamme tietoja latausasemaoperaattoreiden kanssa istuntosi mahdollistamiseksi, maksujen käsittelijöiden kanssa transaktioiden hoitamiseksi sekä analytiikkapalveluntarjoajien kanssa palvelumme parantamiseksi. Kaikki kolmannet osapuolet ovat sopimusvelvoitteen nojalla velvollisia suojaamaan tietosi ja käyttämään niitä vain ohjeidemme mukaisesti."
+      },
+      "security": {
+        "title": "4. Tietoturva",
+        "body": "Käytämme alan standardien mukaista salausta (TLS) siirrettävän ja tallennettavan tiedon suojaamiseen. Maksukorttitietoja ei koskaan tallenneta palvelimillemme — maksunkäsittelijämme tokenisoi ne. Teemme säännöllisiä tietoturvatarkastuksia infrastruktuurillemme."
+      },
+      "retention": {
+        "title": "5. Tietojen säilytys",
+        "body": "Säilytämme tilitietojasi niin kauan kuin tilisi on aktiivinen. Istuntohistoriaa säilytetään enintään 3 vuotta laskutusta ja riitojenselvitystä varten. Voit pyytää tilisi ja siihen liittyvien tietojen poistamista milloin tahansa."
+      },
+      "rights": {
+        "title": "6. Oikeutesi",
+        "body": "Lainkäyttöalueestasi riippuen sinulla voi olla oikeus tarkastella, korjata tai poistaa henkilötietojasi, rajoittaa käsittelyä tai vastustaa sitä sekä pyytää tietojen siirrettävyyttä. Käyttääksesi näitä oikeuksia ota yhteyttä osoitteeseen privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Analytiikka ja seuranta",
+        "body": "Käytämme anonyymiä analytiikkaa ymmärtääksemme, miten sovellusta käytetään, ja tunnistääksemme ongelmia. Nämä tiedot ovat koostettuja eikä niiden avulla voi tunnistaa yksittäisiä käyttäjiä. Voit kieltäytyä analytiikasta laitteesi asetuksista."
+      },
+      "changes": {
+        "title": "8. Tietosuojakäytännön muutokset",
+        "body": "Voimme päivittää tätä tietosuojakäytäntöä ajoittain. Ilmoitamme olennaisista muutoksista sovelluksen tai sähköpostin kautta. Tappy Chargein käytön jatkaminen muutosten voimaantultua merkitsee tarkistetun käytännön hyväksymistä."
+      },
+      "contact": {
+        "title": "9. Ota yhteyttä",
+        "body": "Jos sinulla on kysyttävää tai huolenaiheita tästä tietosuojakäytännöstä tai tietojenkäsittelytavoistamme, ota yhteyttä tietosuojahenkilöstöömme osoitteessa privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "UKK",
+    "categories": {
+      "gettingStarted": "Aloittaminen",
+      "billing": "Laskutus ja maksut",
+      "chargers": "Laturit ja yhteensopivuus",
+      "nfc": "Puhelin kortina (NFC)",
+      "account": "Tili ja tietoturva"
+    },
+    "items": {
+      "q1": "Miten aloitan latausistunnon?",
+      "a1": "Avaa sovellus, etsi lähin asema kartalta, napauta sitä ja paina \"Aloita lataus\". Voit myös skannata laturin QR-koodin.",
+      "q2": "Miten lopetan latausistunnon?",
+      "a2": "Siirry Aktiivinen istunto -näyttöön ja napauta \"Lopeta lataus\". Istunto päättyy ja korttisi veloitetaan automaattisesti.",
+      "q3": "Tarvitsenko tilin lataamiseen?",
+      "a3": "Ei, voit selata vieraana. Istunnon aloittamista tai maksutapojen tallentamista varten sinun täytyy rekisteröityä.",
+      "q4": "Miten minua laskutetaan?",
+      "a4": "Sinulta veloitetaan kulutetun kWh:n mukaan sekä mahdolliset aikamaksut. Täydellinen erittely näkyy jokaisen istunnon lopussa.",
+      "q5": "Mitkä maksutavat ovat hyväksyttyjä?",
+      "a5": "Luotto- ja pankkikortit (Visa, Mastercard). Voit lisätä korttisi kohdassa Profiili → Maksutapa.",
+      "q6": "Mistä löydän lataushistoriani?",
+      "a6": "Napauta \"Istunnot\"-välilehteä nähdäksesi kaikki aiemmat istunnot kustannus- ja energiaerittelyineen.",
+      "q7": "Voinko käyttää mitä tahansa laturia?",
+      "a7": "Tappy Charge toimii sovelluksessa listatuilla asemilla. Etsi laturista Tappy Charge-logo tai QR-koodi.",
+      "q8": "Entä jos laturi on rikki tai ei käytettävissä?",
+      "a8": "Kokeile toista lähistön asemaa kartalta. Ilmoita ongelmista kohdassa Profiili → Ohje ja tuki.",
+      "q9": "Kuinka nopeasti sähköautoni latautuu?",
+      "a9": "Nopeus riippuu laturin teholuokituksesta ja ajoneuvosi sisäisestä laturista. Asematiedoissa näkyy maksimiteho kilowatteina.",
+      "q10": "Miten Puhelin kortina -toiminto toimii?",
+      "a10": "NFC:n ollessa käytössä puhelimesi voi toimia korttina, jolla voit aloittaa istunnon suoraan yhteensopivilla latureilla napauttamalla — QR-koodia ei tarvita.",
+      "q11": "Mitkä laitteet tukevat Puhelin kortina -toimintoa?",
+      "a11": "Kaikki NFC-yhteensopivat Android- tai iPhone-puhelimet, joissa on Tappy Charge-sovellus. Ota ensin NFC käyttöön puhelimesi asetuksissa.",
+      "q12": "Ovatko maksutietoni turvassa?",
+      "a12": "Kyllä. Emme koskaan tallenna täydellisiä korttitietoja. Kaikki maksut käsitellään PCI-yhteensopivan palveluntarjoajan kautta.",
+      "q13": "Miten kirjaudun ulos?",
+      "a13": "Siirry kohtaan Profiili → Vaaravyöhyke → Kirjaudu ulos."
+    }
   },
   "format": {
     "currency": "{{value}}",

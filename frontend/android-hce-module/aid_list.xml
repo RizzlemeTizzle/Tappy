@@ -3,12 +3,12 @@
     android:description="@string/hce_service_description"
     android:requireDeviceUnlock="false">
     
-    <!-- 
-    ChargeTap AID Group
+    <!--
+    Tappy Charge AID Group
     AID: F0 43 68 61 72 67 65 54 61 70
     F0 = Proprietary AID prefix
     436861726765546170 = "ChargeTap" in ASCII hex
-    
+
     Category: OTHER (not payment, this is for EV charging)
     -->
     <aid-group android:description="@string/aid_group_description"

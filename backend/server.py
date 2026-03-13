@@ -47,14 +47,14 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'chargetap_db')]
+db = client[os.environ.get('DB_NAME', 'tappycharge_db')]
 
 # JWT Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET', 'chargetap-secret-key-2025')
+JWT_SECRET = os.environ.get('JWT_SECRET', 'tappycharge-secret-key-2025')
 JWT_ALGORITHM = "HS256"
 
 # Create the main app without a prefix
-app = FastAPI(title="ChargeTap API")
+app = FastAPI(title="Tappy Charge API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -1944,7 +1944,7 @@ async def simulate_notification(notification_type: str, session_id: Optional[str
 
 @api_router.get("/")
 async def root():
-    return {"message": "ChargeTap API", "version": "1.2.0", "features": ["NFC HCE", "QR-Start", "Tap-to-Pay", "Notifications"]}
+    return {"message": "Tappy Charge API", "version": "1.2.0", "features": ["NFC HCE", "QR-Start", "Tap-to-Pay", "Notifications"]}
 
 @api_router.get("/health")
 async def health():

@@ -1,4 +1,4 @@
-# ChargeTap QR Code Generator
+# Tappy Charge QR Code Generator
 
 CLI tool voor het genereren van gesigneerde QR codes voor EV laadstations.
 
@@ -14,7 +14,7 @@ npm install
 ### Schema
 
 ```
-chargetap://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=abc123def456
+tappycharge://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=abc123def456
 ```
 
 ### Parameters
@@ -97,26 +97,26 @@ Voor elke QR code worden gegenereerd:
 ### Standaard (permanent)
 
 ```
-chargetap://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=XyZ789AbCdEf12
+tappycharge://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=XyZ789AbCdEf12
 ```
 
 ### Met Replay Protection
 
 ```
-chargetap://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&ts=1771704000&nonce=a1b2c3d4&sig=QwErTy123456Ab
+tappycharge://start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&ts=1771704000&nonce=a1b2c3d4&sig=QwErTy123456Ab
 ```
 
 ### HTTPS Fallback
 
 ```
-https://chargetap.app/start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=XyZ789AbCdEf12
+https://tappycharge.app/start?v=1&evse_uid=NL*CTP*E00001*1&connector_id=1&loc_id=station-001&cpo=CTP&sig=XyZ789AbCdEf12
 ```
 
 ## Environment Variables
 
 | Variable | Default | Beschrijving |
 |----------|---------|-------------|
-| `QR_SIGNING_SECRET` | `chargetap-qr-secret-key-2025` | HMAC signing secret |
+| `QR_SIGNING_SECRET` | `tappycharge-qr-secret-key-2025` | HMAC signing secret |
 | `API_URL` | `http://localhost:8001` | Backend API URL |
 
 ## Security

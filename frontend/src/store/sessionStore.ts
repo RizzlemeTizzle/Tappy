@@ -54,6 +54,8 @@ interface Session {
   delivered_kwh: number;
   current_power_kw: number;
   battery_percent: number | null;
+  meter_start_kwh?: number | null;
+  meter_end_kwh?: number | null;
   charging_complete_at: string | null;
   penalty_minutes: number;
   penalty_cost_cents: number;
@@ -67,7 +69,7 @@ interface Session {
 }
 
 interface SessionState {
-  stations: any[];
+  stations: Station[];
   selectedStation: Station | null;
   selectedCharger: Charger | null;
   selectedPricing: Pricing | null;
@@ -126,7 +128,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         isLoading: false
       });
     } catch (error: any) {
-      set({ error: error.response?.data?.detail || error.message, isLoading: false });
+      set({ error: error.response?.data?.error || error.message, isLoading: false });
       throw error;
     }
   },
@@ -146,7 +148,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       set({ isLoading: false });
       return response.data.session_id;
     } catch (error: any) {
-      set({ error: error.response?.data?.detail || error.message, isLoading: false });
+      set({ error: error.response?.data?.error || error.message, isLoading: false });
       throw error;
     }
   },
@@ -159,7 +161,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       });
       set({ currentSession: response.data });
     } catch (error: any) {
-      set({ error: error.response?.data?.detail || error.message });
+      set({ error: error.response?.data?.error || error.message });
     }
   },
 
@@ -172,10 +174,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      set({ currentSession: response.data, isLoading: false });
+      // Merge stop response into existing session to preserve pricing_snapshot and other fields
+      set((state) => ({
+        currentSession: state.currentSession
+          ? { ...state.currentSession, ...response.data }
+          : response.data,
+        isLoading: false,
+      }));
       return response.data;
     } catch (error: any) {
-      set({ error: error.response?.data?.detail || error.message, isLoading: false });
+      set({ error: error.response?.data?.error || error.message, isLoading: false });
       throw error;
     }
   },

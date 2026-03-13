@@ -25,8 +25,8 @@ export class ChargerSimulator {
       stopped: false,
     });
 
-    // Update every 2 seconds
-    const interval = setInterval(() => this.updateSession(sessionId), 2000);
+    // Update every 5 seconds — reduces DB write load significantly at scale
+    const interval = setInterval(() => this.updateSession(sessionId), 5000);
     this.intervals.set(sessionId, interval);
   }
 

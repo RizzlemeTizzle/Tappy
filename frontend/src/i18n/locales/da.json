@@ -47,10 +47,11 @@
     "forgotPassword": "Glemt adgangskode?",
     "invalidCredentials": "Ugyldig e-mail eller adgangskode",
     "registrationFailed": "Registrering mislykkedes",
-    "logoutConfirm": "Er du sikker på, at du vil logge ud?"
+    "logoutConfirm": "Er du sikker på, at du vil logge ud?",
+    "passwordMinLength": "Adgangskoden skal være mindst 8 tegn"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "Nem Elbil-opladning",
     "feature1Title": "Tryk for at Starte",
     "feature1Desc": "Hold din telefon mod laderen",
@@ -97,7 +98,14 @@
     "sortBy": "Sorter efter",
     "sortDistance": "Afstand",
     "sortPrice": "Pris",
-    "sortPower": "Effekt"
+    "sortPower": "Effekt",
+    "all": "Alle",
+    "listView": "Liste",
+    "mapView": "Kort",
+    "saved": "Gemt",
+    "clearFilters": "Ryd filtre",
+    "updating": "Opdaterer...",
+    "status": "Status"
   },
   "station": {
     "details": "Stationsdetaljer",
@@ -110,7 +118,25 @@
     "amenities": "Faciliteter",
     "openingHours": "Åbningstider",
     "open24h": "Åben 24 timer",
-    "operatedBy": "Drives af {{operator}}"
+    "operatedBy": "Drives af {{operator}}",
+    "notFound": "Station ikke fundet",
+    "availableOf": "{{available}}/{{total}} Ledig",
+    "savedLabel": "Gemt",
+    "saveLabel": "Gem",
+    "alertSet": "Alarm oprettet",
+    "notifyMe": "Giv mig besked",
+    "navigateTo": "Naviger til Station",
+    "startChargingNfc": "Start opladning via NFC",
+    "noChargersAvailable": "Ingen ledige ladere",
+    "idleFeeDetails": "Detaljer om ventegebyr",
+    "penaltyGrace": "Fristed: {{minutes}} minutter efter opladning er afsluttet",
+    "penaltyRate": "Takst: €{{rate}}/min når tilsluttet",
+    "penaltyMaxPerDay": "Maksimum: €{{max}} pr. dag",
+    "penaltyNoCap": "Ingen daglig grænse – frakobl hurtigt for at undgå høje gebyrer",
+    "penaltyExampleTitle": "Eksempel:",
+    "penaltyExampleIntro": "Hvis du forbliver tilsluttet 45 minutter efter opladning er afsluttet:",
+    "penaltyExampleCalc": "Straf = (45 - {{graceMins}}) × €{{rate}}/min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Ledig",
@@ -156,7 +182,8 @@
     "connected": "Forbundet",
     "preparing": "Forbereder",
     "finishing": "Afslutter",
-    "chargingProgress": "{{percent}}% opladet"
+    "chargingProgress": "{{percent}}% opladet",
+    "connectionLost": "Forbindelsen mistet"
   },
   "receipt": {
     "title": "Opladningskvittering",
@@ -173,7 +200,7 @@
     "downloadReceipt": "Download Kvittering",
     "emailReceipt": "Send via E-mail",
     "goHome": "Til Forsiden",
-    "thankYou": "Tak fordi du opladede med ChargeTap!"
+    "thankYou": "Tak fordi du opladede med Tappy Charge!"
   },
   "history": {
     "title": "Opladningshistorik",
@@ -209,7 +236,10 @@
     "about": "Om",
     "version": "Version {{version}}",
     "dangerZone": "Farezone",
-    "deleteAccount": "Slet Konto"
+    "deleteAccount": "Slet Konto",
+    "darkMode": "Mørk tilstand",
+    "darkModeEnabled": "Mørk tilstand er aktiveret som standard",
+    "info": "Info"
   },
   "payment": {
     "addCard": "Tilføj Kort",
@@ -254,7 +284,13 @@
     "connecting": "Forbinder...",
     "selectStation": "Vælg en Station",
     "selectCharger": "Vælg en Lader",
-    "productionNote": "I produktion ville du holde din telefon mod den fysiske lader"
+    "productionNote": "I produktion ville du holde din telefon mod den fysiske lader",
+    "greeting": "Hej, {{name}}",
+    "cardInfo": "Kort •••• {{last4}}",
+    "simulatingNfc": "Simulerer NFC-detektering",
+    "instantConnection": "Øjeblikkelig forbindelse",
+    "transparentPricing": "Gennemsigtige priser",
+    "securePayment": "Sikker betaling"
   },
   "errors": {
     "generic": "Noget gik galt. Prøv venligst igen.",
@@ -268,7 +304,132 @@
     "paymentMethodRequired": "Tilføj venligst en betalingsmetode først.",
     "invalidCard": "Ugyldige kortoplysninger.",
     "sessionAlreadyActive": "Du har allerede en aktiv session.",
-    "cannotStopSession": "Kun den konto, der startede denne session, kan stoppe den."
+    "cannotStopSession": "Kun den konto, der startede denne session, kan stoppe den.",
+    "failedToLoadStation": "Kunne ikke indlæse station",
+    "couldNotOpenMaps": "Kunne ikke åbne kort",
+    "unavailable": "Utilgængelig",
+    "chargerCurrentlyStatus": "Denne lader er i øjeblikket {{status}}",
+    "failedToConnectCharger": "Kunne ikke oprette forbindelse til laderen"
+  },
+  "terms": {
+    "lastUpdated": "Sidst opdateret: 1. januar 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Accept af vilkår",
+        "body": "Ved at downloade, installere eller bruge Tappy Charge-appen accepterer du at være bundet af disse servicevilkår. Hvis du ikke er enig i nogen del af disse vilkår, bedes du ikke bruge vores tjeneste."
+      },
+      "service": {
+        "title": "2. Beskrivelse af tjenesten",
+        "body": "Tappy Charge tilbyder en mobilapplikation, der giver brugerne mulighed for at finde, få adgang til og betale for opladningssessioner til elbiler på deltagende stationer. Tjenesten omfatter kontostyring, betalingsbehandling og sessionsovervågning."
+      },
+      "accounts": {
+        "title": "3. Brugerkonti",
+        "body": "Du skal oprette en konto for at starte opladningssessioner. Du er ansvarlig for at opretholde fortroligheden af dine loginoplysninger og for al aktivitet, der finder sted under din konto. Du skal straks underrette os om enhver uautoriseret brug."
+      },
+      "payment": {
+        "title": "4. Betaling og fakturering",
+        "body": "Opladningssessioner faktureres baseret på forbrugt energi (pr. kWh) og eventuelle tidsgebyrer. Ved at tilføje en betalingsmetode giver du Tappy Charge tilladelse til at opkræve de gældende gebyrer ved afslutningen af hver session. Alle opkrævninger er endelige, medmindre der er tale om en faktureringsfejl."
+      },
+      "sessions": {
+        "title": "5. Opladningssessioner",
+        "body": "Sessioner begynder, når du starter opladning, og slutter, når du stopper sessionen, eller køretøjet er fuldt opladet. Du er ansvarlig for at sikre, at dit køretøj er korrekt tilsluttet. Tappy Charge er ikke ansvarlig for afbrydelser forårsaget af netværksproblemer, hardwarefejl eller strømafbrydelser uden for vores kontrol."
+      },
+      "prohibited": {
+        "title": "6. Forbudt brug",
+        "body": "Du må ikke bruge Tappy Charge til ulovlige formål, forsøge at få adgang til en anden brugers konto, forstyrre tjenestens drift, reverse-engineere applikationen eller videresælge adgang til ladestationer."
+      },
+      "liability": {
+        "title": "7. Ansvarsbegrænsning",
+        "body": "I det videst mulige omfang tilladt ved lov er Tappy Charge ikke ansvarlig for indirekte, tilfældige eller følgeskader som følge af din brug af tjenesten. Vores samlede ansvar må ikke overstige det beløb, du betalte i de 30 dage forud for kravet."
+      },
+      "changes": {
+        "title": "8. Ændringer af vilkår",
+        "body": "Vi kan opdatere disse servicevilkår fra tid til anden. Fortsat brug af appen efter ændringer udgør accept af de reviderede vilkår. Vi vil underrette dig om væsentlige ændringer via appen eller e-mail."
+      },
+      "contact": {
+        "title": "9. Kontakt",
+        "body": "Hvis du har spørgsmål om disse servicevilkår, bedes du kontakte os på support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Sidst opdateret: 1. januar 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Oplysninger vi indsamler",
+        "body": "Vi indsamler oplysninger, du giver direkte (navn, e-mail, telefonnummer), betalingsoplysninger behandlet af vores PCI-kompatible udbyder, placeringsdata ved brug af kortet, opladningssessionsdata (forbrugt energi, varighed, omkostninger) og enhedsidentifikatorer til NFC-funktionalitet."
+      },
+      "usage": {
+        "title": "2. Sådan bruger vi dine oplysninger",
+        "body": "Vi bruger dine oplysninger til at behandle opladningssessioner og betalinger, yde kundesupport, sende sessionskvitteringer og notifikationer, forbedre appen og overholde juridiske forpligtelser. Vi sælger ikke dine personoplysninger."
+      },
+      "sharing": {
+        "title": "3. Deling af data",
+        "body": "Vi deler data med operatører af ladestationer for at facilitere din session, betalingsbehandlere for at håndtere transaktioner og analyseudbydere for at forbedre vores tjeneste. Alle tredjeparter er kontraktmæssigt forpligtet til at beskytte dine data og kun bruge dem som anvist."
+      },
+      "security": {
+        "title": "4. Datasikkerhed",
+        "body": "Vi bruger industristandard-kryptering (TLS) for data under overførsel og i ro. Betalingskortoplysninger gemmes aldrig på vores servere — de tokeniseres af vores betalingsbehandler. Vi gennemfører regelmæssige sikkerhedsgennemgange af vores infrastruktur."
+      },
+      "retention": {
+        "title": "5. Dataopbevaring",
+        "body": "Vi opbevarer dine kontodata, så længe din konto er aktiv. Sessionshistorik opbevares i op til 3 år til fakturering og tvistløsning. Du kan til enhver tid anmode om sletning af din konto og tilknyttede data."
+      },
+      "rights": {
+        "title": "6. Dine rettigheder",
+        "body": "Afhængigt af din jurisdiktion kan du have ret til at få adgang til, rette eller slette dine personoplysninger, begrænse eller gøre indsigelse mod behandling og anmode om dataportabilitet. For at udøve disse rettigheder, kontakt os på privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Analyse og sporing",
+        "body": "Vi bruger anonym analyse til at forstå, hvordan appen bruges, og til at identificere problemer. Disse data er aggregerede og kan ikke bruges til at identificere individuelle brugere. Du kan fravælge analyse i dine enhedsindstillinger."
+      },
+      "changes": {
+        "title": "8. Ændringer af denne politik",
+        "body": "Vi kan opdatere denne privatlivspolitik fra tid til anden. Vi vil underrette dig om væsentlige ændringer via appen eller e-mail. Din fortsatte brug af Tappy Charge efter ændringerne træder i kraft udgør accept af den reviderede politik."
+      },
+      "contact": {
+        "title": "9. Kontakt os",
+        "body": "Hvis du har spørgsmål eller bekymringer om denne privatlivspolitik eller vores datapraksis, bedes du kontakte vores privatlivsteam på privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "categories": {
+      "gettingStarted": "Kom godt i gang",
+      "billing": "Fakturering og betalinger",
+      "chargers": "Ladere og kompatibilitet",
+      "nfc": "Telefon som kort (NFC)",
+      "account": "Konto og sikkerhed"
+    },
+    "items": {
+      "q1": "Hvordan starter jeg en opladningssession?",
+      "a1": "Åbn appen, find en nærliggende station på kortet, tryk på den, og tryk derefter på \"Start opladning\". Du kan også scanne QR-koden på laderen.",
+      "q2": "Hvordan stopper jeg en opladningssession?",
+      "a2": "Gå til skærmen Live Session og tryk på \"Stop opladning\". Sessionen afsluttes, og dit kort debiteres automatisk.",
+      "q3": "Har jeg brug for en konto for at oplade?",
+      "a3": "Nej, du kan browse som gæst. Men for at starte en session eller gemme betalingsmetoder skal du registrere dig.",
+      "q4": "Hvordan faktureres jeg?",
+      "a4": "Du betaler pr. forbrugt kWh plus eventuelle tidsgebyrer. En fuld oversigt vises ved afslutningen af hver session.",
+      "q5": "Hvilke betalingsmetoder accepteres?",
+      "a5": "Kredit- og debetkort (Visa, Mastercard). Du kan tilføje dit kort under Profil → Betalingsmetode.",
+      "q6": "Hvor kan jeg se min opladningshistorik?",
+      "a6": "Tryk på fanen \"Sessioner\" for at se alle tidligere sessioner med omkostnings- og energioversigter.",
+      "q7": "Kan jeg bruge enhver lader?",
+      "a7": "Tappy Charge fungerer med stationer, der er angivet i appen. Se efter Tappy Charge-logoet eller QR-koden på en lader.",
+      "q8": "Hvad hvis en lader er i stykker eller utilgængelig?",
+      "a8": "Prøv en anden nærliggende station fra kortet. Rapporter problemer via Profil → Hjælp og support.",
+      "q9": "Hvor hurtigt vil min elbil oplade?",
+      "a9": "Hastigheden afhænger af laderens effektklassificering og dit køretøjs indbyggede lader. Stationsoplysninger viser den maksimale effekt i kW.",
+      "q10": "Hvordan fungerer Telefon-som-kort?",
+      "a10": "Med NFC aktiveret kan din telefon fungere som et kort til at starte en session direkte ved kompatible ladere — ingen QR-scanning nødvendig.",
+      "q11": "Hvilke enheder understøtter Telefon-som-kort?",
+      "a11": "Enhver NFC-aktiveret Android eller iPhone med Tappy Charge-appen. Aktiver NFC i din telefons indstillinger først.",
+      "q12": "Er mine betalingsoplysninger sikre?",
+      "a12": "Ja. Vi gemmer aldrig fulde kortoplysninger. Alle betalinger behandles via en PCI-kompatibel udbyder.",
+      "q13": "Hvordan logger jeg ud?",
+      "a13": "Gå til Profil → Farezonen → Log ud."
+    }
   },
   "format": {
     "currency": "{{value}}",

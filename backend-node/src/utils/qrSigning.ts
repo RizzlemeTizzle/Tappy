@@ -15,7 +15,7 @@ export interface QRPayload {
 // Configuration
 const QR_VERSION = 1;
 const QR_TTL_SECONDS = 300; // 5 minutes for replay protection
-const DEFAULT_SECRET = process.env.QR_SIGNING_SECRET || 'chargetap-qr-secret-key-2025';
+const DEFAULT_SECRET = process.env.QR_SIGNING_SECRET || 'tappycharge-qr-secret-key-2025';
 
 // Provider-specific secrets (in production, load from DB)
 const PROVIDER_SECRETS: Record<string, string> = {
@@ -207,7 +207,7 @@ export function validateQRPayload(
  */
 export function generateDeepLink(payload: QRPayload): string {
   const queryString = encodeQRPayload(payload);
-  return `chargetap://start?${queryString}`;
+  return `tappycharge://start?${queryString}`;
 }
 
 /**
@@ -215,5 +215,5 @@ export function generateDeepLink(payload: QRPayload): string {
  */
 export function generateFallbackUrl(payload: QRPayload): string {
   const queryString = encodeQRPayload(payload);
-  return `https://chargetap.app/start?${queryString}`;
+  return `https://tappycharge.com/start?${queryString}`;
 }

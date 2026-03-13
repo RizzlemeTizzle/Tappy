@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "ChargeTap",
-    "slug": "chargetap",
+    "name": "Tappy Charge",
+    "slug": "tappycharge",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "chargetap",
+    "scheme": "tappycharge",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.chargetap.app",
+      "bundleIdentifier": "com.tappycharge.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Find nearby charging stations",
         "NSLocationAlwaysUsageDescription": "Navigate to charging stations",
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0A0A0A"
       },
-      "package": "com.chargetap.app",
+      "package": "com.tappycharge.app",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -37,7 +37,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "chargetap.app",
+              "host": "tappycharge.com",
               "pathPrefix": "/start"
             }
           ],

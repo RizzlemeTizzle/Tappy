@@ -1,4 +1,4 @@
-package com.chargetap.app
+package com.tappycharge.app
 
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
@@ -7,7 +7,7 @@ import android.content.SharedPreferences
 import android.util.Log
 
 /**
- * ChargeTap HCE Service
+ * Tappy Charge HCE Service
  * 
  * Emuleert een NFC laadpas door te reageren op APDU commando's van laadpaal readers.
  * De service stuurt de opgeslagen token UID terug wanneer een SELECT commando wordt ontvangen.
@@ -15,9 +15,9 @@ import android.util.Log
 class HceService : HostApduService() {
     
     companion object {
-        private const val TAG = "ChargeTapHCE"
+        private const val TAG = "TappyChargeHCE"
         
-        // ChargeTap AID: F0 43 68 61 72 67 65 54 61 70 (F0ChargeTap)
+        // Tappy Charge AID: F0 43 68 61 72 67 65 54 61 70 (F0ChargeTap)
         // F0 = proprietary AID, rest = "ChargeTap" in ASCII
         private val CHARGETAP_AID = byteArrayOf(
             0xF0.toByte(), 0x43, 0x68, 0x61, 0x72, 0x67, 0x65, 0x54, 0x61, 0x70
@@ -36,7 +36,7 @@ class HceService : HostApduService() {
         private const val INS_GET_DATA = 0xCA.toByte()
         
         // Shared preferences keys
-        const val PREFS_NAME = "chargetap_hce"
+        const val PREFS_NAME = "tappycharge_hce"
         const val KEY_TOKEN_UID = "token_uid"
         const val KEY_HCE_ENABLED = "hce_enabled"
     }
@@ -99,7 +99,7 @@ class HceService : HostApduService() {
         
         // Check if it's our AID
         if (aidData.contentEquals(CHARGETAP_AID)) {
-            Log.d(TAG, "ChargeTap AID selected successfully")
+            Log.d(TAG, "Tappy Charge AID selected successfully")
             return SW_SUCCESS
         }
         

@@ -1,4 +1,4 @@
-# NFC Host Card Emulation (HCE) - ChargeTap
+# NFC Host Card Emulation (HCE) - Tappy Charge
 
 ## Overzicht
 
@@ -8,7 +8,7 @@ Deze module implementeert NFC "phone-as-card" functionaliteit voor Android devic
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Laadpaal NFC  │     │  Android Phone  │     │  ChargeTap API  │
+│  Laadpaal NFC  │     │  Android Phone  │     │  Tappy Charge API  │
 │     Reader     │<--->|   HCE Service   │<--->|   OCPI Tokens   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
         │                    │                         │
@@ -55,7 +55,7 @@ Deze module implementeert NFC "phone-as-card" functionaliteit voor Android devic
 "CT"  6 random bytes
 ```
 
-- Prefix `CT` (0x4354) = "ChargeTap" identifier
+- Prefix `CT` (0x4354) = "Tappy Charge" identifier
 - 6 random bytes voor uniciteit
 - Totaal: 16 hex karakters (8 bytes)
 
@@ -90,7 +90,7 @@ Visual:       **** 5E6F
 
 ### AID Configuratie
 ```xml
-<!-- F0 + "ChargeTap" in hex = F0436861726765546170 -->
+<!-- F0 + "Tappy Charge" in hex = F0436861726765546170 -->
 <aid-group android:category="other" android:description="@string/aid_description">
     <aid-filter android:name="F0436861726765546170" />
 </aid-group>
@@ -106,7 +106,7 @@ Visual:       **** 5E6F
 
 ### Kotlin Service
 ```kotlin
-class ChargeTapHceService : HostApduService() {
+class TappyChargeHceService : HostApduService() {
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
         // Parse command and return token UID
     }
@@ -165,7 +165,7 @@ Timeline:
 Als HCE niet werkt:
 1. **QR-Start**: Scan QR code op laadpaal
 2. **Remote Start**: Start via app (OCPI Commands)
-3. **Fysieke RFID kaart**: Bestel ChargeTap laadpas
+3. **Fysieke RFID kaart**: Bestel Tappy Charge laadpas
 
 ## Environment Variables
 

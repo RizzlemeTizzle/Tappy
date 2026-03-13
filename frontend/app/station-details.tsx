@@ -14,8 +14,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import PriceBreakdown from '../src/components/PriceBreakdown';
 import { useSessionStore } from '../src/store/sessionStore';
+import { useFavoriteStore } from '../src/store/favoriteStore';
+import { useAlertStore } from '../src/store/alertStore';
 import { API_URL } from '../src/config/api';
 
 interface Charger {
@@ -49,14 +52,19 @@ interface Station {
 
 export default function StationDetails() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { stationId } = useLocalSearchParams<{ stationId: string }>();
   const { resolveNfc } = useSessionStore();
+  const { isFavorited, addFavorite, removeFavorite, loadFavorites } = useFavoriteStore();
+  const { hasAlert, setAlert, cancelAlert, loadAlerts } = useAlertStore();
   const [station, setStation] = useState<Station | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadStation();
+    loadFavorites();
+    loadAlerts();
   }, [stationId]);
 
   const loadStation = async () => {
@@ -65,7 +73,7 @@ export default function StationDetails() {
       const response = await axios.get(`${API_URL}/api/stations/${stationId}`);
       setStation(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load station');
+      setError(err.response?.data?.error || t('errors.failedToLoadStation'));
     } finally {
       setIsLoading(false);
     }
@@ -85,14 +93,14 @@ export default function StationDetails() {
 
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert('Error', 'Could not open maps');
+        Alert.alert(t('common.error'), t('errors.couldNotOpenMaps'));
       });
     }
   };
 
   const handleStartCharging = async (charger: Charger) => {
     if (charger.status !== 'AVAILABLE') {
-      Alert.alert('Unavailable', `This charger is currently ${charger.status}`);
+      Alert.alert(t('errors.unavailable'), t('errors.chargerCurrentlyStatus', { status: charger.status }));
       return;
     }
 
@@ -100,7 +108,7 @@ export default function StationDetails() {
       await resolveNfc(charger.nfc_payload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to connect to charger');
+      Alert.alert(t('common.error'), err.response?.data?.error || t('errors.failedToConnectCharger'));
     }
   };
 
@@ -122,7 +130,7 @@ export default function StationDetails() {
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading station details...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -133,9 +141,9 @@ export default function StationDetails() {
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={48} color="#FF5252" />
-          <Text style={styles.errorText}>{error || 'Station not found'}</Text>
+          <Text style={styles.errorText}>{error || t('station.notFound')}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>{t('common.back')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -163,21 +171,54 @@ export default function StationDetails() {
                 styles.availabilityText,
                 { color: availableCount > 0 ? '#4CAF50' : '#FF5252' }
               ]}>
-                {availableCount}/{totalCount} Available
+                {t('station.availableOf', { available: availableCount, total: totalCount })}
               </Text>
             </View>
           </View>
 
+          {/* Favorite & Alert actions */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => stationId && (isFavorited(stationId) ? removeFavorite(stationId) : addFavorite(stationId))}
+            >
+              <Ionicons
+                name={isFavorited(stationId ?? '') ? 'star' : 'star-outline'}
+                size={20}
+                color={isFavorited(stationId ?? '') ? '#FFD700' : '#888'}
+              />
+              <Text style={[styles.actionText, isFavorited(stationId ?? '') && { color: '#FFD700' }]}>
+                {isFavorited(stationId ?? '') ? t('station.savedLabel') : t('station.saveLabel')}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.actionDivider} />
+
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => stationId && (hasAlert(stationId) ? cancelAlert(stationId) : setAlert(stationId))}
+            >
+              <Ionicons
+                name={hasAlert(stationId ?? '') ? 'notifications' : 'notifications-outline'}
+                size={20}
+                color={hasAlert(stationId ?? '') ? '#4CAF50' : '#888'}
+              />
+              <Text style={[styles.actionText, hasAlert(stationId ?? '') && { color: '#4CAF50' }]}>
+                {hasAlert(stationId ?? '') ? t('station.alertSet') : t('station.notifyMe')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity style={styles.navigateButton} onPress={handleNavigate}>
             <Ionicons name="navigate" size={20} color="#4CAF50" />
-            <Text style={styles.navigateText}>Navigate to Station</Text>
+            <Text style={styles.navigateText}>{t('station.navigateTo')}</Text>
             <Ionicons name="chevron-forward" size={16} color="#666" />
           </TouchableOpacity>
         </View>
 
         {/* Chargers List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Chargers</Text>
+          <Text style={styles.sectionTitle}>{t('station.chargers')}</Text>
           {station.chargers.map((charger) => (
             <TouchableOpacity
               key={charger.id}
@@ -209,7 +250,7 @@ export default function StationDetails() {
 
         {/* Pricing Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pricing Details</Text>
+          <Text style={styles.sectionTitle}>{t('pricing.title')}</Text>
           <PriceBreakdown
             startFeeCents={station.pricing.start_fee_cents}
             energyRateCentsPerKwh={station.pricing.energy_rate_cents_per_kwh}
@@ -224,31 +265,31 @@ export default function StationDetails() {
           <View style={styles.penaltyExplanation}>
             <View style={styles.penaltyHeader}>
               <Ionicons name="warning" size={20} color="#FF9800" />
-              <Text style={styles.penaltyTitle}>Idle Fee Details</Text>
+              <Text style={styles.penaltyTitle}>{t('station.idleFeeDetails')}</Text>
             </View>
             <View style={styles.penaltyContent}>
               <Text style={styles.penaltyItem}>
-                • Grace period: {station.pricing.penalty.grace_minutes} minutes after charging completes
+                • {t('station.penaltyGrace', { minutes: station.pricing.penalty.grace_minutes })}
               </Text>
               <Text style={styles.penaltyItem}>
-                • Rate: €{(station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2)}/min while plugged in
+                • {t('station.penaltyRate', { rate: (station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2) })}
               </Text>
               {station.pricing.penalty.daily_cap_cents ? (
                 <Text style={styles.penaltyItem}>
-                  • Maximum: €{(station.pricing.penalty.daily_cap_cents / 100).toFixed(0)} per day
+                  • {t('station.penaltyMaxPerDay', { max: (station.pricing.penalty.daily_cap_cents / 100).toFixed(0) })}
                 </Text>
               ) : (
                 <Text style={[styles.penaltyItem, styles.penaltyWarning]}>
-                  • No daily cap - unplug promptly to avoid high fees
+                  • {t('station.penaltyNoCap')}
                 </Text>
               )}
             </View>
             <View style={styles.penaltyExample}>
-              <Text style={styles.penaltyExampleTitle}>Example:</Text>
+              <Text style={styles.penaltyExampleTitle}>{t('station.penaltyExampleTitle')}</Text>
               <Text style={styles.penaltyExampleText}>
-                If you stay plugged 45 minutes after charging completes:{'\n'}
-                Penalty = (45 - {station.pricing.penalty.grace_minutes}) × €{(station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2)}/min{'\n'}
-                = €{((45 - station.pricing.penalty.grace_minutes) * station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2)}
+                {t('station.penaltyExampleIntro')}{'\n'}
+                {t('station.penaltyExampleCalc', { graceMins: station.pricing.penalty.grace_minutes, rate: (station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2) })}{'\n'}
+                {t('station.penaltyExampleTotal', { total: ((45 - station.pricing.penalty.grace_minutes) * station.pricing.penalty.penalty_cents_per_minute / 100).toFixed(2) })}
               </Text>
             </View>
           </View>
@@ -272,7 +313,7 @@ export default function StationDetails() {
         >
           <Ionicons name="flash" size={22} color={availableCount > 0 ? '#000' : '#666'} />
           <Text style={[styles.startButtonText, availableCount === 0 && styles.startButtonTextDisabled]}>
-            {availableCount > 0 ? 'Start Charging via NFC' : 'No Chargers Available'}
+            {availableCount > 0 ? t('station.startChargingNfc') : t('station.noChargersAvailable')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -497,5 +538,31 @@ const styles = StyleSheet.create({
   },
   startButtonTextDisabled: {
     color: '#666',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    gap: 6,
+  },
+  actionText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  actionDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#3A3A3A',
   },
 });

@@ -1,6 +1,6 @@
-# Android HCE (Host Card Emulation) Module for ChargeTap
+# Android HCE (Host Card Emulation) Module for Tappy Charge
 
-Dit document beschrijft hoe je de HCE functionaliteit activeert voor de ChargeTap app.
+Dit document beschrijft hoe je de HCE functionaliteit activeert voor de Tappy Charge app.
 
 ## Vereisten
 
@@ -23,7 +23,7 @@ Na prebuild, kopieer de volgende bestanden naar je android project:
 
 ```bash
 # Kopieer HCE Service
-cp android-hce-module/HceService.kt android/app/src/main/java/com/chargetap/app/
+cp android-hce-module/HceService.kt android/app/src/main/java/com/tappycharge/app/
 
 # Kopieer AID resource
 cp android-hce-module/aid_list.xml android/app/src/main/res/xml/
@@ -61,9 +61,9 @@ cd android
 
 ## Hoe HCE Werkt
 
-1. **AID Selectie**: Wanneer een NFC lezer de telefoon detecteert, stuurt het een SELECT APDU met de ChargeTap AID (`F0436861726765546170`)
+1. **AID Selectie**: Wanneer een NFC lezer de telefoon detecteert, stuurt het een SELECT APDU met de Tappy Charge AID (`F0436861726765546170`)
 2. **Token Response**: De HCE service antwoordt met de opgeslagen token UID
-3. **Autorisatie**: De laadpaal operator (CPO) verifieert de token via OCPI bij ChargeTap
+3. **Autorisatie**: De laadpaal operator (CPO) verifieert de token via OCPI bij Tappy Charge
 4. **Sessie Start**: Bij succesvolle autorisatie start de laadsessie
 
 ## Token Formaat
@@ -74,7 +74,7 @@ cd android
 
 ## Testen
 
-1. Activeer HCE in de ChargeTap app
+1. Activeer HCE in de Tappy Charge app
 2. Ga naar een ondersteunde laadpaal
 3. Houd je telefoon tegen de NFC lezer
 4. De laadsessie zou automatisch moeten starten

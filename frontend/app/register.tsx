@@ -33,8 +33,8 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert(t('common.error'), t('errors.generic'));
+    if (password.length < 8) {
+      Alert.alert(t('common.error'), t('auth.passwordMinLength'));
       return;
     }
 
@@ -43,7 +43,7 @@ export default function Register() {
       await register(email.trim(), password, name.trim());
       router.replace('/(tabs)/tap');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.detail || t('auth.registrationFailed'));
+      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('auth.registrationFailed'));
     } finally {
       setIsLoading(false);
     }

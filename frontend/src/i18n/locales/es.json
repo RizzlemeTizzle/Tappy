@@ -47,10 +47,11 @@
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "invalidCredentials": "Correo o contraseña inválidos",
     "registrationFailed": "Error en el registro",
-    "logoutConfirm": "¿Seguro que quieres cerrar sesión?"
+    "logoutConfirm": "¿Seguro que quieres cerrar sesión?",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "Carga de VE Simplificada",
     "feature1Title": "Toca para Iniciar",
     "feature1Desc": "Solo acerca tu teléfono al cargador",
@@ -97,7 +98,14 @@
     "sortBy": "Ordenar por",
     "sortDistance": "Distancia",
     "sortPrice": "Precio",
-    "sortPower": "Potencia"
+    "sortPower": "Potencia",
+    "all": "Todos",
+    "listView": "Lista",
+    "mapView": "Mapa",
+    "saved": "Guardado",
+    "clearFilters": "Borrar filtros",
+    "updating": "Actualizando...",
+    "status": "Estado"
   },
   "station": {
     "details": "Detalles de la Estación",
@@ -110,7 +118,25 @@
     "amenities": "Servicios",
     "openingHours": "Horario",
     "open24h": "Abierto 24 horas",
-    "operatedBy": "Operado por {{operator}}"
+    "operatedBy": "Operado por {{operator}}",
+    "notFound": "Estación no encontrada",
+    "availableOf": "{{available}}/{{total}} Disponibles",
+    "savedLabel": "Guardado",
+    "saveLabel": "Guardar",
+    "alertSet": "Alerta establecida",
+    "notifyMe": "Notificarme",
+    "navigateTo": "Navegar a la Estación",
+    "startChargingNfc": "Iniciar Carga mediante NFC",
+    "noChargersAvailable": "No Hay Cargadores Disponibles",
+    "idleFeeDetails": "Detalles de la Tarifa de Espera",
+    "penaltyGrace": "Período de gracia: {{minutes}} minutos después de completar la carga",
+    "penaltyRate": "Tarifa: €{{rate}}/min mientras conectado",
+    "penaltyMaxPerDay": "Máximo: €{{max}} por día",
+    "penaltyNoCap": "Sin límite diario - desenchufa rápidamente para evitar tarifas altas",
+    "penaltyExampleTitle": "Ejemplo:",
+    "penaltyExampleIntro": "Si permaneces conectado 45 minutos después de completar la carga:",
+    "penaltyExampleCalc": "Penalización = (45 - {{graceMins}}) × €{{rate}}/min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Disponible",
@@ -156,7 +182,8 @@
     "connected": "Conectado",
     "preparing": "Preparando",
     "finishing": "Finalizando",
-    "chargingProgress": "{{percent}}% cargado"
+    "chargingProgress": "{{percent}}% cargado",
+    "connectionLost": "Conexión perdida"
   },
   "receipt": {
     "title": "Recibo de Carga",
@@ -173,7 +200,7 @@
     "downloadReceipt": "Descargar Recibo",
     "emailReceipt": "Enviar por Correo",
     "goHome": "Ir al Inicio",
-    "thankYou": "¡Gracias por cargar con ChargeTap!"
+    "thankYou": "¡Gracias por cargar con Tappy Charge!"
   },
   "history": {
     "title": "Historial de Cargas",
@@ -209,7 +236,10 @@
     "about": "Acerca de",
     "version": "Versión {{version}}",
     "dangerZone": "Zona de Peligro",
-    "deleteAccount": "Eliminar Cuenta"
+    "deleteAccount": "Eliminar Cuenta",
+    "darkMode": "Modo oscuro",
+    "darkModeEnabled": "El modo oscuro está activado por defecto",
+    "info": "Info"
   },
   "payment": {
     "addCard": "Agregar Tarjeta",
@@ -254,7 +284,13 @@
     "connecting": "Conectando...",
     "selectStation": "Seleccionar una Estación",
     "selectCharger": "Seleccionar un Cargador",
-    "productionNote": "En producción, acercarías tu teléfono al cargador físico"
+    "productionNote": "En producción, acercarías tu teléfono al cargador físico",
+    "greeting": "Hola, {{name}}",
+    "cardInfo": "Tarjeta •••• {{last4}}",
+    "simulatingNfc": "Simulando detección NFC",
+    "instantConnection": "Conexión Instantánea",
+    "transparentPricing": "Precios Transparentes",
+    "securePayment": "Pago Seguro"
   },
   "errors": {
     "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
@@ -268,7 +304,132 @@
     "paymentMethodRequired": "Por favor, agrega un método de pago primero.",
     "invalidCard": "Datos de tarjeta inválidos.",
     "sessionAlreadyActive": "Ya tienes una sesión activa.",
-    "cannotStopSession": "Solo la cuenta que inició esta sesión puede detenerla."
+    "cannotStopSession": "Solo la cuenta que inició esta sesión puede detenerla.",
+    "failedToLoadStation": "Error al cargar la estación",
+    "couldNotOpenMaps": "No se pudo abrir los mapas",
+    "unavailable": "No disponible",
+    "chargerCurrentlyStatus": "Este cargador está actualmente {{status}}",
+    "failedToConnectCharger": "Error al conectar con el cargador"
+  },
+  "terms": {
+    "lastUpdated": "Última actualización: 1 de enero de 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceptación de los términos",
+        "body": "Al descargar, instalar o usar la aplicación Tappy Charge, aceptas estar vinculado por estos Términos de servicio. Si no estás de acuerdo con alguna parte de estos términos, por favor no uses nuestro servicio."
+      },
+      "service": {
+        "title": "2. Descripción del servicio",
+        "body": "Tappy Charge proporciona una aplicación móvil que permite a los usuarios localizar, acceder y pagar sesiones de carga para vehículos eléctricos en estaciones participantes. El servicio incluye gestión de cuenta, procesamiento de pagos y seguimiento de sesiones."
+      },
+      "accounts": {
+        "title": "3. Cuentas de usuario",
+        "body": "Debes crear una cuenta para iniciar sesiones de carga. Eres responsable de mantener la confidencialidad de tus credenciales de acceso y de toda la actividad que ocurra bajo tu cuenta. Debes notificarnos inmediatamente cualquier uso no autorizado."
+      },
+      "payment": {
+        "title": "4. Pago y facturación",
+        "body": "Las sesiones de carga se facturan según la energía consumida (por kWh) y cualquier tarifa de tiempo aplicable. Al añadir un método de pago, autorizas a Tappy Charge a cobrar las tarifas aplicables al final de cada sesión. Todos los cargos son definitivos salvo error de facturación."
+      },
+      "sessions": {
+        "title": "5. Sesiones de carga",
+        "body": "Las sesiones comienzan cuando inicias la carga y terminan cuando detienes la sesión o el vehículo está completamente cargado. Eres responsable de asegurarte de que tu vehículo esté correctamente conectado. Tappy Charge no se hace responsable de las interrupciones causadas por problemas de red, fallos de hardware o cortes de energía fuera de nuestro control."
+      },
+      "prohibited": {
+        "title": "6. Uso prohibido",
+        "body": "No puedes usar Tappy Charge para ningún propósito ilegal, intentar acceder a la cuenta de otro usuario, interferir con el funcionamiento del servicio, realizar ingeniería inversa de la aplicación ni revender el acceso a estaciones de carga."
+      },
+      "liability": {
+        "title": "7. Limitación de responsabilidad",
+        "body": "En la máxima medida permitida por la ley, Tappy Charge no es responsable de daños indirectos, incidentales o consecuentes derivados del uso del servicio. Nuestra responsabilidad total no superará el importe que hayas pagado en los 30 días anteriores a la reclamación."
+      },
+      "changes": {
+        "title": "8. Cambios en los términos",
+        "body": "Podemos actualizar estos Términos de servicio de vez en cuando. El uso continuado de la aplicación tras los cambios constituye la aceptación de los términos revisados. Te notificaremos los cambios significativos a través de la aplicación o por correo electrónico."
+      },
+      "contact": {
+        "title": "9. Contacto",
+        "body": "Si tienes preguntas sobre estos Términos de servicio, contáctanos en support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Última actualización: 1 de enero de 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Información que recopilamos",
+        "body": "Recopilamos la información que proporcionas directamente (nombre, correo electrónico, número de teléfono), los datos de pago procesados por nuestro proveedor conforme con PCI, los datos de ubicación al usar el mapa, los datos de las sesiones de carga (energía consumida, duración, coste) y los identificadores de dispositivo para la funcionalidad NFC."
+      },
+      "usage": {
+        "title": "2. Cómo usamos tu información",
+        "body": "Usamos tu información para procesar las sesiones de carga y los pagos, proporcionar atención al cliente, enviar recibos y notificaciones de sesión, mejorar la aplicación y cumplir con las obligaciones legales. No vendemos tus datos personales."
+      },
+      "sharing": {
+        "title": "3. Compartición de datos",
+        "body": "Compartimos datos con los operadores de estaciones de carga para facilitar tu sesión, con procesadores de pago para gestionar las transacciones y con proveedores de análisis para mejorar nuestro servicio. Todos los terceros están contractualmente obligados a proteger tus datos y a usarlos solo según lo indicado."
+      },
+      "security": {
+        "title": "4. Seguridad de los datos",
+        "body": "Usamos cifrado estándar del sector (TLS) para los datos en tránsito y en reposo. Los datos de la tarjeta de pago nunca se almacenan en nuestros servidores — son tokenizados por nuestro procesador de pagos. Realizamos revisiones de seguridad periódicas de nuestra infraestructura."
+      },
+      "retention": {
+        "title": "5. Retención de datos",
+        "body": "Conservamos los datos de tu cuenta mientras tu cuenta esté activa. El historial de sesiones se conserva hasta 3 años para facturación y resolución de disputas. Puedes solicitar la eliminación de tu cuenta y los datos asociados en cualquier momento."
+      },
+      "rights": {
+        "title": "6. Tus derechos",
+        "body": "Según tu jurisdicción, puedes tener derecho a acceder, corregir o eliminar tus datos personales, restringir u oponerte al tratamiento y solicitar la portabilidad de datos. Para ejercer estos derechos, contáctanos en privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Análisis y seguimiento",
+        "body": "Usamos análisis anónimos para entender cómo se usa la aplicación e identificar problemas. Estos datos son agregados y no pueden usarse para identificar a usuarios individuales. Puedes optar por no participar en los análisis en la configuración de tu dispositivo."
+      },
+      "changes": {
+        "title": "8. Cambios en esta política",
+        "body": "Podemos actualizar esta Política de privacidad de vez en cuando. Te notificaremos los cambios materiales a través de la aplicación o por correo electrónico. El uso continuado de Tappy Charge tras la entrada en vigor de los cambios constituye la aceptación de la política revisada."
+      },
+      "contact": {
+        "title": "9. Contáctanos",
+        "body": "Si tienes preguntas o inquietudes sobre esta Política de privacidad o nuestras prácticas de datos, contacta a nuestro equipo de privacidad en privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "categories": {
+      "gettingStarted": "Primeros pasos",
+      "billing": "Facturación y pagos",
+      "chargers": "Cargadores y compatibilidad",
+      "nfc": "Teléfono como tarjeta (NFC)",
+      "account": "Cuenta y seguridad"
+    },
+    "items": {
+      "q1": "¿Cómo inicio una sesión de carga?",
+      "a1": "Abre la aplicación, encuentra una estación cercana en el mapa, tócala y pulsa \"Iniciar carga\". También puedes escanear el código QR del cargador.",
+      "q2": "¿Cómo detengo una sesión de carga?",
+      "a2": "Ve a la pantalla de Sesión en vivo y pulsa \"Detener carga\". La sesión termina y tu tarjeta se carga automáticamente.",
+      "q3": "¿Necesito una cuenta para cargar?",
+      "a3": "No, puedes navegar como invitado. Pero para iniciar una sesión o guardar métodos de pago, tendrás que registrarte.",
+      "q4": "¿Cómo se me factura?",
+      "a4": "Se te cobra por kWh consumido más las tarifas de tiempo aplicables. Un desglose completo aparece al final de cada sesión.",
+      "q5": "¿Qué métodos de pago se aceptan?",
+      "a5": "Tarjetas de crédito y débito (Visa, Mastercard). Puedes añadir tu tarjeta en Perfil → Método de pago.",
+      "q6": "¿Dónde puedo ver mi historial de carga?",
+      "a6": "Pulsa la pestaña \"Sesiones\" para ver todas las sesiones pasadas con el desglose de coste y energía.",
+      "q7": "¿Puedo usar cualquier cargador?",
+      "a7": "Tappy Charge funciona con las estaciones listadas en la aplicación. Busca el logotipo de Tappy Charge o el código QR en un cargador.",
+      "q8": "¿Qué pasa si un cargador está averiado o no disponible?",
+      "a8": "Prueba otra estación cercana en el mapa. Informa de problemas a través de Perfil → Ayuda y soporte.",
+      "q9": "¿A qué velocidad se cargará mi vehículo eléctrico?",
+      "a9": "La velocidad depende de la potencia del cargador y del cargador a bordo de tu vehículo. Los detalles de la estación muestran la potencia máxima en kW.",
+      "q10": "¿Cómo funciona el teléfono como tarjeta?",
+      "a10": "Con NFC activado, tu teléfono puede actuar como tarjeta para iniciar una sesión tocando directamente cargadores compatibles — sin necesidad de escanear el código QR.",
+      "q11": "¿Qué dispositivos admiten el teléfono como tarjeta?",
+      "a11": "Cualquier Android o iPhone con NFC habilitado y la aplicación Tappy Charge. Activa primero NFC en la configuración de tu teléfono.",
+      "q12": "¿Están seguros mis datos de pago?",
+      "a12": "Sí. Nunca almacenamos los detalles completos de la tarjeta. Todos los pagos se procesan a través de un proveedor conforme con PCI.",
+      "q13": "¿Cómo cierro sesión?",
+      "a13": "Ve a Perfil → Zona de peligro → Cerrar sesión."
+    }
   },
   "format": {
     "currency": "{{value}}",

@@ -1,4 +1,4 @@
-# RFID Token Management - ChargeTap
+# RFID Token Management - Tappy Charge
 
 ## Overzicht
 
@@ -108,7 +108,7 @@ Real-time autorisatie verzoek van CPO.
 ### Authenticatie
 Basic Auth met admin credentials:
 ```
-Authorization: Basic base64(admin:chargetap2025)
+Authorization: Basic base64(admin:tappycharge2025)
 ```
 
 ## Admin Portal
@@ -196,7 +196,7 @@ Per CPO kunnen de volgende instellingen worden geconfigureerd:
 
 ```env
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=chargetap2025
+ADMIN_PASSWORD=tappycharge2025
 OCPI_COUNTRY_CODE=NL
 OCPI_PARTY_ID=CTP
 ```

@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import debounce from 'lodash/debounce';
 import { API_URL } from '../config/api';
 
 interface PricingSummary {
@@ -132,7 +130,6 @@ export const useMapStore = create<MapState>((set, get) => ({
     const lat = userLocation?.latitude || region.latitude;
     const lng = userLocation?.longitude || region.longitude;
 
-    console.log('[MapStore] Fetching stations near:', { lat, lng, userLocation: !!userLocation });
 
     try {
       set({ isLoading: true, error: null });
@@ -158,10 +155,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       }
 
       const url = `${API_URL}/api/stations/nearby?${params}`;
-      console.log('[MapStore] API URL:', url);
-      
       const response = await axios.get(url);
-      console.log('[MapStore] Fetched stations:', response.data.length);
       set({ nearbyStations: response.data, isLoading: false });
     } catch (error: any) {
       set({

@@ -45,7 +45,7 @@ export default function TapScreen() {
       await resolveNfc(nfcPayload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.response?.data?.detail || t('errors.chargerNotAvailable'));
+      Alert.alert(t('common.error'), err.response?.data?.error || err.message || t('errors.chargerNotAvailable'));
     } finally {
       setIsTapping(false);
     }

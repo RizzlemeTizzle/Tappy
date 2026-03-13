@@ -13,7 +13,7 @@ HEADERS = {"Content-Type": "application/json"}
 
 # Admin credentials
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "chargetap2025"
+ADMIN_PASSWORD = "tappycharge2025"
 
 # OCPI CPO Token for testing
 CPO_TOKEN = "test-cpo-token-12345"
@@ -503,14 +503,14 @@ class RFIDTokenTester:
 
     def run_full_test_suite(self):
         """Run the complete RFID Token Management test suite"""
-        print("🏷️  ChargeTap RFID Token Management Testing")
+        print("🏷️  Tappy Charge RFID Token Management Testing")
         print("=" * 60)
         print("Testing RFID Token Admin & OCPI eMSP Endpoints")
         
         # Test steps as specified in the review request
         tests = [
             ("Backend Health Check", self.test_backend_health),
-            ("Create RFID Token (admin:chargetap2025)", self.test_create_rfid_token),
+            ("Create RFID Token (admin:tappycharge2025)", self.test_create_rfid_token),
             ("List All Tokens", self.test_list_all_tokens),
             ("Get Token Details", self.test_get_token_details),
             ("Block Token", self.test_block_token),
@@ -547,7 +547,7 @@ class RFIDTokenTester:
         print(f"📊 Total:  {passed + failed}")
         
         if failed == 0:
-            print("\n🎉 ALL RFID TOKEN TESTS PASSED! ChargeTap RFID Token Management is working correctly.")
+            print("\n🎉 ALL RFID TOKEN TESTS PASSED! Tappy Charge RFID Token Management is working correctly.")
             return True
         else:
             print(f"\n⚠️  {failed} test(s) failed. Please check the issues above.")

@@ -37,7 +37,7 @@ export default function Login() {
       await login(email.trim(), password);
       router.replace('/(tabs)/tap');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.detail || t('auth.invalidCredentials'));
+      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('auth.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }

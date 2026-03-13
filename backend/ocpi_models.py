@@ -1,5 +1,5 @@
 """
-OCPI 2.2.1 Module Implementation for ChargeTap
+OCPI 2.2.1 Module Implementation for Tappy Charge
 ===============================================
 This module implements the eMSP (e-Mobility Service Provider) role.
 

@@ -160,8 +160,8 @@ export default function ProfileScreen() {
           <MenuItem
             icon="moon"
             title={t('profile.about')}
-            subtitle="Dark mode"
-            onPress={() => Alert.alert('Info', 'Dark mode is enabled by default')}
+            subtitle={t('profile.darkMode')}
+            onPress={() => Alert.alert(t('profile.info'), t('profile.darkModeEnabled'))}
           />
         </View>
       </View>
@@ -173,19 +173,19 @@ export default function ProfileScreen() {
           <MenuItem
             icon="help-circle"
             title={t('profile.faq')}
-            onPress={() => Alert.alert(t('profile.help'), 'Contact us at support@chargetap.com')}
+            onPress={() => router.push('/faq')}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="document-text"
             title={t('profile.terms')}
-            onPress={() => Alert.alert('Info', t('profile.terms'))}
+            onPress={() => router.push('/terms-of-service')}
           />
           <View style={styles.divider} />
           <MenuItem
             icon="shield-checkmark"
             title={t('profile.privacy')}
-            onPress={() => Alert.alert('Info', t('profile.privacy'))}
+            onPress={() => router.push('/privacy-policy')}
           />
         </View>
       </View>

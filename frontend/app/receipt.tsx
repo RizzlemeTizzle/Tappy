@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   Share,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,8 +19,26 @@ import { useTranslation } from 'react-i18next';
 export default function Receipt() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
-  const { currentSession } = useSessionStore();
+  const { sessionId, fromHistory } = useLocalSearchParams<{ sessionId: string; fromHistory?: string }>();
+  const { currentSession, fetchSession, isLoading } = useSessionStore();
+  const isFromHistory = fromHistory === 'true';
+
+  useEffect(() => {
+    // If viewing from history or session not loaded, fetch it
+    if (sessionId && (!currentSession || currentSession.id !== sessionId)) {
+      fetchSession(sessionId);
+    }
+  }, [sessionId]);
+
+  if (isLoading || (!currentSession && sessionId)) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!currentSession) {
     return (
@@ -183,12 +202,12 @@ ${t('receipt.thankYou')}
           <Ionicons name="share-outline" size={20} color="#FFFFFF" />
           <Text style={styles.shareButtonText}>{t('receipt.share')}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.doneButton}
-          onPress={() => router.replace('/(tabs)/tap')}
+          onPress={() => isFromHistory ? router.back() : router.replace('/(tabs)/tap')}
         >
-          <Text style={styles.doneButtonText}>{t('common.done')}</Text>
+          <Text style={styles.doneButtonText}>{isFromHistory ? t('common.back') : t('common.done')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

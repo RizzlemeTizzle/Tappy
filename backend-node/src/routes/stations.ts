@@ -15,7 +15,14 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-function getPenaltySummary(pricingPlan: any): string {
+interface PricingPlanSummary {
+  penaltyEnabled: boolean;
+  penaltyGraceMinutes: number;
+  penaltyCentsPerMinute: number;
+  penaltyDailyCapCents: number | null;
+}
+
+function getPenaltySummary(pricingPlan: PricingPlanSummary): string {
   if (!pricingPlan.penaltyEnabled) return 'No idle fee';
   const grace = pricingPlan.penaltyGraceMinutes;
   const rate = pricingPlan.penaltyCentsPerMinute;
@@ -34,24 +41,44 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
         pricingPlan: true,
       },
     });
-    
-    return stations.map(station => ({
-      ...station,
-      pricing: station.pricingPlan,
+
+    return stations.map((station) => ({
+      id: station.id,
+      name: station.name,
+      address: station.address,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      chargers: station.chargers.map((c) => ({
+        id: c.id,
+        station_id: c.stationId,
+        connector_type: c.connectorType,
+        max_kw: c.maxKw,
+        status: c.status,
+        nfc_payload: c.nfcPayload,
+      })),
     }));
   });
 
   // Get nearby stations
   fastify.get('/nearby', async (request) => {
-    const query = request.query as any;
-    const lat = parseFloat(query.lat) || 51.9244;
-    const lng = parseFloat(query.lng) || 4.4777;
-    const radiusKm = parseFloat(query.radius_km) || 50;
-    const connectorType = query.connector_type as string | undefined;
+    const query = request.query as {
+      lat?: string;
+      lng?: string;
+      radius_km?: string;
+      connector_type?: string;
+      min_power_kw?: string;
+      max_price_cents?: string;
+      available_only?: string;
+      sort_by?: string;
+    };
+    const lat = parseFloat(query.lat ?? '') || 51.9244;
+    const lng = parseFloat(query.lng ?? '') || 4.4777;
+    const radiusKm = parseFloat(query.radius_km ?? '') || 50;
+    const connectorType = query.connector_type;
     const minPowerKw = query.min_power_kw ? parseFloat(query.min_power_kw) : undefined;
-    const maxPriceCents = query.max_price_cents ? parseInt(query.max_price_cents) : undefined;
+    const maxPriceCents = query.max_price_cents ? parseInt(query.max_price_cents, 10) : undefined;
     const availableOnly = query.available_only === 'true';
-    const sortBy = (query.sort_by as string) || 'distance';
+    const sortBy = query.sort_by ?? 'distance';
 
     const stations = await fastify.prisma.station.findMany({
       include: {
@@ -159,10 +186,137 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
     return results;
   });
 
+  // ==================== FAVORITES ====================
+
+  // Get user's favorited stations
+  fastify.get('/favorites', {
+    preValidation: [fastify.authenticate],
+  }, async (request) => {
+    const { userId } = request.user;
+
+    const favorites = await fastify.prisma.favoriteStation.findMany({
+      where: { userId },
+      include: {
+        station: {
+          include: { chargers: true, pricingPlan: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return favorites.map(({ station }) => ({
+      id: station.id,
+      name: station.name,
+      address: station.address,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      chargers: station.chargers.map((c) => ({
+        id: c.id,
+        connector_type: c.connectorType,
+        max_kw: c.maxKw,
+        status: c.status,
+      })),
+      availability: {
+        available_count: station.chargers.filter((c) => c.status === 'AVAILABLE').length,
+        total_count: station.chargers.length,
+      },
+    }));
+  });
+
+  // Add station to favorites
+  fastify.post('/:stationId/favorite', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const { stationId } = request.params as { stationId: string };
+
+    const station = await fastify.prisma.station.findUnique({ where: { id: stationId } });
+    if (!station) return reply.status(404).send({ error: 'Station not found' });
+
+    const existing = await fastify.prisma.favoriteStation.findUnique({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    if (existing) return reply.status(409).send({ error: 'Already favorited' });
+
+    await fastify.prisma.favoriteStation.create({ data: { userId, stationId } });
+    return { success: true };
+  });
+
+  // Remove station from favorites
+  fastify.delete('/:stationId/favorite', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const { stationId } = request.params as { stationId: string };
+
+    const existing = await fastify.prisma.favoriteStation.findUnique({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    if (!existing) return reply.status(404).send({ error: 'Favorite not found' });
+
+    await fastify.prisma.favoriteStation.delete({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    return { success: true };
+  });
+
+  // ==================== AVAILABILITY ALERTS ====================
+
+  // Get all station IDs where user has a pending alert
+  fastify.get('/alerts', {
+    preValidation: [fastify.authenticate],
+  }, async (request) => {
+    const { userId } = request.user;
+
+    const alerts = await fastify.prisma.availabilityAlertRequest.findMany({
+      where: { userId },
+      select: { stationId: true },
+    });
+
+    return { station_ids: alerts.map((a) => a.stationId) };
+  });
+
+  // Set a one-time availability alert for a station
+  fastify.post('/:stationId/alert', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const { stationId } = request.params as { stationId: string };
+
+    const station = await fastify.prisma.station.findUnique({ where: { id: stationId } });
+    if (!station) return reply.status(404).send({ error: 'Station not found' });
+
+    const existing = await fastify.prisma.availabilityAlertRequest.findUnique({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    if (existing) return reply.status(409).send({ error: 'Alert already set' });
+
+    await fastify.prisma.availabilityAlertRequest.create({ data: { userId, stationId } });
+    return { success: true };
+  });
+
+  // Cancel a pending availability alert
+  fastify.delete('/:stationId/alert', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const { stationId } = request.params as { stationId: string };
+
+    const existing = await fastify.prisma.availabilityAlertRequest.findUnique({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    if (!existing) return reply.status(404).send({ error: 'Alert not found' });
+
+    await fastify.prisma.availabilityAlertRequest.delete({
+      where: { userId_stationId: { userId, stationId } },
+    });
+    return { success: true };
+  });
+
   // Get station by ID
   fastify.get('/:stationId', async (request, reply) => {
     const { stationId } = request.params as { stationId: string };
-    
+
     const station = await fastify.prisma.station.findUnique({
       where: { id: stationId },
       include: {
@@ -170,14 +324,38 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
         pricingPlan: true,
       },
     });
-    
+
     if (!station) {
       return reply.status(404).send({ error: 'Station not found' });
     }
-    
+
+    const p = station.pricingPlan;
+
     return {
-      ...station,
-      pricing: station.pricingPlan,
+      id: station.id,
+      name: station.name,
+      address: station.address,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      chargers: station.chargers.map((c) => ({
+        id: c.id,
+        station_id: c.stationId,
+        connector_type: c.connectorType,
+        max_kw: c.maxKw,
+        status: c.status,
+        nfc_payload: c.nfcPayload,
+      })),
+      pricing: p ? {
+        start_fee_cents: p.startFeeCents,
+        energy_rate_cents_per_kwh: p.energyRateCentsPerKwh,
+        tax_percent: p.taxPercent,
+        penalty: {
+          enabled: p.penaltyEnabled,
+          grace_minutes: p.penaltyGraceMinutes,
+          penalty_cents_per_minute: p.penaltyCentsPerMinute,
+          daily_cap_cents: p.penaltyDailyCapCents,
+        },
+      } : null,
     };
   });
 
@@ -197,14 +375,21 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // Get chargers status bulk
-  fastify.get('/chargers/status/bulk', async (request) => {
-    const query = request.query as { ids: string };
-    const chargerIds = query.ids.split(',').map(id => id.trim());
-    
+  fastify.get('/chargers/status/bulk', async (request, reply) => {
+    const query = request.query as { ids?: string };
+    if (!query.ids) {
+      return reply.status(400).send({ error: 'ids query parameter is required' });
+    }
+    const chargerIds = query.ids
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 100); // Cap at 100 IDs to prevent oversized queries
+
     const chargers = await fastify.prisma.charger.findMany({
       where: { id: { in: chargerIds } },
     });
-    
+
     return chargers;
   });
 };

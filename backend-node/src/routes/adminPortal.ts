@@ -8,7 +8,7 @@ import {
 
 // Admin credentials
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chargetap2025';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'tappycharge2025';
 
 function checkBasicAuth(authHeader: string | undefined): boolean {
   if (!authHeader?.startsWith('Basic ')) return false;
@@ -27,7 +27,7 @@ const adminPortalRoutes: FastifyPluginAsync = async (fastify) => {
   // Auth check
   fastify.addHook('preHandler', async (request, reply) => {
     if (!checkBasicAuth(request.headers.authorization)) {
-      reply.header('WWW-Authenticate', 'Basic realm="ChargeTap Admin"');
+      reply.header('WWW-Authenticate', 'Basic realm="Tappy Charge Admin"');
       return reply.status(401).send('Unauthorized');
     }
   });

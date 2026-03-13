@@ -38,7 +38,7 @@ export default function NotificationSettings() {
     }
     
     try {
-      const response = await api.get('/me/notification-preferences');
+      const response = await api.get('/users/me/notification-preferences');
       const data = response.data;
       setSessionUpdates(data.session_updates_enabled ?? true);
       setPenaltyAlerts(data.penalty_alerts_enabled ?? true);
@@ -61,7 +61,7 @@ export default function NotificationSettings() {
     
     setIsSaving(true);
     try {
-      await api.put('/me/notification-preferences', { [key]: value });
+      await api.put('/users/me/notification-preferences', { [key]: value });
     } catch (error) {
       Alert.alert(t('common.error'), t('errors.generic'));
     } finally {

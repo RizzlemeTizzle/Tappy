@@ -1,4 +1,4 @@
-package com.chargetap
+package com.tappycharge
 
 import android.os.Build
 import android.os.Bundle

@@ -653,7 +653,7 @@ const nfcTokenRoutes: FastifyPluginAsync = async (fastify) => {
     if (command.startsWith('00A4')) {
       // SELECT command
       if (command.includes('F0436861726765546170')) {
-        // Our AID: F0ChargeTap
+        // Our AID: F0TappyCharge
         response = '9000'; // Success
         description = 'SELECT AID success';
       } else {

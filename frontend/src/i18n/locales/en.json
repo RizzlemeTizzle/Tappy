@@ -34,7 +34,8 @@
     "home": "Home",
     "later": "Later",
     "add": "Add",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "help": "Help"
   },
   "auth": {
     "signIn": "Sign In",
@@ -51,10 +52,11 @@
     "forgotPassword": "Forgot password?",
     "invalidCredentials": "Invalid email or password",
     "registrationFailed": "Registration failed",
-    "logoutConfirm": "Are you sure you want to logout?"
+    "logoutConfirm": "Are you sure you want to logout?",
+    "passwordMinLength": "Password must be at least 8 characters"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "EV Charging Made Simple",
     "feature1Title": "Tap to Start",
     "feature1Desc": "Just tap your phone on the charger",
@@ -103,7 +105,14 @@
     "sortBy": "Sort by",
     "sortDistance": "Distance",
     "sortPrice": "Price",
-    "sortPower": "Power"
+    "sortPower": "Power",
+    "all": "All",
+    "listView": "List",
+    "mapView": "Map",
+    "saved": "Saved",
+    "clearFilters": "Clear filters",
+    "updating": "Updating...",
+    "status": "Status"
   },
   "station": {
     "details": "Station Details",
@@ -116,7 +125,25 @@
     "amenities": "Amenities",
     "openingHours": "Opening Hours",
     "open24h": "Open 24 hours",
-    "operatedBy": "Operated by {{operator}}"
+    "operatedBy": "Operated by {{operator}}",
+    "notFound": "Station not found",
+    "availableOf": "{{available}}/{{total}} Available",
+    "savedLabel": "Saved",
+    "saveLabel": "Save",
+    "alertSet": "Alert set",
+    "notifyMe": "Notify me",
+    "navigateTo": "Navigate to Station",
+    "startChargingNfc": "Start Charging via NFC",
+    "noChargersAvailable": "No Chargers Available",
+    "idleFeeDetails": "Idle Fee Details",
+    "penaltyGrace": "Grace period: {{minutes}} minutes after charging completes",
+    "penaltyRate": "Rate: €{{rate}}/min while plugged in",
+    "penaltyMaxPerDay": "Maximum: €{{max}} per day",
+    "penaltyNoCap": "No daily cap - unplug promptly to avoid high fees",
+    "penaltyExampleTitle": "Example:",
+    "penaltyExampleIntro": "If you stay plugged 45 minutes after charging completes:",
+    "penaltyExampleCalc": "Penalty = (45 - {{graceMins}}) × €{{rate}}/min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Available",
@@ -177,7 +204,8 @@
     "preparing": "Preparing",
     "finishing": "Finishing",
     "chargingProgress": "{{percent}}% charged",
-    "helpContact": "Contact support at:\n\nPhone: 1-800-CHARGE\nEmail: support@chargetap.com"
+    "helpContact": "Contact support at:\n\nPhone: 1-800-CHARGE\nEmail: support@tappycharge.com",
+    "connectionLost": "Connection lost"
   },
   "receipt": {
     "title": "Charging Receipt",
@@ -195,9 +223,9 @@
     "transactionId": "Transaction ID",
     "downloadReceipt": "Download Receipt",
     "emailReceipt": "Email Receipt",
-    "share": "Share Receipt",
+    "share": "Share",
     "goHome": "Go to Home",
-    "thankYou": "Thank you for charging with ChargeTap!"
+    "thankYou": "Thank you for charging with Tappy Charge!"
   },
   "history": {
     "title": "Charging History",
@@ -233,7 +261,130 @@
     "about": "About",
     "version": "Version {{version}}",
     "dangerZone": "Danger Zone",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "darkMode": "Dark mode",
+    "darkModeEnabled": "Dark mode is enabled by default",
+    "info": "Info"
+  },
+  "terms": {
+    "lastUpdated": "Last updated: January 1, 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "body": "By downloading, installing, or using the Tappy Charge app, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our service."
+      },
+      "service": {
+        "title": "2. Description of Service",
+        "body": "Tappy Charge provides a mobile application that allows users to locate, access, and pay for electric vehicle charging sessions at participating stations. The service includes account management, payment processing, and session monitoring."
+      },
+      "accounts": {
+        "title": "3. User Accounts",
+        "body": "You must create an account to start charging sessions. You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. You must notify us immediately of any unauthorized use."
+      },
+      "payment": {
+        "title": "4. Payment and Billing",
+        "body": "Charging sessions are billed based on energy consumed (per kWh) and any applicable time fees. By adding a payment method, you authorize Tappy Charge to charge the applicable fees at the end of each session. All charges are final unless there is a billing error."
+      },
+      "sessions": {
+        "title": "5. Charging Sessions",
+        "body": "Sessions begin when you initiate charging and end when you stop the session or the vehicle is fully charged. You are responsible for ensuring your vehicle is properly connected. Tappy Charge is not liable for interruptions caused by network issues, hardware faults, or power outages beyond our control."
+      },
+      "prohibited": {
+        "title": "6. Prohibited Use",
+        "body": "You may not use Tappy Charge for any unlawful purpose, attempt to access another user's account, interfere with the service's operation, reverse engineer the application, or resell access to charging stations."
+      },
+      "liability": {
+        "title": "7. Limitation of Liability",
+        "body": "To the fullest extent permitted by law, Tappy Charge is not liable for any indirect, incidental, or consequential damages arising from your use of the service. Our total liability shall not exceed the amount you paid in the 30 days preceding the claim."
+      },
+      "changes": {
+        "title": "8. Changes to Terms",
+        "body": "We may update these Terms of Service from time to time. Continued use of the app after changes constitutes acceptance of the revised terms. We will notify you of significant changes via the app or email."
+      },
+      "contact": {
+        "title": "9. Contact",
+        "body": "If you have questions about these Terms of Service, please contact us at support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Last updated: January 1, 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Information We Collect",
+        "body": "We collect information you provide directly (name, email, phone number), payment details processed by our PCI-compliant provider, location data when using the map, charging session data (energy consumed, duration, cost), and device identifiers for NFC functionality."
+      },
+      "usage": {
+        "title": "2. How We Use Your Information",
+        "body": "We use your information to process charging sessions and payments, provide customer support, send session receipts and notifications, improve the app, and comply with legal obligations. We do not sell your personal data."
+      },
+      "sharing": {
+        "title": "3. Data Sharing",
+        "body": "We share data with charging station operators to facilitate your session, payment processors to handle transactions, and analytics providers to improve our service. All third parties are contractually required to protect your data and use it only as directed."
+      },
+      "security": {
+        "title": "4. Data Security",
+        "body": "We use industry-standard encryption (TLS) for data in transit and at rest. Payment card details are never stored on our servers — they are tokenized by our payment processor. We conduct regular security reviews of our infrastructure."
+      },
+      "retention": {
+        "title": "5. Data Retention",
+        "body": "We retain your account data for as long as your account is active. Session history is retained for up to 3 years for billing and dispute resolution. You may request deletion of your account and associated data at any time."
+      },
+      "rights": {
+        "title": "6. Your Rights",
+        "body": "Depending on your jurisdiction, you may have the right to access, correct, or delete your personal data, restrict or object to processing, and request data portability. To exercise these rights, contact us at privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Analytics and Tracking",
+        "body": "We use anonymous analytics to understand how the app is used and to identify issues. This data is aggregated and cannot be used to identify individual users. You can opt out of analytics in your device settings."
+      },
+      "changes": {
+        "title": "8. Changes to This Policy",
+        "body": "We may update this Privacy Policy from time to time. We will notify you of material changes via the app or email. Your continued use of Tappy Charge after changes take effect constitutes acceptance of the revised policy."
+      },
+      "contact": {
+        "title": "9. Contact Us",
+        "body": "If you have questions or concerns about this Privacy Policy or our data practices, please contact our privacy team at privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "categories": {
+      "gettingStarted": "Getting Started",
+      "billing": "Billing & Payments",
+      "chargers": "Chargers & Compatibility",
+      "nfc": "Phone as Card (NFC)",
+      "account": "Account & Security"
+    },
+    "items": {
+      "q1": "How do I start a charging session?",
+      "a1": "Open the app, find a nearby station on the map, tap it, then press \"Start Charging\". You can also scan the QR code on the charger.",
+      "q2": "How do I stop a charging session?",
+      "a2": "Go to the Live Session screen and tap \"Stop Charging\". The session ends and your card is charged automatically.",
+      "q3": "Do I need an account to charge?",
+      "a3": "No, you can browse as a guest. But to start a session or save payment methods, you'll need to register.",
+      "q4": "How am I billed?",
+      "a4": "You're charged per kWh consumed plus any applicable time fees. A full breakdown appears at the end of each session.",
+      "q5": "What payment methods are accepted?",
+      "a5": "Credit and debit cards (Visa, Mastercard). You can add your card under Profile → Payment Method.",
+      "q6": "Where can I see my charging history?",
+      "a6": "Tap the \"Sessions\" tab to view all past sessions with cost and energy breakdowns.",
+      "q7": "Can I use any charger?",
+      "a7": "Tappy Charge works with stations listed in the app. Look for the Tappy Charge logo or QR code on a charger.",
+      "q8": "What if a charger is broken or unavailable?",
+      "a8": "Try another nearby station from the map. Report issues via Profile → Help & Support.",
+      "q9": "How fast will my EV charge?",
+      "a9": "Speed depends on the charger's power rating and your vehicle's onboard charger. Station details show the max output in kW.",
+      "q10": "How does Phone-as-Card work?",
+      "a10": "With NFC enabled, your phone can act as a card to tap-start a session directly at compatible chargers — no QR scan needed.",
+      "q11": "Which devices support Phone-as-Card?",
+      "a11": "Any NFC-enabled Android or iPhone with the Tappy Charge app. Enable NFC in your phone's settings first.",
+      "q12": "Is my payment information secure?",
+      "a12": "Yes. We never store full card details. All payments are processed through a PCI-compliant provider.",
+      "q13": "How do I logout?",
+      "a13": "Go to Profile → Danger Zone → Logout."
+    }
   },
   "payment": {
     "addCard": "Add Card",
@@ -344,7 +495,13 @@
     "connecting": "Connecting...",
     "selectStation": "Select a Station",
     "selectCharger": "Select a Charger",
-    "productionNote": "In production, you would tap your phone on the physical charger"
+    "productionNote": "In production, you would tap your phone on the physical charger",
+    "greeting": "Hello, {{name}}",
+    "cardInfo": "Card •••• {{last4}}",
+    "simulatingNfc": "Simulating NFC tap detection",
+    "instantConnection": "Instant Connection",
+    "transparentPricing": "Transparent Pricing",
+    "securePayment": "Secure Payment"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -358,7 +515,12 @@
     "paymentMethodRequired": "Please add a payment method first.",
     "invalidCard": "Invalid card details.",
     "sessionAlreadyActive": "You already have an active session.",
-    "cannotStopSession": "Only the account that started this session can stop it."
+    "cannotStopSession": "Only the account that started this session can stop it.",
+    "failedToLoadStation": "Failed to load station",
+    "couldNotOpenMaps": "Could not open maps",
+    "unavailable": "Unavailable",
+    "chargerCurrentlyStatus": "This charger is currently {{status}}",
+    "failedToConnectCharger": "Failed to connect to charger"
   },
   "format": {
     "currency": "{{value}}",

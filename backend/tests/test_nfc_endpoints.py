@@ -1,6 +1,6 @@
 """
 Test NFC HCE Token Endpoints
-Bug fix session tests for ChargeTap app
+Bug fix session tests for Tappy Charge app
 """
 import pytest
 import requests
@@ -25,7 +25,7 @@ class TestHealthAndBasicEndpoints:
         response = requests.get(f"{BASE_URL}/api/")
         assert response.status_code == 200
         data = response.json()
-        assert "ChargeTap API" in data.get("message", "")
+        assert "Tappy Charge API" in data.get("message", "")
         print(f"✓ Root API passed: {data}")
 
 

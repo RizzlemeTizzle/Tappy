@@ -3,18 +3,57 @@ import { Stack, useRouter, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Platform, Linking } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
+import { useNotificationStore, initializeNotificationListeners } from '../src/store/notificationStore';
 import * as ExpoLinking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 import '../src/i18n';
+import api from '../src/utils/api';
 
 export default function RootLayout() {
-  const { loadToken, isLoading } = useAuthStore();
+  const { loadToken, isLoading, isAuthenticated } = useAuthStore();
+  const { requestPermissions, loadPreferences } = useNotificationStore();
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const { t } = useTranslation();
 
   useEffect(() => {
     loadToken();
+  }, []);
+
+  // Request notification permissions once auth check completes
+  useEffect(() => {
+    if (!isLoading) {
+      requestPermissions();
+    }
+  }, [isLoading]);
+
+  // Load notification preferences from backend when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadPreferences();
+    }
+  }, [isAuthenticated]);
+
+  // Register Expo push token with backend when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const registerPushToken = async () => {
+      try {
+        const { status } = await Notifications.getPermissionsAsync();
+        if (status !== 'granted') return;
+        const tokenData = await Notifications.getExpoPushTokenAsync();
+        await api.post('/users/me/push-token', { token: tokenData.data });
+      } catch {
+        // Non-critical — fails silently on simulators or if permissions denied
+      }
+    };
+    registerPushToken();
+  }, [isAuthenticated]);
+
+  // Set up notification tap/receive listeners for the lifetime of the app
+  useEffect(() => {
+    return initializeNotificationListeners();
   }, []);
 
   // Handle deep links
@@ -87,10 +126,14 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ title: t('auth.createAccount'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="add-payment" options={{ title: t('payment.addCard'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="ready-to-tap" options={{ headerShown: false }} />
         <Stack.Screen name="pricing-confirmation" options={{ title: t('pricing.title'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="live-session" options={{ title: t('session.sessionActive'), headerBackVisible: false, gestureEnabled: false }} />
-        <Stack.Screen name="receipt" options={{ title: t('receipt.title'), headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen name="receipt" options={({ route }) => ({
+          title: t('receipt.title'),
+          headerBackVisible: (route.params as any)?.fromHistory === 'true',
+          gestureEnabled: (route.params as any)?.fromHistory === 'true',
+          headerBackTitle: t('common.back'),
+        })} />
         <Stack.Screen name="history" options={{ title: t('history.title'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="station-details" options={{ title: t('station.details'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="qr-scanner" options={{ headerShown: false, presentation: 'fullScreenModal' }} />

@@ -7,10 +7,20 @@ const paymentMethodSchema = z.object({
   cvv: z.string(),
 });
 
+const notificationPreferencesSchema = z.object({
+  session_updates_enabled: z.boolean().optional(),
+  penalty_alerts_enabled: z.boolean().optional(),
+  payment_enabled: z.boolean().optional(),
+  cost_milestones_enabled: z.boolean().optional(),
+  penalty_prealert_minutes: z.number().int().refine((v) => [1, 3, 5, 10].includes(v), {
+    message: 'penalty_prealert_minutes must be 1, 3, 5, or 10',
+  }).optional(),
+});
+
 const userRoutes: FastifyPluginAsync = async (fastify) => {
   // Get current user
   fastify.get('/me', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     
@@ -26,14 +36,81 @@ const userRoutes: FastifyPluginAsync = async (fastify) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      paymentMethodAdded: user.paymentMethodAdded,
-      paymentMethodLast4: user.paymentMethodLast4,
+      payment_method_added: user.paymentMethodAdded,
+      payment_method_last4: user.paymentMethodLast4,
     };
+  });
+
+  // Get notification preferences
+  fastify.get('/me/notification-preferences', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+
+    let prefs = await fastify.prisma.notificationPreference.findUnique({
+      where: { userId },
+    });
+
+    if (!prefs) {
+      prefs = await fastify.prisma.notificationPreference.create({
+        data: { userId },
+      });
+    }
+
+    return {
+      session_updates_enabled: prefs.sessionUpdatesEnabled,
+      penalty_alerts_enabled: prefs.penaltyAlertsEnabled,
+      payment_enabled: prefs.paymentEnabled,
+      cost_milestones_enabled: prefs.costMilestonesEnabled,
+      penalty_prealert_minutes: prefs.penaltyPrealertMinutes,
+    };
+  });
+
+  // Update notification preferences
+  fastify.put('/me/notification-preferences', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const body = notificationPreferencesSchema.parse(request.body);
+
+    const data: Record<string, unknown> = {};
+    if (body.session_updates_enabled !== undefined) data.sessionUpdatesEnabled = body.session_updates_enabled;
+    if (body.penalty_alerts_enabled !== undefined) data.penaltyAlertsEnabled = body.penalty_alerts_enabled;
+    if (body.payment_enabled !== undefined) data.paymentEnabled = body.payment_enabled;
+    if (body.cost_milestones_enabled !== undefined) data.costMilestonesEnabled = body.cost_milestones_enabled;
+    if (body.penalty_prealert_minutes !== undefined) data.penaltyPrealertMinutes = body.penalty_prealert_minutes;
+
+    await fastify.prisma.notificationPreference.upsert({
+      where: { userId },
+      update: data,
+      create: { userId, ...data },
+    });
+
+    return { success: true };
+  });
+
+  // Store Expo push token
+  fastify.post('/me/push-token', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const { token } = request.body as { token: string };
+
+    if (!token || typeof token !== 'string') {
+      return reply.status(400).send({ error: 'token is required' });
+    }
+
+    await fastify.prisma.user.update({
+      where: { id: userId },
+      data: { expoPushToken: token },
+    });
+
+    return { success: true };
   });
 
   // Add payment method (mocked)
   fastify.post('/payment-method', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const body = paymentMethodSchema.parse(request.body);

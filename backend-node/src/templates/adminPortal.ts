@@ -7,7 +7,7 @@ export function renderAdminLayout(title: string, content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - ChargeTap Admin</title>
+  <title>${title} - Tappy Charge Admin</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -185,7 +185,7 @@ export function renderAdminLayout(title: string, content: string): string {
 </head>
 <body>
   <header class="header">
-    <h1>⚡ ChargeTap Admin</h1>
+    <h1>⚡ Tappy Charge Admin</h1>
     <nav>
       <a href="/admin/tokens" class="active">RFID Tokens</a>
       <a href="/admin/tokens/new">+ Nieuwe Token</a>
@@ -409,7 +409,7 @@ export function renderTokenDetail(token: any): string {
         if (!confirm('Weet je zeker dat je deze token wilt blokkeren?')) return;
         await fetch('/api/admin/tokens/' + id, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:chargetap2025') },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:tappycharge2025') },
           body: JSON.stringify({ status: 'BLOCKED', reason: 'Geblokkeerd via admin portal' })
         });
         location.reload();
@@ -418,7 +418,7 @@ export function renderTokenDetail(token: any): string {
       async function unblockToken(id) {
         await fetch('/api/admin/tokens/' + id, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:chargetap2025') },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:tappycharge2025') },
           body: JSON.stringify({ status: 'ACTIVE' })
         });
         location.reload();
@@ -428,7 +428,7 @@ export function renderTokenDetail(token: any): string {
         if (!confirm('Weet je zeker dat je deze token wilt loskoppelen?')) return;
         await fetch('/api/admin/tokens/' + id + '/unassign', {
           method: 'POST',
-          headers: { 'Authorization': 'Basic ' + btoa('admin:chargetap2025') }
+          headers: { 'Authorization': 'Basic ' + btoa('admin:tappycharge2025') }
         });
         location.reload();
       }
@@ -438,7 +438,7 @@ export function renderTokenDetail(token: any): string {
         if (!email) return;
         fetch('/api/admin/tokens/' + id + '/assign', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:chargetap2025') },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + btoa('admin:tappycharge2025') },
           body: JSON.stringify({ user_email: email })
         }).then(r => r.json()).then(data => {
           if (data.error) alert(data.error);

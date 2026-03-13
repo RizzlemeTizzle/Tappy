@@ -9,7 +9,7 @@ const startSessionSchema = z.object({
 const sessionRoutes: FastifyPluginAsync = async (fastify) => {
   // Start session
   fastify.post('/start', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const body = startSessionSchema.parse(request.body);
@@ -98,7 +98,7 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Get session by ID
   fastify.get('/:sessionId', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const { sessionId } = request.params as { sessionId: string };
@@ -143,6 +143,8 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
       delivered_kwh: session.deliveredKwh,
       current_power_kw: session.currentPowerKw,
       battery_percent: session.batteryPercent,
+      meter_start_kwh: session.meterStartKwh,
+      meter_end_kwh: session.meterEndKwh,
       energy_cost_cents: session.energyCostCents,
       penalty_minutes: session.penaltyMinutes,
       penalty_cost_cents: session.penaltyCostCents,
@@ -176,7 +178,7 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Stop session
   fastify.post('/:sessionId/stop', {
-    preValidation: [fastify.authenticate as any],
+    preValidation: [fastify.authenticate],
   }, async (request, reply) => {
     const { userId } = request.user;
     const { sessionId } = request.params as { sessionId: string };
@@ -261,30 +263,35 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Get user session history
   fastify.get('/user/history', {
-    preValidation: [fastify.authenticate as any],
-  }, async (request) => {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
     const { userId } = request.user;
-    
-    const sessions = await fastify.prisma.session.findMany({
-      where: { userId },
-      include: { station: true },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
-    
-    return sessions.map(session => ({
-      id: session.id,
-      status: session.status,
-      started_at: session.startedAt,
-      ended_at: session.endedAt,
-      delivered_kwh: session.deliveredKwh,
-      total_cost_cents: session.totalCostCents,
-      station: {
-        id: session.station.id,
-        name: session.station.name,
-        address: session.station.address,
-      },
-    }));
+
+    try {
+      const sessions = await fastify.prisma.session.findMany({
+        where: { userId },
+        include: { station: true },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      return sessions.map((session) => ({
+        id: session.id,
+        status: session.status,
+        started_at: session.startedAt,
+        ended_at: session.endedAt,
+        delivered_kwh: session.deliveredKwh,
+        total_cost_cents: session.totalCostCents,
+        station: {
+          id: session.station.id,
+          name: session.station.name,
+          address: session.station.address,
+        },
+      }));
+    } catch (err) {
+      fastify.log.error({ err, userId }, 'Failed to fetch session history');
+      return reply.status(500).send({ error: 'Failed to retrieve session history' });
+    }
   });
 };
 

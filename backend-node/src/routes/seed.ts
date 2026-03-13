@@ -1,4 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 import { v4 as uuid } from 'uuid';
 
 const stationConfigs = [
@@ -150,7 +151,7 @@ const seedRoutes: FastifyPluginAsync = async (fastify) => {
             connectorType: connector,
             maxKw: power,
             status,
-            nfcPayload: `CHARGETAP-${String(i + 1).padStart(3, '0')}-${String.fromCharCode(65 + j)}`,
+            nfcPayload: `TAPPYCHARGE-${String(i + 1).padStart(3, '0')}-${String.fromCharCode(65 + j)}`,
             ocpiEvseUid: `NL*CTP*E${String(i + 1).padStart(5, '0')}*${j + 1}`,
             ocpiConnectorId: String(j + 1),
           },
@@ -200,3 +201,57 @@ const seedRoutes: FastifyPluginAsync = async (fastify) => {
 };
 
 export default seedRoutes;
+
+export async function autoSeedIfEmpty(prisma: PrismaClient): Promise<void> {
+  const count = await prisma.station.count();
+  if (count > 0) return;
+
+  console.log('📡 No stations found — auto-seeding demo data...');
+
+  for (let i = 0; i < stationConfigs.length; i++) {
+    const config = stationConfigs[i];
+    const stationId = `station-${String(i + 1).padStart(3, '0')}`;
+
+    await prisma.station.create({
+      data: {
+        id: stationId,
+        name: config.name,
+        address: config.address,
+        latitude: config.lat,
+        longitude: config.lng,
+      },
+    });
+
+    const template = pricingTemplates[config.type];
+    await prisma.pricingPlan.create({
+      data: {
+        id: `pricing-${String(i + 1).padStart(3, '0')}`,
+        stationId,
+        ...template,
+      },
+    });
+
+    for (let j = 0; j < config.chargers.length; j++) {
+      const [connector, power] = config.chargers[j] as [string, number];
+      const rand = Math.random();
+      let status = 'AVAILABLE';
+      if (rand >= 0.7 && rand < 0.9) status = 'CHARGING';
+      else if (rand >= 0.9) status = 'FAULTED';
+
+      await prisma.charger.create({
+        data: {
+          id: `charger-${String(i + 1).padStart(3, '0')}-${String.fromCharCode(97 + j)}`,
+          stationId,
+          connectorType: connector,
+          maxKw: power,
+          status,
+          nfcPayload: `TAPPYCHARGE-${String(i + 1).padStart(3, '0')}-${String.fromCharCode(65 + j)}`,
+          ocpiEvseUid: `NL*CTP*E${String(i + 1).padStart(5, '0')}*${j + 1}`,
+          ocpiConnectorId: String(j + 1),
+        },
+      });
+    }
+  }
+
+  console.log(`✅ Auto-seeded ${stationConfigs.length} stations`);
+}

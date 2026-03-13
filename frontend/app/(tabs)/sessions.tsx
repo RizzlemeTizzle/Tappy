@@ -45,7 +45,10 @@ export default function SessionsScreen() {
     const isCompleted = item.status === 'ENDED';
 
     return (
-      <TouchableOpacity style={styles.sessionCard}>
+      <TouchableOpacity
+        style={styles.sessionCard}
+        onPress={() => router.push({ pathname: '/receipt', params: { sessionId: item.id, fromHistory: 'true' } })}
+      >
         <View style={styles.sessionHeader}>
           <View style={styles.stationInfo}>
             <Ionicons name="location" size={18} color="#4CAF50" />

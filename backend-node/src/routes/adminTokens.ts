@@ -1,19 +1,34 @@
 import { FastifyPluginAsync } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
 
-// Admin credentials (hardcoded for MVP)
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chargetap2025';
+// Admin credentials must be set via environment variables — no insecure defaults
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-// Contract ID counter (in production, use a sequence)
-let contractIdCounter = 1;
+if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+  throw new Error('ADMIN_USERNAME and ADMIN_PASSWORD environment variables are required');
+}
 
-function generateContractId(): string {
+// Contract ID is derived from the latest DB record to survive restarts.
+// NOTE: this is still susceptible to a race condition under high concurrency;
+// a proper DB sequence (e.g. Postgres SERIAL) should be used in production.
+async function generateContractId(prisma: PrismaClient): Promise<string> {
   const year = new Date().getFullYear();
-  const num = String(contractIdCounter++).padStart(6, '0');
-  return `CTP-NL-${year}-${num}`;
+  const prefix = `CTP-NL-${year}-`;
+  const lastToken = await prisma.rfidToken.findFirst({
+    where: { contractId: { startsWith: prefix } },
+    orderBy: { contractId: 'desc' },
+    select: { contractId: true },
+  });
+  let nextNum = 1;
+  if (lastToken) {
+    const match = lastToken.contractId.match(/(\d+)$/);
+    if (match) nextNum = parseInt(match[1], 10) + 1;
+  }
+  return `${prefix}${String(nextNum).padStart(6, '0')}`;
 }
 
 function maskCardNumber(uid: string): string {
@@ -27,7 +42,10 @@ function checkBasicAuth(authHeader: string | undefined): boolean {
   try {
     const base64 = authHeader.substring(6);
     const decoded = Buffer.from(base64, 'base64').toString('utf-8');
-    const [username, password] = decoded.split(':');
+    const colonIndex = decoded.indexOf(':');
+    if (colonIndex === -1) return false;
+    const username = decoded.substring(0, colonIndex);
+    const password = decoded.substring(colonIndex + 1);
     return username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
   } catch {
     return false;
@@ -39,7 +57,7 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
   // Auth check for all admin routes
   fastify.addHook('preHandler', async (request, reply) => {
     if (!checkBasicAuth(request.headers.authorization)) {
-      reply.header('WWW-Authenticate', 'Basic realm="ChargeTap Admin"');
+      reply.header('WWW-Authenticate', 'Basic realm="Tappy Charge Admin"');
       return reply.status(401).send({ error: 'Unauthorized' });
     }
   });
@@ -59,16 +77,25 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
       offset?: string;
     };
     
-    const where: any = {};
-    
+    type TokenWhere = {
+      status?: string;
+      userId?: string;
+      OR?: Array<{
+        uid?: { contains: string; mode: 'insensitive' };
+        contractId?: { contains: string; mode: 'insensitive' };
+        user?: { email: { contains: string; mode: 'insensitive' } };
+      }>;
+    };
+    const where: TokenWhere = {};
+
     if (query.status) {
       where.status = query.status;
     }
-    
+
     if (query.user_id) {
       where.userId = query.user_id;
     }
-    
+
     if (query.search) {
       where.OR = [
         { uid: { contains: query.search, mode: 'insensitive' } },
@@ -209,24 +236,13 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
         where: { email: body.user_email },
       });
       if (!user) {
-        return reply.status(404).send({ error: `User not found: ${body.user_email}` });
+        // Generic message to avoid revealing whether an email is registered
+        return reply.status(404).send({ error: 'User not found' });
       }
       userId = user.id;
     }
-    
-    // Get next contract ID
-    const lastToken = await fastify.prisma.rfidToken.findFirst({
-      orderBy: { createdAt: 'desc' },
-      select: { contractId: true },
-    });
-    if (lastToken) {
-      const match = lastToken.contractId.match(/(\d+)$/);
-      if (match) {
-        contractIdCounter = parseInt(match[1], 10) + 1;
-      }
-    }
-    
-    const contractId = generateContractId();
+
+    const contractId = await generateContractId(fastify.prisma);
     const visualNumber = maskCardNumber(uid);
     
     const token = await fastify.prisma.rfidToken.create({
@@ -299,8 +315,25 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ error: 'Token not found' });
     }
     
-    const updates: any = { lastUpdated: new Date() };
-    const auditLogs: any[] = [];
+    type TokenUpdate = {
+      lastUpdated: Date;
+      status?: string;
+      whitelist?: string;
+      groupId?: string | null;
+      validUntil?: Date | null;
+    };
+    type AuditLogEntry = {
+      tokenId: string;
+      action: string;
+      field?: string;
+      oldValue?: string | null;
+      newValue?: string | null;
+      performedBy: string;
+      ipAddress: string;
+      reason?: string;
+    };
+    const updates: TokenUpdate = { lastUpdated: new Date() };
+    const auditLogs: AuditLogEntry[] = [];
     
     if (body.status && body.status !== token.status) {
       const action = body.status === 'BLOCKED' ? 'BLOCKED' : 
@@ -481,28 +514,16 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
         skipped: 0,
         errors: [] as { row: number; uid: string; error: string }[],
       };
-      
-      // Get starting contract ID
-      const lastToken = await fastify.prisma.rfidToken.findFirst({
-        orderBy: { createdAt: 'desc' },
-        select: { contractId: true },
-      });
-      if (lastToken) {
-        const match = lastToken.contractId.match(/(\d+)$/);
-        if (match) {
-          contractIdCounter = parseInt(match[1], 10) + 1;
-        }
-      }
-      
+
       for (let i = 0; i < records.length; i++) {
         const record = records[i];
         const uid = (record.rfid_uid || record.uid || '').replace(/[\s:]/g, '').toUpperCase();
-        
+
         if (!uid) {
           results.errors.push({ row: i + 2, uid: '', error: 'Missing RFID UID' });
           continue;
         }
-        
+
         // Check duplicate
         const existing = await fastify.prisma.rfidToken.findUnique({ where: { uid } });
         if (existing) {
@@ -510,7 +531,7 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
           results.errors.push({ row: i + 2, uid, error: 'Duplicate UID' });
           continue;
         }
-        
+
         // Find user if provided
         let userId: string | null = null;
         const userEmail = record.user_email || record.email;
@@ -519,11 +540,12 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
           if (user) {
             userId = user.id;
           } else {
-            results.errors.push({ row: i + 2, uid, error: `User not found: ${userEmail}` });
+            // Log the row error without revealing whether the email is registered externally
+            results.errors.push({ row: i + 2, uid, error: 'User not found for provided email' });
           }
         }
-        
-        const contractId = generateContractId();
+
+        const contractId = await generateContractId(fastify.prisma);
         const visualNumber = record.visual_number || maskCardNumber(uid);
         
         await fastify.prisma.rfidToken.create({
@@ -543,8 +565,9 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
       }
       
       return results;
-    } catch (error: any) {
-      return reply.status(400).send({ error: `CSV parse error: ${error.message}` });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return reply.status(400).send({ error: `CSV parse error: ${message}` });
     }
   });
   
@@ -555,7 +578,7 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/tokens/export', async (request, reply) => {
     const query = request.query as { status?: string; group_id?: string };
     
-    const where: any = {};
+    const where: { status?: string; groupId?: string } = {};
     if (query.status) where.status = query.status;
     if (query.group_id) where.groupId = query.group_id;
     

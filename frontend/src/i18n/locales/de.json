@@ -47,10 +47,11 @@
     "forgotPassword": "Passwort vergessen?",
     "invalidCredentials": "Ungültige E-Mail oder Passwort",
     "registrationFailed": "Registrierung fehlgeschlagen",
-    "logoutConfirm": "Möchten Sie sich wirklich abmelden?"
+    "logoutConfirm": "Möchten Sie sich wirklich abmelden?",
+    "passwordMinLength": "Das Passwort muss mindestens 8 Zeichen lang sein"
   },
   "onboarding": {
-    "title": "ChargeTap",
+    "title": "Tappy Charge",
     "subtitle": "E-Auto Laden Leicht Gemacht",
     "feature1Title": "Tippen zum Starten",
     "feature1Desc": "Halten Sie Ihr Handy an die Ladesäule",
@@ -97,7 +98,14 @@
     "sortBy": "Sortieren nach",
     "sortDistance": "Entfernung",
     "sortPrice": "Preis",
-    "sortPower": "Leistung"
+    "sortPower": "Leistung",
+    "all": "Alle",
+    "listView": "Liste",
+    "mapView": "Karte",
+    "saved": "Gespeichert",
+    "clearFilters": "Filter zurücksetzen",
+    "updating": "Wird aktualisiert...",
+    "status": "Status"
   },
   "station": {
     "details": "Stationsdetails",
@@ -110,7 +118,25 @@
     "amenities": "Ausstattung",
     "openingHours": "Öffnungszeiten",
     "open24h": "24 Stunden geöffnet",
-    "operatedBy": "Betrieben von {{operator}}"
+    "operatedBy": "Betrieben von {{operator}}",
+    "notFound": "Station nicht gefunden",
+    "availableOf": "{{available}}/{{total}} Verfügbar",
+    "savedLabel": "Gespeichert",
+    "saveLabel": "Speichern",
+    "alertSet": "Benachrichtigung gesetzt",
+    "notifyMe": "Benachrichtige mich",
+    "navigateTo": "Zur Station navigieren",
+    "startChargingNfc": "Laden per NFC starten",
+    "noChargersAvailable": "Keine Ladepunkte verfügbar",
+    "idleFeeDetails": "Details zur Standgebühr",
+    "penaltyGrace": "Kulanzzeit: {{minutes}} Minuten nach Abschluss des Ladevorgangs",
+    "penaltyRate": "Preis: €{{rate}}/Min während des Anschlusses",
+    "penaltyMaxPerDay": "Maximum: €{{max}} pro Tag",
+    "penaltyNoCap": "Kein tägliches Limit – schnell abstecken, um hohe Gebühren zu vermeiden",
+    "penaltyExampleTitle": "Beispiel:",
+    "penaltyExampleIntro": "Wenn Sie 45 Minuten nach Abschluss des Ladevorgangs angeschlossen bleiben:",
+    "penaltyExampleCalc": "Strafe = (45 - {{graceMins}}) × €{{rate}}/Min",
+    "penaltyExampleTotal": "= €{{total}}"
   },
   "charger": {
     "available": "Verfügbar",
@@ -156,7 +182,8 @@
     "connected": "Verbunden",
     "preparing": "Vorbereiten",
     "finishing": "Abschließen",
-    "chargingProgress": "{{percent}}% geladen"
+    "chargingProgress": "{{percent}}% geladen",
+    "connectionLost": "Verbindung verloren"
   },
   "receipt": {
     "title": "Ladequittung",
@@ -173,7 +200,7 @@
     "downloadReceipt": "Quittung herunterladen",
     "emailReceipt": "Quittung per E-Mail",
     "goHome": "Zur Startseite",
-    "thankYou": "Vielen Dank fürs Laden mit ChargeTap!"
+    "thankYou": "Vielen Dank fürs Laden mit Tappy Charge!"
   },
   "history": {
     "title": "Ladehistorie",
@@ -209,7 +236,10 @@
     "about": "Über",
     "version": "Version {{version}}",
     "dangerZone": "Gefahrenzone",
-    "deleteAccount": "Konto löschen"
+    "deleteAccount": "Konto löschen",
+    "darkMode": "Dunkelmodus",
+    "darkModeEnabled": "Dunkelmodus ist standardmäßig aktiviert",
+    "info": "Info"
   },
   "payment": {
     "addCard": "Karte hinzufügen",
@@ -254,7 +284,13 @@
     "connecting": "Verbinde...",
     "selectStation": "Station auswählen",
     "selectCharger": "Ladepunkt auswählen",
-    "productionNote": "In der Produktion würden Sie Ihr Handy an den physischen Ladepunkt halten"
+    "productionNote": "In der Produktion würden Sie Ihr Handy an den physischen Ladepunkt halten",
+    "greeting": "Hallo, {{name}}",
+    "cardInfo": "Karte •••• {{last4}}",
+    "simulatingNfc": "NFC-Erkennung wird simuliert",
+    "instantConnection": "Sofortverbindung",
+    "transparentPricing": "Transparente Preise",
+    "securePayment": "Sichere Zahlung"
   },
   "errors": {
     "generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
@@ -268,7 +304,132 @@
     "paymentMethodRequired": "Bitte fügen Sie zuerst eine Zahlungsmethode hinzu.",
     "invalidCard": "Ungültige Kartendaten.",
     "sessionAlreadyActive": "Sie haben bereits eine aktive Sitzung.",
-    "cannotStopSession": "Nur das Konto, das diese Sitzung gestartet hat, kann sie beenden."
+    "cannotStopSession": "Nur das Konto, das diese Sitzung gestartet hat, kann sie beenden.",
+    "failedToLoadStation": "Station konnte nicht geladen werden",
+    "couldNotOpenMaps": "Karten konnten nicht geöffnet werden",
+    "unavailable": "Nicht verfügbar",
+    "chargerCurrentlyStatus": "Dieser Ladepunkt ist derzeit {{status}}",
+    "failedToConnectCharger": "Verbindung zum Ladepunkt fehlgeschlagen"
+  },
+  "terms": {
+    "lastUpdated": "Zuletzt aktualisiert: 1. Januar 2025",
+    "sections": {
+      "acceptance": {
+        "title": "1. Annahme der Nutzungsbedingungen",
+        "body": "Durch das Herunterladen, Installieren oder Verwenden der Tappy Charge-App erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie mit einem Teil dieser Bedingungen nicht einverstanden sind, nutzen Sie bitte unseren Dienst nicht."
+      },
+      "service": {
+        "title": "2. Beschreibung des Dienstes",
+        "body": "Tappy Charge bietet eine mobile Anwendung, mit der Nutzer Ladestationen für Elektrofahrzeuge bei teilnehmenden Stationen finden, nutzen und bezahlen können. Der Dienst umfasst Kontoverwaltung, Zahlungsabwicklung und Sitzungsüberwachung."
+      },
+      "accounts": {
+        "title": "3. Benutzerkonten",
+        "body": "Sie müssen ein Konto erstellen, um Ladesitzungen zu starten. Sie sind dafür verantwortlich, die Vertraulichkeit Ihrer Anmeldedaten zu wahren und für alle Aktivitäten, die unter Ihrem Konto stattfinden. Sie müssen uns unverzüglich über jede unbefugte Nutzung informieren."
+      },
+      "payment": {
+        "title": "4. Zahlung und Abrechnung",
+        "body": "Ladesitzungen werden auf der Grundlage des verbrauchten Energieverbrauchs (pro kWh) und etwaiger Zeitgebühren abgerechnet. Durch das Hinzufügen einer Zahlungsmethode ermächtigen Sie Tappy Charge, die anfallenden Gebühren am Ende jeder Sitzung zu berechnen. Alle Gebühren sind endgültig, es sei denn, es liegt ein Abrechnungsfehler vor."
+      },
+      "sessions": {
+        "title": "5. Ladesitzungen",
+        "body": "Sitzungen beginnen, wenn Sie das Laden einleiten, und enden, wenn Sie die Sitzung beenden oder das Fahrzeug vollständig geladen ist. Sie sind dafür verantwortlich, dass Ihr Fahrzeug ordnungsgemäß angeschlossen ist. Tappy Charge haftet nicht für Unterbrechungen, die durch Netzwerkprobleme, Hardwarefehler oder Stromausfälle außerhalb unserer Kontrolle verursacht werden."
+      },
+      "prohibited": {
+        "title": "6. Verbotene Nutzung",
+        "body": "Sie dürfen Tappy Charge nicht für rechtswidrige Zwecke nutzen, versuchen, auf das Konto eines anderen Nutzers zuzugreifen, den Betrieb des Dienstes zu stören, die Anwendung zurückzuentwickeln oder den Zugang zu Ladestationen weiterzuverkaufen."
+      },
+      "liability": {
+        "title": "7. Haftungsbeschränkung",
+        "body": "Im größtmöglichen gesetzlich zulässigen Umfang haftet Tappy Charge nicht für indirekte, zufällige oder Folgeschäden, die aus Ihrer Nutzung des Dienstes entstehen. Unsere Gesamthaftung darf den Betrag nicht übersteigen, den Sie in den 30 Tagen vor dem Anspruch gezahlt haben."
+      },
+      "changes": {
+        "title": "8. Änderungen der Nutzungsbedingungen",
+        "body": "Wir können diese Nutzungsbedingungen von Zeit zu Zeit aktualisieren. Die weitere Nutzung der App nach Änderungen gilt als Annahme der überarbeiteten Bedingungen. Wir werden Sie über wesentliche Änderungen über die App oder per E-Mail informieren."
+      },
+      "contact": {
+        "title": "9. Kontakt",
+        "body": "Wenn Sie Fragen zu diesen Nutzungsbedingungen haben, kontaktieren Sie uns bitte unter support@tappycharge.com."
+      }
+    }
+  },
+  "privacy": {
+    "lastUpdated": "Zuletzt aktualisiert: 1. Januar 2025",
+    "sections": {
+      "collected": {
+        "title": "1. Informationen, die wir erheben",
+        "body": "Wir erheben Informationen, die Sie direkt angeben (Name, E-Mail, Telefonnummer), Zahlungsdetails, die von unserem PCI-konformen Anbieter verarbeitet werden, Standortdaten bei der Nutzung der Karte, Ladesitzungsdaten (verbrauchte Energie, Dauer, Kosten) und Gerätekennungen für die NFC-Funktionalität."
+      },
+      "usage": {
+        "title": "2. Wie wir Ihre Informationen verwenden",
+        "body": "Wir verwenden Ihre Informationen zur Verarbeitung von Ladesitzungen und Zahlungen, zur Bereitstellung von Kundensupport, zum Versenden von Sitzungsbelegen und Benachrichtigungen, zur Verbesserung der App und zur Erfüllung rechtlicher Verpflichtungen. Wir verkaufen Ihre persönlichen Daten nicht."
+      },
+      "sharing": {
+        "title": "3. Datenweitergabe",
+        "body": "Wir teilen Daten mit Ladestationsbetreibern, um Ihre Sitzung zu ermöglichen, mit Zahlungsabwicklern zur Abwicklung von Transaktionen und mit Analyseanbietern zur Verbesserung unseres Dienstes. Alle Dritten sind vertraglich verpflichtet, Ihre Daten zu schützen und nur wie angewiesen zu verwenden."
+      },
+      "security": {
+        "title": "4. Datensicherheit",
+        "body": "Wir verwenden branchenübliche Verschlüsselung (TLS) für Daten bei der Übertragung und im Ruhezustand. Zahlungskartendetails werden niemals auf unseren Servern gespeichert — sie werden von unserem Zahlungsabwickler tokenisiert. Wir führen regelmäßige Sicherheitsüberprüfungen unserer Infrastruktur durch."
+      },
+      "retention": {
+        "title": "5. Datenspeicherung",
+        "body": "Wir speichern Ihre Kontodaten, solange Ihr Konto aktiv ist. Der Sitzungsverlauf wird bis zu 3 Jahre lang für Abrechnungs- und Streitlösungszwecke aufbewahrt. Sie können jederzeit die Löschung Ihres Kontos und der damit verbundenen Daten beantragen."
+      },
+      "rights": {
+        "title": "6. Ihre Rechte",
+        "body": "Je nach Ihrer Gerichtsbarkeit haben Sie möglicherweise das Recht, auf Ihre persönlichen Daten zuzugreifen, diese zu korrigieren oder zu löschen, die Verarbeitung einzuschränken oder zu widersprechen und Datenübertragbarkeit zu beantragen. Um diese Rechte auszuüben, kontaktieren Sie uns unter privacy@tappycharge.com."
+      },
+      "cookies": {
+        "title": "7. Analyse und Tracking",
+        "body": "Wir verwenden anonyme Analysen, um zu verstehen, wie die App genutzt wird, und um Probleme zu identifizieren. Diese Daten werden aggregiert und können nicht zur Identifizierung einzelner Nutzer verwendet werden. Sie können die Analyse in Ihren Geräteeinstellungen deaktivieren."
+      },
+      "changes": {
+        "title": "8. Änderungen dieser Richtlinie",
+        "body": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über wesentliche Änderungen über die App oder per E-Mail informieren. Ihre weitere Nutzung von Tappy Charge nach Inkrafttreten der Änderungen gilt als Annahme der überarbeiteten Richtlinie."
+      },
+      "contact": {
+        "title": "9. Kontaktieren Sie uns",
+        "body": "Wenn Sie Fragen oder Bedenken zu dieser Datenschutzrichtlinie oder unseren Datenpraktiken haben, kontaktieren Sie bitte unser Datenschutzteam unter privacy@tappycharge.com."
+      }
+    }
+  },
+  "faq": {
+    "title": "FAQ",
+    "categories": {
+      "gettingStarted": "Erste Schritte",
+      "billing": "Abrechnung und Zahlungen",
+      "chargers": "Ladegeräte und Kompatibilität",
+      "nfc": "Telefon als Karte (NFC)",
+      "account": "Konto und Sicherheit"
+    },
+    "items": {
+      "q1": "Wie starte ich eine Ladesitzung?",
+      "a1": "Öffnen Sie die App, finden Sie eine nahegelegene Station auf der Karte, tippen Sie darauf und drücken Sie dann „Laden starten“. Sie können auch den QR-Code am Ladegerät scannen.",
+      "q2": "Wie beende ich eine Ladesitzung?",
+      "a2": "Gehen Sie zum Bildschirm „Live-Sitzung“ und tippen Sie auf „Laden stoppen“. Die Sitzung endet und Ihre Karte wird automatisch belastet.",
+      "q3": "Benötige ich ein Konto zum Laden?",
+      "a3": "Nein, Sie können als Gast stöbern. Um jedoch eine Sitzung zu starten oder Zahlungsmethoden zu speichern, müssen Sie sich registrieren.",
+      "q4": "Wie werde ich abgerechnet?",
+      "a4": "Sie werden pro verbrauchtem kWh zuzüglich etwaiger Zeitgebühren berechnet. Eine vollständige Aufschlüsselung erscheint am Ende jeder Sitzung.",
+      "q5": "Welche Zahlungsmethoden werden akzeptiert?",
+      "a5": "Kredit- und Debitkarten (Visa, Mastercard). Sie können Ihre Karte unter Profil → Zahlungsmethode hinzufügen.",
+      "q6": "Wo kann ich meinen Ladeverlauf sehen?",
+      "a6": "Tippen Sie auf die Registerkarte „Sitzungen“, um alle vergangenen Sitzungen mit Kosten- und Energieaufschlüsselungen anzuzeigen.",
+      "q7": "Kann ich jedes Ladegerät verwenden?",
+      "a7": "Tappy Charge funktioniert mit den in der App aufgelisteten Stationen. Achten Sie auf das Tappy Charge-Logo oder den QR-Code an einem Ladegerät.",
+      "q8": "Was ist, wenn ein Ladegerät defekt oder nicht verfügbar ist?",
+      "a8": "Versuchen Sie eine andere nahegelegene Station auf der Karte. Melden Sie Probleme über Profil → Hilfe und Support.",
+      "q9": "Wie schnell wird mein Elektrofahrzeug geladen?",
+      "a9": "Die Geschwindigkeit hängt von der Leistungsklasse des Ladegeräts und dem Bordladegerät Ihres Fahrzeugs ab. Die Stationsdetails zeigen die maximale Leistung in kW.",
+      "q10": "Wie funktioniert Telefon-als-Karte?",
+      "a10": "Mit aktiviertem NFC kann Ihr Telefon als Karte fungieren, um eine Sitzung direkt an kompatiblen Ladegeräten per Antippen zu starten — kein QR-Scan erforderlich.",
+      "q11": "Welche Geräte unterstützen Telefon-als-Karte?",
+      "a11": "Jedes NFC-fähige Android- oder iPhone-Gerät mit der Tappy Charge-App. Aktivieren Sie zuerst NFC in den Einstellungen Ihres Telefons.",
+      "q12": "Sind meine Zahlungsinformationen sicher?",
+      "a12": "Ja. Wir speichern niemals vollständige Kartendetails. Alle Zahlungen werden über einen PCI-konformen Anbieter abgewickelt.",
+      "q13": "Wie melde ich mich ab?",
+      "a13": "Gehen Sie zu Profil → Gefahrenzone → Abmelden."
+    }
   },
   "format": {
     "currency": "{{value}}",

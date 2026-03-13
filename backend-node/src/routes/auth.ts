@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(4),
+  password: z.string().min(8),
   name: z.string().min(1),
 });
 
@@ -15,8 +15,10 @@ const loginSchema = z.object({
 });
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
-  // Register
-  fastify.post('/register', async (request, reply) => {
+  // Register — rate limited to prevent abuse
+  fastify.post('/register', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const body = registerSchema.parse(request.body);
     
     // Check if email exists
@@ -42,7 +44,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
             uid: ocpiTokenUid,
             type: 'APP_USER',
             authId: body.email,
-            issuer: 'ChargeTap',
+            issuer: 'Tappy Charge',
           },
         },
       },
@@ -59,13 +61,16 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        paymentMethodAdded: user.paymentMethodAdded,
+        payment_method_added: user.paymentMethodAdded,
+        payment_method_last4: user.paymentMethodLast4,
       },
     };
   });
 
-  // Login
-  fastify.post('/login', async (request, reply) => {
+  // Login — rate limited to slow brute-force attacks
+  fastify.post('/login', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const body = loginSchema.parse(request.body);
     
     const user = await fastify.prisma.user.findUnique({
@@ -92,8 +97,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        paymentMethodAdded: user.paymentMethodAdded,
-        paymentMethodLast4: user.paymentMethodLast4,
+        payment_method_added: user.paymentMethodAdded,
+        payment_method_last4: user.paymentMethodLast4,
       },
     };
   });

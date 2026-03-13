@@ -34,7 +34,7 @@ interface AuthState {
   // Pending action state (for resuming after login)
   pendingAction: {
     type: string;
-    data?: any;
+    data?: Record<string, unknown>;
     returnTo?: string;
   } | null;
   
@@ -54,7 +54,7 @@ interface AuthState {
   hasCapability: (capability: Capability) => boolean;
   
   // Pending action management
-  setPendingAction: (action: { type: string; data?: any; returnTo?: string } | null) => void;
+  setPendingAction: (action: { type: string; data?: Record<string, unknown>; returnTo?: string } | null) => void;
   clearPendingAction: () => void;
 }
 
