@@ -507,7 +507,7 @@ const adminTokenRoutes: FastifyPluginAsync = async (fastify) => {
         columns: true,
         skip_empty_lines: true,
         trim: true,
-      });
+      }) as Record<string, string>[];
       
       const results = {
         imported: 0,
