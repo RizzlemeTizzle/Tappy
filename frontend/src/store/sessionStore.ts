@@ -85,6 +85,7 @@ interface SessionState {
   fetchHistory: () => Promise<void>;
   clearSelection: () => void;
   setError: (error: string | null) => void;
+  checkActiveSession: () => Promise<Session | null>;
 }
 
 const getToken = async () => {
@@ -145,8 +146,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         { charger_id: selectedCharger.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      const session_id = response.data.session_id;
+      await AsyncStorage.setItem('@active_session_id', session_id);
       set({ isLoading: false });
-      return response.data.session_id;
+      return session_id;
     } catch (error: any) {
       set({ error: error.response?.data?.error || error.message, isLoading: false });
       throw error;
@@ -160,6 +163,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ currentSession: response.data });
+      if (response.data.status === 'ENDED') {
+        await AsyncStorage.removeItem('@active_session_id');
+      }
     } catch (error: any) {
       set({ error: error.response?.data?.error || error.message });
     }
@@ -174,6 +180,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      await AsyncStorage.removeItem('@active_session_id');
       // Merge stop response into existing session to preserve pricing_snapshot and other fields
       set((state) => ({
         currentSession: state.currentSession
@@ -211,5 +218,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     });
   },
 
-  setError: (error: string | null) => set({ error })
+  setError: (error: string | null) => set({ error }),
+
+  checkActiveSession: async () => {
+    const sessionId = await AsyncStorage.getItem('@active_session_id');
+    if (!sessionId) return null;
+    await get().fetchSession(sessionId);
+    const session = get().currentSession;
+    if (!session || session.status === 'ENDED') {
+      await AsyncStorage.removeItem('@active_session_id');
+      return null;
+    }
+    return session;
+  },
 }));

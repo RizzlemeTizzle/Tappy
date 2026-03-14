@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import ActiveSessionBanner from '../../src/components/ActiveSessionBanner';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -88,6 +89,9 @@ export default function TabLayout() {
         />
       </Tabs>
       
+      {/* Active Session Banner */}
+      <ActiveSessionBanner tabBarHeight={tabBarHeight} />
+
       {/* Floating QR Scanner Button */}
       <TouchableOpacity
         style={[styles.qrButton, { bottom: tabBarHeight + 16 }]}

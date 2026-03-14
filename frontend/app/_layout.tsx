@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Platform, Linking } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
 import { useNotificationStore, initializeNotificationListeners } from '../src/store/notificationStore';
+import { useSessionStore } from '../src/store/sessionStore';
 import * as ExpoLinking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import api from '../src/utils/api';
 
 export default function RootLayout() {
   const { loadToken, isLoading, isAuthenticated } = useAuthStore();
+  const { checkActiveSession } = useSessionStore();
   const { requestPermissions, loadPreferences } = useNotificationStore();
   const router = useRouter();
   const navigationState = useRootNavigationState();
@@ -55,6 +57,16 @@ export default function RootLayout() {
   useEffect(() => {
     return initializeNotificationListeners();
   }, []);
+
+  // Recover active session on app launch
+  useEffect(() => {
+    if (isLoading || !navigationState?.key || !isAuthenticated) return;
+    checkActiveSession().then((session) => {
+      if (session) {
+        router.replace({ pathname: '/live-session', params: { sessionId: session.id } });
+      }
+    });
+  }, [isLoading, isAuthenticated, navigationState?.key]);
 
   // Handle deep links
   useEffect(() => {
@@ -127,7 +139,7 @@ export default function RootLayout() {
         <Stack.Screen name="add-payment" options={{ title: t('payment.addCard'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="pricing-confirmation" options={{ title: t('pricing.title'), headerBackTitle: t('common.back') }} />
-        <Stack.Screen name="live-session" options={{ title: t('session.sessionActive'), headerBackVisible: false, gestureEnabled: false }} />
+        <Stack.Screen name="live-session" options={{ title: t('session.sessionActive'), headerBackVisible: true, gestureEnabled: true }} />
         <Stack.Screen name="receipt" options={({ route }) => ({
           title: t('receipt.title'),
           headerBackVisible: (route.params as any)?.fromHistory === 'true',
