@@ -1,0 +1,15 @@
+# Exclude Metro bundler cache
+.metro-cache/
+
+# Exclude backend directories (not needed for frontend build)
+../backend/
+../backend-node/
+
+# Exclude dev/tooling directories
+../.emergent/
+../memory/
+../test_reports/
+../tools/
+
+# Exclude git internals
+../.git/
