@@ -1822,7 +1822,7 @@ async def deregister_device(data: dict, user: dict = Depends(get_current_user)):
 
 # ==================== NOTIFICATION PREFERENCES ENDPOINTS ====================
 
-@api_router.get("/me/notification-preferences")
+@api_router.get("/users/me/notification-preferences")
 async def get_notification_preferences(user: dict = Depends(get_current_user)):
     """Get user's notification preferences"""
     
@@ -1845,7 +1845,7 @@ async def get_notification_preferences(user: dict = Depends(get_current_user)):
         "cost_milestone_thresholds": prefs.get("cost_milestone_thresholds", [500, 1000, 2000])
     })
 
-@api_router.put("/me/notification-preferences")
+@api_router.put("/users/me/notification-preferences")
 async def update_notification_preferences(data: NotificationPreferenceUpdate, user: dict = Depends(get_current_user)):
     """Update user's notification preferences"""
     
