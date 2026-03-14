@@ -14,6 +14,7 @@ import api from '../src/utils/api';
 export default function RootLayout() {
   const { loadToken, isLoading, isAuthenticated } = useAuthStore();
   const { checkActiveSession } = useSessionStore();
+  const sessionRecoveryDoneRef = React.useRef(false);
   const { requestPermissions, loadPreferences } = useNotificationStore();
   const router = useRouter();
   const navigationState = useRootNavigationState();
@@ -58,9 +59,11 @@ export default function RootLayout() {
     return initializeNotificationListeners();
   }, []);
 
-  // Recover active session on app launch
+  // Recover active session on app launch (runs once only)
   useEffect(() => {
     if (isLoading || !navigationState?.key || !isAuthenticated) return;
+    if (sessionRecoveryDoneRef.current) return;
+    sessionRecoveryDoneRef.current = true;
     checkActiveSession().then((session) => {
       if (session) {
         router.replace({ pathname: '/live-session', params: { sessionId: session.id } });
