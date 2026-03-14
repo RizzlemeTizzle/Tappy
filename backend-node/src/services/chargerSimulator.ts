@@ -5,6 +5,9 @@ interface SimulatorSession {
   maxPowerKw: number;
   stopped: boolean;
   chargingCompleteAt?: Date;
+  frozenDeliveredKwh?: number;
+  frozenCurrentPowerKw?: number;
+  frozenEnergyCostCents?: number;
 }
 
 export class ChargerSimulator {
@@ -78,7 +81,7 @@ export class ChargerSimulator {
       // Simulate battery percentage
       const batteryPercent = Math.min(100, Math.floor(20 + (deliveredKwh / 60) * 100));
       
-      // Calculate costs
+      // Calculate costs (will be overridden by frozen values after completion)
       const energyCostCents = Math.floor(deliveredKwh * session.pricingEnergyRateCents);
       let subtotal = session.pricingStartFeeCents + energyCostCents;
       
@@ -91,15 +94,23 @@ export class ChargerSimulator {
       if (batteryPercent >= 100 && !chargingCompleteAt) {
         chargingCompleteAt = new Date();
         simSession.chargingCompleteAt = chargingCompleteAt;
+        simSession.frozenDeliveredKwh = Math.round(deliveredKwh * 1000) / 1000;
+        simSession.frozenEnergyCostCents = Math.floor(deliveredKwh * session.pricingEnergyRateCents);
+        simSession.frozenCurrentPowerKw = 0;
         newStatus = 'COMPLETE';
-        
+
         // Update charger status
         await this.prisma.charger.update({
           where: { id: session.chargerId },
           data: { status: 'COMPLETE' },
         });
       }
-      
+
+      // Use frozen values once charging is complete so energy cost doesn't keep rising
+      const finalDeliveredKwh = simSession.frozenDeliveredKwh ?? deliveredKwh;
+      const finalCurrentPowerKw = simSession.frozenCurrentPowerKw ?? currentPower;
+      const finalEnergyCostCents = simSession.frozenEnergyCostCents ?? energyCostCents;
+
       // Calculate penalty if applicable
       if (chargingCompleteAt && session.pricingPenaltyEnabled) {
         const idleMinutes = (Date.now() - chargingCompleteAt.getTime()) / 60000;
@@ -124,24 +135,25 @@ export class ChargerSimulator {
         }
       }
       
-      // Calculate tax and total
-      const subtotalWithPenalty = subtotal + penaltyCostCents;
+      // Calculate tax and total using frozen energy cost once charging is complete
+      const finalSubtotal = session.pricingStartFeeCents + finalEnergyCostCents;
+      const subtotalWithPenalty = finalSubtotal + penaltyCostCents;
       const taxCents = Math.floor(subtotalWithPenalty * session.pricingTaxPercent / 100);
       const totalCostCents = subtotalWithPenalty + taxCents;
-      
+
       // Update session
       await this.prisma.session.update({
         where: { id: sessionId },
         data: {
-          deliveredKwh: Math.round(deliveredKwh * 1000) / 1000,
-          currentPowerKw: Math.round(currentPower * 10) / 10,
+          deliveredKwh: finalDeliveredKwh,
+          currentPowerKw: Math.round(finalCurrentPowerKw * 10) / 10,
           batteryPercent,
-          energyCostCents,
+          energyCostCents: finalEnergyCostCents,
           penaltyMinutes,
           penaltyCostCents,
           taxCents,
           totalCostCents,
-          meterEndKwh: session.meterStartKwh + deliveredKwh,
+          meterEndKwh: session.meterStartKwh + finalDeliveredKwh,
           status: newStatus,
           chargingCompleteAt,
         },

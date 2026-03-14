@@ -90,8 +90,8 @@ export default function LiveSession() {
       }, 0);
     }
 
-    // Cost milestones: fire at every €5 increment (500 cents)
-    if (preferences.cost_milestones_enabled) {
+    // Cost milestones: fire at every €5 increment (500 cents), only while actively charging
+    if (preferences.cost_milestones_enabled && status === 'CHARGING') {
       const MILESTONE_CENTS = 500;
       const currentMilestone = Math.floor(currentSession.total_cost_cents / MILESTONE_CENTS) * MILESTONE_CENTS;
       if (currentMilestone > 0 && currentMilestone > lastMilestoneCentsRef.current) {
@@ -114,6 +114,12 @@ export default function LiveSession() {
         station_name: currentSession.station?.name ?? '',
         reason: t('session.connectionLost'),
       }, 0);
+    }
+
+    // Stop polling once the session is fully ended
+    if (status === 'ENDED' && pollInterval.current) {
+      clearInterval(pollInterval.current);
+      pollInterval.current = null;
     }
 
     prevStatusRef.current = status;
