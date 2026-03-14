@@ -486,6 +486,23 @@ export default function FindScreen() {
           </View>
         )}
 
+        {/* Notify me — only when fully unavailable */}
+        {selectedStation.availability.available_count === 0 && (
+          <TouchableOpacity
+            style={[styles.mapNotifyBtn, hasAlert(selectedStation.id) && styles.mapNotifyBtnActive]}
+            onPress={() => hasAlert(selectedStation.id) ? cancelAlert(selectedStation.id) : setAlert(selectedStation.id)}
+          >
+            <Ionicons
+              name={hasAlert(selectedStation.id) ? 'notifications' : 'notifications-outline'}
+              size={18}
+              color={hasAlert(selectedStation.id) ? '#000' : '#4CAF50'}
+            />
+            <Text style={[styles.mapNotifyBtnText, hasAlert(selectedStation.id) && styles.mapNotifyBtnTextActive]}>
+              {hasAlert(selectedStation.id) ? t('station.alertSet') : t('station.notifyMe')}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* CTAs */}
         <View style={styles.mapCardActions}>
           <TouchableOpacity style={styles.mapNavBtn} onPress={() => handleNavigate(selectedStation)}>
@@ -929,6 +946,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
   },
+
+  // Map notify button
+  mapNotifyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+    marginBottom: 10,
+    gap: 6,
+  },
+  mapNotifyBtnActive: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  mapNotifyBtnText: { color: '#4CAF50', fontSize: 14, fontWeight: '600' },
+  mapNotifyBtnTextActive: { color: '#000' },
 
   // Map CTAs
   mapCardActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
