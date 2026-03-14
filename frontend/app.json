@@ -41,7 +41,10 @@
               "pathPrefix": "/start"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -77,6 +80,13 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "http://192.168.68.105:8001",
+      "router": {},
+      "eas": {
+        "projectId": "da0eb21a-97c3-4b90-9ca1-ea80608a6bd2"
+      }
     }
   }
 }
