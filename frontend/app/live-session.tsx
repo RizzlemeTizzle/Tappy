@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120,
+    paddingBottom: 16,
   },
   stationInfo: {
     flexDirection: 'row',
@@ -305,13 +305,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bottomButtons: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     padding: 20,
-    paddingBottom: 32,
     backgroundColor: '#0A0A0A',
     borderTopWidth: 1,
     borderTopColor: '#1E1E1E',

@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120,
+    paddingBottom: 16,
   },
   successHeader: {
     alignItems: 'center',
@@ -395,13 +395,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomButtons: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     padding: 20,
-    paddingBottom: 32,
     backgroundColor: '#0A0A0A',
     borderTopWidth: 1,
     borderTopColor: '#1E1E1E',
