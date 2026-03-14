@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -125,38 +126,43 @@ export default function LiveSession() {
     prevStatusRef.current = status;
   }, [currentSession]);
 
+  const doStop = async () => {
+    setStopping(true);
+    userInitiatedStopRef.current = true;
+    try {
+      if (pollInterval.current) {
+        clearInterval(pollInterval.current);
+      }
+      const stoppedSession = await stopSession(sessionId!);
+      scheduleLocalNotification(NotificationType.SESSION_STOPPED, {
+        station_name: currentSession?.station?.name ?? '',
+        total: formatCents(stoppedSession.total_cost_cents),
+      }, 0);
+      // Delay receipt notification so it fires after the user has landed on the receipt screen
+      scheduleLocalNotification(NotificationType.PAYMENT_SUCCEEDED, {
+        total: formatCents(stoppedSession.total_cost_cents),
+      }, 3);
+      router.replace({ pathname: '/receipt', params: { sessionId } });
+    } catch (error: any) {
+      Alert.alert(t('common.error'), error.response?.data?.error || t('errors.generic'));
+      setStopping(false);
+    }
+  };
+
   const handleStopCharging = () => {
+    // Alert.alert is a no-op in react-native-web; use window.confirm on web
+    if (Platform.OS === 'web') {
+      if ((window as any).confirm(`${t('session.stopCharging')}\n\n${t('session.confirmStop')}`)) {
+        doStop();
+      }
+      return;
+    }
     Alert.alert(
       t('session.stopCharging'),
       t('session.confirmStop'),
       [
         { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('session.stop'),
-          style: 'destructive',
-          onPress: async () => {
-            setStopping(true);
-            userInitiatedStopRef.current = true;
-            try {
-              if (pollInterval.current) {
-                clearInterval(pollInterval.current);
-              }
-              const stoppedSession = await stopSession(sessionId!);
-              scheduleLocalNotification(NotificationType.SESSION_STOPPED, {
-                station_name: currentSession?.station?.name ?? '',
-                total: formatCents(stoppedSession.total_cost_cents),
-              }, 0);
-              // Delay receipt notification so it fires after the user has landed on the receipt screen
-              scheduleLocalNotification(NotificationType.PAYMENT_SUCCEEDED, {
-                total: formatCents(stoppedSession.total_cost_cents),
-              }, 3);
-              router.replace({ pathname: '/receipt', params: { sessionId } });
-            } catch (error: any) {
-              Alert.alert(t('common.error'), error.response?.data?.error || t('errors.generic'));
-              setStopping(false);
-            }
-          }
-        }
+        { text: t('session.stop'), style: 'destructive', onPress: doStop },
       ]
     );
   };
