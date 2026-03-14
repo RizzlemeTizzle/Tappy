@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Share,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -82,7 +82,7 @@ ${t('receipt.thankYou')}
 `;
       await Share.share({ message: receiptText });
     } catch (error) {
-      Alert.alert(t('common.error'), t('errors.generic'));
+      showAlert(t('common.error'), t('errors.generic'));
     }
   };
 

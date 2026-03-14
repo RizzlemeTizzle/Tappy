@@ -8,9 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +28,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert(t('common.error'), t('errors.generic'));
+      showAlert(t('common.error'), t('errors.generic'));
       return;
     }
 
@@ -37,7 +37,7 @@ export default function Login() {
       await login(email.trim(), password);
       router.replace('/(tabs)/tap');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('auth.invalidCredentials'));
+      showAlert(t('common.error'), error.response?.data?.error || error.message || t('auth.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }

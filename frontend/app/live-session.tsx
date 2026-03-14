@@ -4,10 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   ScrollView,
-  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '../src/store/sessionStore';
 import { useNotificationStore, NotificationType } from '../src/store/notificationStore';
 import { formatCents, formatCentsPerMinute } from '../src/utils/formatters';
+import { showAlert } from '../src/utils/alert';
 import LiveCostDisplay from '../src/components/LiveCostDisplay';
 import { useTranslation } from 'react-i18next';
 
@@ -144,20 +143,13 @@ export default function LiveSession() {
       }, 3);
       router.replace({ pathname: '/receipt', params: { sessionId } });
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.error || t('errors.generic'));
+      showAlert(t('common.error'), error.response?.data?.error || t('errors.generic'));
       setStopping(false);
     }
   };
 
   const handleStopCharging = () => {
-    // Alert.alert is a no-op in react-native-web; use window.confirm on web
-    if (Platform.OS === 'web') {
-      if ((window as any).confirm(`${t('session.stopCharging')}\n\n${t('session.confirmStop')}`)) {
-        doStop();
-      }
-      return;
-    }
-    Alert.alert(
+    showAlert(
       t('session.stopCharging'),
       t('session.confirmStop'),
       [
@@ -168,7 +160,7 @@ export default function LiveSession() {
   };
 
   const handleGetHelp = () => {
-    Alert.alert(
+    showAlert(
       t('common.help'),
       t('session.helpContact'),
       [{ text: t('common.ok') }]

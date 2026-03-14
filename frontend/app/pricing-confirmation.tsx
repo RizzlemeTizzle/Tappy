@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,7 +53,7 @@ export default function PricingConfirmation() {
 
     // Require payment method
     if (!user?.payment_method_added) {
-      Alert.alert(
+      showAlert(
         t('payment.cardRequired'),
         t('errors.paymentMethodRequired'),
         [
@@ -75,14 +75,14 @@ export default function PricingConfirmation() {
       scheduleLocalNotification(NotificationType.SESSION_START_FAILED, {
         station_name: selectedStation.name,
       }, 0);
-      Alert.alert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
+      showAlert(t('common.error'), error.response?.data?.detail || t('errors.generic'));
     } finally {
       setStarting(false);
     }
   };
 
   const handleCancel = () => {
-    Alert.alert(t('common.cancel'), t('session.confirmCancel'), [
+    showAlert(t('common.cancel'), t('session.confirmCancel'), [
       { text: t('common.no'), style: 'cancel' },
       { text: t('common.yes'), onPress: () => { clearSelection(); router.back(); } }
     ]);

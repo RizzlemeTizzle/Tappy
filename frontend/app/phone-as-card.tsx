@@ -5,11 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Switch,
   Platform,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +52,7 @@ export default function PhoneAsCardScreen() {
 
   useEffect(() => {
     if (error) {
-      Alert.alert(t('common.error'), error, [{ text: t('common.ok'), onPress: clearError }]);
+      showAlert(t('common.error'), error, [{ text: t('common.ok'), onPress: clearError }]);
     }
   }, [error]);
 

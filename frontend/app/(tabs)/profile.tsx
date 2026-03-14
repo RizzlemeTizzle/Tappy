@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ScrollView,
   Modal,
   FlatList,
 } from 'react-native';
+import { showAlert } from '../../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
@@ -23,7 +23,7 @@ export default function ProfileScreen() {
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert(t('common.logout'), t('auth.logoutConfirm'), [
+    showAlert(t('common.logout'), t('auth.logoutConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.logout'),
@@ -161,7 +161,7 @@ export default function ProfileScreen() {
             icon="moon"
             title={t('profile.about')}
             subtitle={t('profile.darkMode')}
-            onPress={() => Alert.alert(t('profile.info'), t('profile.darkModeEnabled'))}
+            onPress={() => showAlert(t('profile.info'), t('profile.darkModeEnabled'))}
           />
         </View>
       </View>

@@ -8,9 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,26 +43,26 @@ export default function AddPayment() {
   const handleSubmit = async () => {
     const cleanedCard = cardNumber.replace(/\s/g, '');
     if (cleanedCard.length !== 16) {
-      Alert.alert(t('common.error'), t('errors.invalidCard'));
+      showAlert(t('common.error'), t('errors.invalidCard'));
       return;
     }
     if (expiry.length !== 5) {
-      Alert.alert(t('common.error'), t('errors.invalidCard'));
+      showAlert(t('common.error'), t('errors.invalidCard'));
       return;
     }
     if (cvv.length < 3) {
-      Alert.alert(t('common.error'), t('errors.invalidCard'));
+      showAlert(t('common.error'), t('errors.invalidCard'));
       return;
     }
 
     setIsLoading(true);
     try {
       await addPaymentMethod(cleanedCard, expiry, cvv);
-      Alert.alert(t('common.success'), t('payment.cardAdded'), [
+      showAlert(t('common.success'), t('payment.cardAdded'), [
         { text: t('common.ok'), onPress: () => router.replace('/(tabs)/find') }
       ]);
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('errors.paymentFailed'));
+      showAlert(t('common.error'), error.response?.data?.error || error.message || t('errors.paymentFailed'));
     } finally {
       setIsLoading(false);
     }

@@ -8,9 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,12 +29,12 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert(t('common.error'), t('errors.generic'));
+      showAlert(t('common.error'), t('errors.generic'));
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert(t('common.error'), t('auth.passwordMinLength'));
+      showAlert(t('common.error'), t('auth.passwordMinLength'));
       return;
     }
 
@@ -43,7 +43,7 @@ export default function Register() {
       await register(email.trim(), password, name.trim());
       router.replace('/add-payment');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('auth.registrationFailed'));
+      showAlert(t('common.error'), error.response?.data?.error || error.message || t('auth.registrationFailed'));
     } finally {
       setIsLoading(false);
     }

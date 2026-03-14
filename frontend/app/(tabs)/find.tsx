@@ -10,9 +10,9 @@ import {
   Platform,
   ScrollView,
   Linking,
-  Alert,
   Animated,
 } from 'react-native';
+import { showAlert } from '../../src/utils/alert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -204,7 +204,7 @@ export default function FindScreen() {
       android: `geo:${station.latitude},${station.longitude}?q=${station.latitude},${station.longitude}(${encodeURIComponent(station.name)})`,
       default: `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,
     });
-    if (url) Linking.openURL(url).catch(() => Alert.alert(t('common.error'), t('errors.generic')));
+    if (url) Linking.openURL(url).catch(() => showAlert(t('common.error'), t('errors.generic')));
   };
 
   const handleViewDetails = (station: NearbyStation) => {

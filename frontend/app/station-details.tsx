@@ -7,9 +7,9 @@ import {
   ScrollView,
   ActivityIndicator,
   Linking,
-  Alert,
   Platform,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,14 +93,14 @@ export default function StationDetails() {
 
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert(t('common.error'), t('errors.couldNotOpenMaps'));
+        showAlert(t('common.error'), t('errors.couldNotOpenMaps'));
       });
     }
   };
 
   const handleStartCharging = async (charger: Charger) => {
     if (charger.status !== 'AVAILABLE') {
-      Alert.alert(t('errors.unavailable'), t('errors.chargerCurrentlyStatus', { status: charger.status }));
+      showAlert(t('errors.unavailable'), t('errors.chargerCurrentlyStatus', { status: charger.status }));
       return;
     }
 
@@ -108,7 +108,7 @@ export default function StationDetails() {
       await resolveNfc(charger.nfc_payload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.response?.data?.error || t('errors.failedToConnectCharger'));
+      showAlert(t('common.error'), err.response?.data?.error || t('errors.failedToConnectCharger'));
     }
   };
 

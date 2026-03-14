@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   Modal,
   FlatList,
 } from 'react-native';
+import { showAlert } from '../../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,7 +45,7 @@ export default function TapScreen() {
       await resolveNfc(nfcPayload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.response?.data?.error || err.message || t('errors.chargerNotAvailable'));
+      showAlert(t('common.error'), err.response?.data?.error || err.message || t('errors.chargerNotAvailable'));
     } finally {
       setIsTapping(false);
     }

@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   Dimensions,
   Platform,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -179,7 +179,7 @@ export default function QRScannerScreen() {
           error: data.error 
         });
         
-        Alert.alert('Fout', data.error || 'Kon laden niet starten');
+        showAlert('Fout', data.error || 'Kon laden niet starten');
         return;
       }
       
@@ -194,7 +194,7 @@ export default function QRScannerScreen() {
         params: { sessionId: data.session_id },
       });
     } catch (err) {
-      Alert.alert('Fout', 'Kan geen verbinding maken met server');
+      showAlert('Fout', 'Kan geen verbinding maken met server');
     } finally {
       setLoading(false);
     }

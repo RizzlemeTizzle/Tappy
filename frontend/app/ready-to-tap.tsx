@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   ScrollView,
   Modal,
   FlatList,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,7 +45,7 @@ export default function ReadyToTap() {
       await resolveNfc(nfcPayload);
       router.push('/pricing-confirmation');
     } catch (err: any) {
-      Alert.alert(t('common.error'), err.response?.data?.detail || t('errors.failedToConnectCharger'));
+      showAlert(t('common.error'), err.response?.data?.detail || t('errors.failedToConnectCharger'));
     } finally {
       setIsTapping(false);
     }
@@ -62,7 +62,7 @@ export default function ReadyToTap() {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('common.logout'), t('auth.logoutConfirm'), [
+    showAlert(t('common.logout'), t('auth.logoutConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.logout'), style: 'destructive', onPress: logout }
     ]);

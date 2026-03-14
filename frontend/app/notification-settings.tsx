@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -66,7 +66,7 @@ export default function NotificationSettings() {
     try {
       await api.put('/users/me/notification-preferences', { [key]: value });
     } catch (error) {
-      Alert.alert(t('common.error'), t('errors.generic'));
+      showAlert(t('common.error'), t('errors.generic'));
     } finally {
       setIsSaving(false);
     }
