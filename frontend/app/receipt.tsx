@@ -187,13 +187,6 @@ ${t('receipt.thankYou')}
           </View>
         </View>
 
-        {/* Pricing Snapshot Notice */}
-        <View style={styles.snapshotNotice}>
-          <Ionicons name="lock-closed" size={16} color="#4CAF50" />
-          <Text style={styles.snapshotText}>
-            {t('pricing.lockedAt')}: {formatDate(currentSession.pricing_snapshot.locked_at)}
-          </Text>
-        </View>
       </ScrollView>
 
       {/* Bottom Buttons */}
