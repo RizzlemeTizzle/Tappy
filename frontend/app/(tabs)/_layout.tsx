@@ -5,11 +5,16 @@ import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import ActiveSessionBanner from '../../src/components/ActiveSessionBanner';
+import { useSessionStore } from '../../src/store/sessionStore';
+
+const BANNER_HEIGHT = 56; // approximate height of ActiveSessionBanner
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  const currentSession = useSessionStore((s) => s.currentSession);
+  const bannerVisible = !!(currentSession && currentSession.status !== 'ENDED');
   
   // Calculate bottom padding - use safe area insets for proper spacing
   const bottomPadding = Platform.OS === 'ios' 
@@ -94,7 +99,7 @@ export default function TabLayout() {
 
       {/* Floating QR Scanner Button */}
       <TouchableOpacity
-        style={[styles.qrButton, { bottom: tabBarHeight + 16 }]}
+        style={[styles.qrButton, { bottom: bannerVisible ? tabBarHeight + 8 + BANNER_HEIGHT + 8 : tabBarHeight + 16 }]}
         onPress={() => router.push('/qr-scanner')}
         activeOpacity={0.8}
       >
