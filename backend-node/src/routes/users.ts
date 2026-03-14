@@ -12,6 +12,9 @@ const notificationPreferencesSchema = z.object({
   penalty_alerts_enabled: z.boolean().optional(),
   payment_enabled: z.boolean().optional(),
   cost_milestones_enabled: z.boolean().optional(),
+  cost_milestone_cents: z.number().int().refine((v) => [100, 200, 500, 1000].includes(v), {
+    message: 'cost_milestone_cents must be 100, 200, 500, or 1000',
+  }).optional(),
   penalty_prealert_minutes: z.number().int().refine((v) => [1, 3, 5, 10].includes(v), {
     message: 'penalty_prealert_minutes must be 1, 3, 5, or 10',
   }).optional(),
@@ -62,6 +65,7 @@ const userRoutes: FastifyPluginAsync = async (fastify) => {
       penalty_alerts_enabled: prefs.penaltyAlertsEnabled,
       payment_enabled: prefs.paymentEnabled,
       cost_milestones_enabled: prefs.costMilestonesEnabled,
+      cost_milestone_cents: prefs.costMilestoneIntervalCents,
       penalty_prealert_minutes: prefs.penaltyPrealertMinutes,
     };
   });
@@ -78,6 +82,7 @@ const userRoutes: FastifyPluginAsync = async (fastify) => {
     if (body.penalty_alerts_enabled !== undefined) data.penaltyAlertsEnabled = body.penalty_alerts_enabled;
     if (body.payment_enabled !== undefined) data.paymentEnabled = body.payment_enabled;
     if (body.cost_milestones_enabled !== undefined) data.costMilestonesEnabled = body.cost_milestones_enabled;
+    if (body.cost_milestone_cents !== undefined) data.costMilestoneIntervalCents = body.cost_milestone_cents;
     if (body.penalty_prealert_minutes !== undefined) data.penaltyPrealertMinutes = body.penalty_prealert_minutes;
 
     await fastify.prisma.notificationPreference.upsert({

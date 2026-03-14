@@ -314,6 +314,7 @@
     "paymentReceiptsDesc": "Ontvang meldingen over betalingsstatus en bonnetjes",
     "costMilestones": "Kosten Mijlpalen",
     "costMilestonesDesc": "Ontvang updates wanneer je sessie kostendrempels bereikt",
+    "costMilestoneInterval": "Notify Every",
     "penaltyPrealert": "Wachttarief Waarschuwingstijd",
     "penaltyPrealertDesc": "Hoeveel minuten voor wachttarief begint",
     "quietHours": "Stille Uren",

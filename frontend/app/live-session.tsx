@@ -90,9 +90,9 @@ export default function LiveSession() {
       }, 0);
     }
 
-    // Cost milestones: fire at every €5 increment (500 cents), only while actively charging
+    // Cost milestones: fire at configured interval, only while actively charging
     if (preferences.cost_milestones_enabled && status === 'CHARGING') {
-      const MILESTONE_CENTS = 500;
+      const MILESTONE_CENTS = preferences.cost_milestone_cents ?? 500;
       const currentMilestone = Math.floor(currentSession.total_cost_cents / MILESTONE_CENTS) * MILESTONE_CENTS;
       if (currentMilestone > 0 && currentMilestone > lastMilestoneCentsRef.current) {
         lastMilestoneCentsRef.current = currentMilestone;

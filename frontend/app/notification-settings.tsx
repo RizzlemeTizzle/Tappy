@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../src/utils/api';
 
 const PREALERT_OPTIONS = [1, 3, 5, 10];
+const MILESTONE_OPTIONS = [100, 200, 500, 1000]; // cents
 
 export default function NotificationSettings() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function NotificationSettings() {
   const [penaltyAlerts, setPenaltyAlerts] = useState(true);
   const [paymentEnabled, setPaymentEnabled] = useState(true);
   const [costMilestones, setCostMilestones] = useState(false);
+  const [milestoneCents, setMilestoneCents] = useState(500);
   const [prealertMinutes, setPrealertMinutes] = useState(5);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,6 +46,7 @@ export default function NotificationSettings() {
       setPenaltyAlerts(data.penalty_alerts_enabled ?? true);
       setPaymentEnabled(data.payment_enabled ?? true);
       setCostMilestones(data.cost_milestones_enabled ?? false);
+      setMilestoneCents(data.cost_milestone_cents ?? 500);
       setPrealertMinutes(data.penalty_prealert_minutes ?? 5);
     } catch (error) {
       console.log('Failed to load preferences, using defaults');
@@ -87,6 +90,11 @@ export default function NotificationSettings() {
   const handleCostMilestones = (value: boolean) => {
     setCostMilestones(value);
     savePreference('cost_milestones_enabled', value);
+  };
+
+  const handleMilestoneInterval = (cents: number) => {
+    setMilestoneCents(cents);
+    savePreference('cost_milestone_cents', cents);
   };
 
   const handlePrealertChange = (minutes: number) => {
@@ -248,6 +256,36 @@ export default function NotificationSettings() {
                 thumbColor={costMilestones ? '#FFF' : '#888'}
               />
             </View>
+
+            {costMilestones && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.prealertSection}>
+                  <Text style={styles.prealertLabel}>{t('notifications.costMilestoneInterval')}</Text>
+                  <View style={styles.prealertOptions}>
+                    {MILESTONE_OPTIONS.map((cents) => (
+                      <TouchableOpacity
+                        key={cents}
+                        style={[
+                          styles.prealertOption,
+                          milestoneCents === cents && styles.prealertOptionActive,
+                        ]}
+                        onPress={() => handleMilestoneInterval(cents)}
+                      >
+                        <Text
+                          style={[
+                            styles.prealertOptionText,
+                            milestoneCents === cents && styles.prealertOptionTextActive,
+                          ]}
+                        >
+                          {`€${(cents / 100).toFixed(cents < 100 ? 2 : 0)}`}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
           </View>
         </View>
 

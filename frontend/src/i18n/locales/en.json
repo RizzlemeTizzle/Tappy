@@ -435,6 +435,7 @@
     "paymentReceiptsDesc": "Get notified about payment status and receipts",
     "costMilestones": "Cost Milestones",
     "costMilestonesDesc": "Get updates when your session reaches cost thresholds",
+    "costMilestoneInterval": "Notify Every",
     "penaltyPrealert": "Idle Fee Warning Time",
     "penaltyPrealertDesc": "How many minutes before idle fee starts",
     "quietHours": "Quiet Hours",

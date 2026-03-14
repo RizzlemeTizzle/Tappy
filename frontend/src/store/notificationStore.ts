@@ -37,6 +37,7 @@ export interface NotificationPreferences {
   penalty_alerts_enabled: boolean;
   payment_enabled: boolean;
   cost_milestones_enabled: boolean;
+  cost_milestone_cents: number;
   penalty_prealert_minutes: number;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;
@@ -144,6 +145,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     penalty_alerts_enabled: true,
     payment_enabled: true,
     cost_milestones_enabled: false,
+    cost_milestone_cents: 500,
     penalty_prealert_minutes: 5,
     quiet_hours_start: null,
     quiet_hours_end: null,

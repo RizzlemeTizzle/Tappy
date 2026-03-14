@@ -524,8 +524,9 @@ model NotificationPreference {
   sessionUpdatesEnabled  Boolean  @default(true) @map("session_updates_enabled")
   penaltyAlertsEnabled   Boolean  @default(true) @map("penalty_alerts_enabled")
   paymentEnabled         Boolean  @default(true) @map("payment_enabled")
-  costMilestonesEnabled  Boolean  @default(false) @map("cost_milestones_enabled")
-  penaltyPrealertMinutes Int      @default(5) @map("penalty_prealert_minutes")
+  costMilestonesEnabled      Boolean  @default(false) @map("cost_milestones_enabled")
+  costMilestoneIntervalCents Int      @default(500) @map("cost_milestone_interval_cents")
+  penaltyPrealertMinutes     Int      @default(5) @map("penalty_prealert_minutes")
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 
