@@ -41,7 +41,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       await register(email.trim(), password, name.trim());
-      router.replace('/(tabs)/tap');
+      router.replace('/add-payment');
     } catch (error: any) {
       Alert.alert(t('common.error'), error.response?.data?.error || error.message || t('auth.registrationFailed'));
     } finally {

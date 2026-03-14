@@ -39,8 +39,6 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         name: body.name,
         passwordHash,
         ocpiTokenUid,
-        paymentMethodAdded: true,
-        paymentMethodLast4: '4242',
         ocpiTokens: {
           create: {
             uid: ocpiTokenUid,

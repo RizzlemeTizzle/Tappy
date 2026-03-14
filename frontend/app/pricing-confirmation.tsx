@@ -51,6 +51,19 @@ export default function PricingConfirmation() {
       return;
     }
 
+    // Require payment method
+    if (!user?.payment_method_added) {
+      Alert.alert(
+        t('payment.cardRequired'),
+        t('errors.paymentMethodRequired'),
+        [
+          { text: t('common.later'), style: 'cancel' },
+          { text: t('common.add'), onPress: () => router.push('/add-payment') },
+        ]
+      );
+      return;
+    }
+
     setStarting(true);
     try {
       const sessionId = await startSession();
