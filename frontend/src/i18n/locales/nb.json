@@ -168,6 +168,7 @@
     "stopCharging": "Stopp Lading",
     "charging": "Lader...",
     "sessionActive": "Økt Aktiv",
+    "pending": "Venter",
     "sessionCompleted": "Økt Fullført",
     "sessionStopped": "Økt Stoppet",
     "currentCost": "Nåværende Kostnad",

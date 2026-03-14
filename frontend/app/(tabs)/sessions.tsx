@@ -44,10 +44,18 @@ export default function SessionsScreen() {
   const renderSession = ({ item }: { item: any }) => {
     const isCompleted = item.status === 'ENDED';
 
+    const handlePress = () => {
+      if (isCompleted) {
+        router.push({ pathname: '/receipt', params: { sessionId: item.id, fromHistory: 'true' } });
+      } else {
+        router.push({ pathname: '/live-session', params: { sessionId: item.id } });
+      }
+    };
+
     return (
       <TouchableOpacity
         style={styles.sessionCard}
-        onPress={() => router.push({ pathname: '/receipt', params: { sessionId: item.id, fromHistory: 'true' } })}
+        onPress={handlePress}
       >
         <View style={styles.sessionHeader}>
           <View style={styles.stationInfo}>
@@ -77,7 +85,9 @@ export default function SessionsScreen() {
           <View style={styles.detailDivider} />
           <View style={styles.detailItem}>
             <Ionicons name="cash" size={16} color="#888" />
-            <Text style={styles.detailText}>{formatCurrency(item.total_cost_cents)}</Text>
+            <Text style={[styles.detailText, !isCompleted && styles.pendingText]}>
+              {isCompleted ? formatCurrency(item.total_cost_cents) : t('session.pending')}
+            </Text>
           </View>
           {item.penalty_cost_cents > 0 && (
             <>
@@ -229,5 +239,8 @@ const styles = StyleSheet.create({
   },
   penaltyText: {
     color: '#FF9800',
+  },
+  pendingText: {
+    color: '#2196F3',
   },
 });

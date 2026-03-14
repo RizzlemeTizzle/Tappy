@@ -168,6 +168,7 @@
     "stopCharging": "Stoppa Laddning",
     "charging": "Laddar...",
     "sessionActive": "Session Aktiv",
+    "pending": "Pågående",
     "sessionCompleted": "Session Avslutad",
     "sessionStopped": "Session Stoppad",
     "currentCost": "Aktuell Kostnad",

@@ -181,6 +181,7 @@
     "stop": "Stop",
     "charging": "Charging...",
     "sessionActive": "Session Active",
+    "pending": "Pending",
     "sessionCompleted": "Charging Complete!",
     "sessionStopped": "Session Stopped",
     "currentCost": "Current Cost",

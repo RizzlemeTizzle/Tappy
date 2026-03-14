@@ -168,6 +168,7 @@
     "stopCharging": "Detener Carga",
     "charging": "Cargando...",
     "sessionActive": "Sesión Activa",
+    "pending": "Pendiente",
     "sessionCompleted": "Sesión Completada",
     "sessionStopped": "Sesión Detenida",
     "currentCost": "Costo Actual",

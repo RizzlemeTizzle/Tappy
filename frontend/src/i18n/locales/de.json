@@ -168,6 +168,7 @@
     "stopCharging": "Laden stoppen",
     "charging": "Lädt...",
     "sessionActive": "Sitzung aktiv",
+    "pending": "Ausstehend",
     "sessionCompleted": "Sitzung abgeschlossen",
     "sessionStopped": "Sitzung beendet",
     "currentCost": "Aktuelle Kosten",

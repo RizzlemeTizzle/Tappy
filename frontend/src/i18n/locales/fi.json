@@ -168,6 +168,7 @@
     "stopCharging": "Lopeta Lataus",
     "charging": "Ladataan...",
     "sessionActive": "Istunto Aktiivinen",
+    "pending": "Odottaa",
     "sessionCompleted": "Istunto Valmis",
     "sessionStopped": "Istunto Lopetettu",
     "currentCost": "Nykyinen Hinta",

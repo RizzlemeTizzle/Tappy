@@ -168,6 +168,7 @@
     "stopCharging": "Arrêter la Recharge",
     "charging": "Recharge en cours...",
     "sessionActive": "Session Active",
+    "pending": "En cours",
     "sessionCompleted": "Session Terminée",
     "sessionStopped": "Session Arrêtée",
     "currentCost": "Coût Actuel",

@@ -180,6 +180,7 @@
     "stop": "Stoppen",
     "charging": "Laden...",
     "sessionActive": "Sessie Actief",
+    "pending": "In behandeling",
     "sessionCompleted": "Laden Voltooid!",
     "sessionStopped": "Sessie Gestopt",
     "currentCost": "Huidige Kosten",
