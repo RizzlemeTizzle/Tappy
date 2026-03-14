@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import api from '../utils/api';
 import i18n from '../i18n';
 
@@ -47,7 +46,6 @@ interface NotificationState {
   // State
   hasPermission: boolean;
   expoPushToken: string | null;
-  deviceId: string | null;
   preferences: NotificationPreferences;
   isLoading: boolean;
   error: string | null;
@@ -55,8 +53,6 @@ interface NotificationState {
   
   // Actions
   requestPermissions: () => Promise<boolean>;
-  registerDevice: () => Promise<void>;
-  deregisterDevice: () => Promise<void>;
   loadPreferences: () => Promise<void>;
   updatePreferences: (prefs: Partial<NotificationPreferences>) => Promise<void>;
   scheduleLocalNotification: (type: string, params: Record<string, string>, delaySeconds: number) => Promise<string | null>;
@@ -117,29 +113,9 @@ export const getLocalizedNotification = (type: string, params: Record<string, st
   return templates[type] || { title: 'Notification', body: '' };
 };
 
-// Get unique device ID
-const getDeviceId = async (): Promise<string> => {
-  // Use a combination of device info for a unique ID
-  const deviceName = Device.deviceName || 'unknown';
-  const modelId = Device.modelId || 'unknown';
-  const osVersion = Device.osVersion || '0';
-  
-  // Create a simple hash
-  const combined = `${deviceName}-${modelId}-${osVersion}-${Platform.OS}`;
-  let hash = 0;
-  for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  
-  return Math.abs(hash).toString(16);
-};
-
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   hasPermission: false,
   expoPushToken: null,
-  deviceId: null,
   preferences: {
     session_updates_enabled: true,
     penalty_alerts_enabled: true,
@@ -202,73 +178,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       console.error('[Notifications] Permission request failed:', error);
       set({ error: 'Failed to request notification permissions' });
       return false;
-    }
-  },
-  
-  registerDevice: async () => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      const deviceId = await getDeviceId();
-      set({ deviceId });
-      
-      // Get push token if on physical device and not running in Expo Go
-      // (Remote push notifications were removed from Expo Go in SDK 53)
-      let pushToken = null;
-      const isExpoGo = Constants.executionEnvironment === 'storeClient';
-      if (Device.isDevice && !isExpoGo) {
-        try {
-          const tokenData = await Notifications.getExpoPushTokenAsync({
-            projectId: Constants.expoConfig?.extra?.eas?.projectId,
-          });
-          pushToken = tokenData.data;
-        } catch (e) {
-          console.log('[Notifications] Could not get push token:', e);
-        }
-      }
-      
-      set({ expoPushToken: pushToken });
-      
-      // Register with backend
-      await api.post('/devices/register', {
-        device_id: deviceId,
-        platform: Platform.OS,
-        fcm_token: pushToken, // In production, this would be FCM token
-        app_version: Constants.expoConfig?.version || '1.0.0',
-        locale: i18n.language,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
-      
-      console.log('[Notifications] Device registered:', deviceId);
-      set({ isLoading: false });
-    } catch (error: any) {
-      console.error('[Notifications] Device registration failed:', error);
-      set({ 
-        isLoading: false, 
-        error: error.response?.data?.detail || 'Failed to register device' 
-      });
-    }
-  },
-  
-  deregisterDevice: async () => {
-    try {
-      const { deviceId } = get();
-      if (!deviceId) return;
-      
-      await api.post('/devices/deregister', { device_id: deviceId });
-      
-      // Cancel all scheduled notifications
-      await get().cancelAllScheduledNotifications();
-      
-      set({ 
-        deviceId: null, 
-        expoPushToken: null,
-        scheduledNotifications: [] 
-      });
-      
-      console.log('[Notifications] Device deregistered');
-    } catch (error) {
-      console.error('[Notifications] Device deregistration failed:', error);
     }
   },
   

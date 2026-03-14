@@ -82,7 +82,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "http://192.168.68.105:8001",
+      "apiUrl": "https://tappy-shhd.onrender.com",
       "router": {},
       "eas": {
         "projectId": "da0eb21a-97c3-4b90-9ca1-ea80608a6bd2"
