@@ -37,6 +37,15 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ error: 'Pricing not found' });
     }
     
+    // Get user subscription plan and apply surcharges
+    const user = await fastify.prisma.user.findUnique({ where: { id: userId }, select: { subscriptionPlan: true } });
+    const isComfort = user?.subscriptionPlan === 'comfort';
+    const startFeeSurcharge = isComfort ? 0 : 31;    // Flex: +€0.31
+    const kwhSurcharge = isComfort ? 0 : 2;           // Flex: +€0.02/kWh (rounded from 2.4)
+
+    const effectiveStartFeeCents = pricing.startFeeCents + startFeeSurcharge;
+    const effectiveEnergyRateCents = pricing.energyRateCentsPerKwh + kwhSurcharge;
+
     // Create session with pricing snapshot
     const session = await fastify.prisma.session.create({
       data: {
@@ -46,8 +55,8 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
         status: 'CHARGING',
         startedAt: new Date(),
         meterStartKwh: Math.random() * 4000 + 1000,
-        pricingStartFeeCents: pricing.startFeeCents,
-        pricingEnergyRateCents: pricing.energyRateCentsPerKwh,
+        pricingStartFeeCents: effectiveStartFeeCents,
+        pricingEnergyRateCents: effectiveEnergyRateCents,
         pricingTaxPercent: pricing.taxPercent,
         pricingPenaltyEnabled: pricing.penaltyEnabled,
         pricingPenaltyGraceMin: pricing.penaltyGraceMinutes,
@@ -68,8 +77,8 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     return {
       session_id: session.id,
       pricing_snapshot: {
-        start_fee_cents: pricing.startFeeCents,
-        energy_rate_cents_per_kwh: pricing.energyRateCentsPerKwh,
+        start_fee_cents: effectiveStartFeeCents,
+        energy_rate_cents_per_kwh: effectiveEnergyRateCents,
         tax_percent: pricing.taxPercent,
         penalty: {
           enabled: pricing.penaltyEnabled,

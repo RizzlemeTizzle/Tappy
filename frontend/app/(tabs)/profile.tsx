@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,17 +13,34 @@ import { showAlert } from '../../src/utils/alert';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
+import api from '../../src/utils/api';
 import { InlineLoginWall } from '../../src/components/LoginWall';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, changeLanguage, getCurrentLanguage, LanguageCode } from '../../src/i18n';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout, isGuest } = useAuthStore();
+  const { user, logout, isGuest, refreshUser } = useAuthStore();
   const { t, i18n } = useTranslation();
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
-  const [activePlan, setActivePlan] = useState<'flex' | 'comfort'>('flex');
+  const [activePlan, setActivePlan] = useState<'flex' | 'comfort'>(user?.subscription_plan ?? 'flex');
+
+  useEffect(() => {
+    if (user?.subscription_plan) {
+      setActivePlan(user.subscription_plan);
+    }
+  }, [user?.subscription_plan]);
+
+  const handleSelectPlan = async (plan: 'flex' | 'comfort') => {
+    setActivePlan(plan);
+    try {
+      await api.put('/users/me/subscription', { plan });
+      await refreshUser();
+    } catch (e) {
+      console.error('[Profile] Failed to update subscription plan:', e);
+    }
+  };
 
   const handleLogout = () => {
     showAlert(t('common.logout'), t('auth.logoutConfirm'), [
@@ -243,7 +260,7 @@ export default function ProfileScreen() {
               {/* Flex Plan */}
               <TouchableOpacity
                 style={[styles.planCard, activePlan === 'flex' && styles.planCardActive]}
-                onPress={() => setActivePlan('flex')}
+                onPress={() => handleSelectPlan('flex')}
                 activeOpacity={0.85}
               >
                 <View style={styles.planHeader}>
@@ -285,7 +302,7 @@ export default function ProfileScreen() {
               {/* Comfort Plan */}
               <TouchableOpacity
                 style={[styles.planCard, activePlan === 'comfort' && styles.planCardActive]}
-                onPress={() => setActivePlan('comfort')}
+                onPress={() => handleSelectPlan('comfort')}
                 activeOpacity={0.85}
               >
                 <View style={styles.planHeader}>

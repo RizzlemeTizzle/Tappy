@@ -21,6 +21,7 @@ interface User {
   name: string;
   payment_method_added: boolean;
   payment_method_last4?: string;
+  subscription_plan: 'flex' | 'comfort';
 }
 
 interface AuthState {

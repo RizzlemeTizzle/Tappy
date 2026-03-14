@@ -7,6 +7,10 @@ const paymentMethodSchema = z.object({
   cvv: z.string(),
 });
 
+const subscriptionSchema = z.object({
+  plan: z.enum(['flex', 'comfort']),
+});
+
 const notificationPreferencesSchema = z.object({
   session_updates_enabled: z.boolean().optional(),
   penalty_alerts_enabled: z.boolean().optional(),
@@ -41,6 +45,7 @@ const userRoutes: FastifyPluginAsync = async (fastify) => {
       name: user.name,
       payment_method_added: user.paymentMethodAdded,
       payment_method_last4: user.paymentMethodLast4,
+      subscription_plan: user.subscriptionPlan,
     };
   });
 
@@ -111,6 +116,21 @@ const userRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     return { success: true };
+  });
+
+  // Update subscription plan
+  fastify.put('/me/subscription', {
+    preValidation: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { userId } = request.user;
+    const body = subscriptionSchema.parse(request.body);
+
+    await fastify.prisma.user.update({
+      where: { id: userId },
+      data: { subscriptionPlan: body.plan },
+    });
+
+    return { success: true, plan: body.plan };
   });
 
   // Add payment method (mocked)

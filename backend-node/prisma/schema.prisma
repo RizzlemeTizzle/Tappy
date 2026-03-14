@@ -28,7 +28,8 @@ model User {
   favorites               FavoriteStation[]
   alertRequests           AvailabilityAlertRequest[]
 
-  expoPushToken String? @map("expo_push_token")
+  expoPushToken    String? @map("expo_push_token")
+  subscriptionPlan String  @default("flex") @map("subscription_plan")
 
   @@map("users")
 }

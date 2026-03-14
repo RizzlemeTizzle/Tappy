@@ -60,7 +60,23 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // Get nearby stations
-  fastify.get('/nearby', async (request) => {
+  fastify.get('/nearby', async (request, reply) => {
+    // Optional auth — apply subscription surcharges if user is logged in
+    let subscriptionPlan = 'flex';
+    const authHeader = (request.headers as Record<string, string | undefined>).authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const decoded = await request.jwtVerify() as { userId: string };
+        const user = await fastify.prisma.user.findUnique({ where: { id: decoded.userId }, select: { subscriptionPlan: true } });
+        subscriptionPlan = user?.subscriptionPlan ?? 'flex';
+      } catch {
+        // No valid token — treat as flex (unauthenticated)
+      }
+    }
+    const isComfort = subscriptionPlan === 'comfort';
+    const startFeeSurcharge = isComfort ? 0 : 31;
+    const kwhSurcharge = isComfort ? 0 : 2;
+
     const query = request.query as {
       lat?: string;
       lng?: string;
@@ -123,9 +139,11 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
       // Get max power
       const maxPower = chargers.length > 0 ? Math.max(...chargers.map(c => c.maxKw)) : 0;
 
-      // Calculate estimated cost for 20 kWh
+      // Calculate estimated cost for 20 kWh (with subscription surcharges)
       const pricing = station.pricingPlan;
-      const estimated20kwh = pricing.startFeeCents + 20 * pricing.energyRateCentsPerKwh;
+      const effStart = pricing.startFeeCents + startFeeSurcharge;
+      const effRate = pricing.energyRateCentsPerKwh + kwhSurcharge;
+      const estimated20kwh = effStart + 20 * effRate;
       const estimated20kwhWithTax = Math.round(estimated20kwh * (1 + pricing.taxPercent / 100));
 
       // Build connector breakdown
@@ -150,8 +168,8 @@ const stationRoutes: FastifyPluginAsync = async (fastify) => {
         longitude: station.longitude,
         distance_km: Math.round(distance * 100) / 100,
         pricing_summary: {
-          start_fee_cents: pricing.startFeeCents,
-          energy_rate_cents_per_kwh: pricing.energyRateCentsPerKwh,
+          start_fee_cents: effStart,
+          energy_rate_cents_per_kwh: effRate,
           tax_percent: pricing.taxPercent,
           penalty_summary: getPenaltySummary(pricing),
           penalty_enabled: pricing.penaltyEnabled,
