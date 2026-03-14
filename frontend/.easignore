@@ -1,3 +1,6 @@
+# Exclude local dev environment variables (backend URL etc.)
+.env
+
 # Exclude Metro bundler cache
 .metro-cache/
 
