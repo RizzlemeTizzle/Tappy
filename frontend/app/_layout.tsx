@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Stack, useRouter, useRootNavigationState } from 'expo-router';
+import { Stack, useRouter, useRootNavigationState, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet, Platform, Linking } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
@@ -15,6 +15,9 @@ export default function RootLayout() {
   const { loadToken, isLoading, isAuthenticated } = useAuthStore();
   const { checkActiveSession } = useSessionStore();
   const sessionRecoveryDoneRef = React.useRef(false);
+  const pathname = usePathname();
+  const pathnameRef = React.useRef(pathname);
+  pathnameRef.current = pathname;
   const { requestPermissions, loadPreferences } = useNotificationStore();
   const router = useRouter();
   const navigationState = useRootNavigationState();
@@ -65,9 +68,11 @@ export default function RootLayout() {
     if (sessionRecoveryDoneRef.current) return;
     sessionRecoveryDoneRef.current = true;
     checkActiveSession().then((session) => {
-      if (session) {
-        router.replace({ pathname: '/live-session', params: { sessionId: session.id } });
-      }
+      if (!session) return;
+      // If already on live-session (e.g. page refreshed from that URL), don't navigate again
+      if (pathnameRef.current.includes('live-session')) return;
+      // Push so the tabs remain in the back stack
+      router.push({ pathname: '/live-session', params: { sessionId: session.id } });
     });
   }, [isLoading, isAuthenticated, navigationState?.key]);
 
@@ -142,7 +147,7 @@ export default function RootLayout() {
         <Stack.Screen name="add-payment" options={{ title: t('payment.addCard'), headerBackTitle: t('common.back') }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="pricing-confirmation" options={{ title: t('pricing.title'), headerBackTitle: t('common.back') }} />
-        <Stack.Screen name="live-session" options={{ title: t('session.sessionActive'), headerBackVisible: true, gestureEnabled: true }} />
+        <Stack.Screen name="live-session" options={{ gestureEnabled: true }} />
         <Stack.Screen name="receipt" options={({ route }) => ({
           title: t('receipt.title'),
           headerBackVisible: (route.params as any)?.fromHistory === 'true',
