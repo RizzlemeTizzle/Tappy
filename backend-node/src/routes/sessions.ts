@@ -14,15 +14,6 @@ const sessionRoutes: FastifyPluginAsync = async (fastify) => {
     const { userId } = request.user;
     const body = startSessionSchema.parse(request.body);
     
-    // Get user
-    const user = await fastify.prisma.user.findUnique({
-      where: { id: userId },
-    });
-    
-    if (!user?.paymentMethodAdded) {
-      return reply.status(400).send({ error: 'Please add a payment method first' });
-    }
-    
     // Get charger
     const charger = await fastify.prisma.charger.findUnique({
       where: { id: body.charger_id },
