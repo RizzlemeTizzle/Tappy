@@ -374,19 +374,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
   },
-  snapshotNotice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    padding: 12,
-    borderRadius: 10,
-  },
-  snapshotText: {
-    color: '#888',
-    fontSize: 13,
-    marginLeft: 8,
-    flex: 1,
-  },
   bottomButtons: {
     flexDirection: 'row',
     padding: 20,
