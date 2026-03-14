@@ -1385,6 +1385,8 @@ class NotificationType:
     PAYMENT_FAILED = "PAYMENT_FAILED"
     # Optional
     COST_MILESTONE = "COST_MILESTONE"
+    # Availability alerts
+    CHARGER_AVAILABLE = "CHARGER_AVAILABLE"
 
 class DeviceRegister(BaseModel):
     device_id: str
@@ -1441,6 +1443,12 @@ class NotificationLog(BaseModel):
     status: str = "SENT"  # SENT, DELIVERED, FAILED, SUPPRESSED
     sent_at: datetime = Field(default_factory=datetime.utcnow)
     error: Optional[str] = None
+
+class StationAlert(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    station_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 # Scheduled notification jobs
 scheduled_jobs: Dict[str, dict] = {}
@@ -1582,6 +1590,18 @@ def get_notification_content(notification_type: str, locale: str, params: Dict[s
             "da": {"title": "Omkostningsopdatering", "body": "Din session har nået {total}. I øjeblikket på {energy} kWh."},
             "nb": {"title": "Kostnadsoppdatering", "body": "Økten din har nådd {total}. For øyeblikket på {energy} kWh."},
         },
+        NotificationType.CHARGER_AVAILABLE: {
+            "en": {"title": "Charger Available!", "body": "{station_name} now has {available_count} charger(s) available. Tap to start charging."},
+            "nl": {"title": "Lader Beschikbaar!", "body": "{station_name} heeft nu {available_count} lader(s) beschikbaar. Tik om te starten."},
+            "de": {"title": "Lader Verfügbar!", "body": "{station_name} hat jetzt {available_count} Lader verfügbar. Tippen zum Starten."},
+            "fr": {"title": "Chargeur Disponible!", "body": "{station_name} a maintenant {available_count} chargeur(s) disponible(s). Appuyez pour commencer."},
+            "it": {"title": "Caricatore Disponibile!", "body": "{station_name} ha ora {available_count} caricatore/i disponibile/i. Tocca per iniziare."},
+            "es": {"title": "¡Cargador Disponible!", "body": "{station_name} ahora tiene {available_count} cargador(es) disponible(s). Toca para comenzar."},
+            "sv": {"title": "Laddare Tillgänglig!", "body": "{station_name} har nu {available_count} laddare tillgänglig(a). Tryck för att starta."},
+            "fi": {"title": "Laturi Saatavilla!", "body": "{station_name} on nyt {available_count} laturi(a) saatavilla. Napauta aloittaaksesi."},
+            "da": {"title": "Oplader Tilgængelig!", "body": "{station_name} har nu {available_count} oplader(e) tilgængelig(e). Tryk for at starte."},
+            "nb": {"title": "Lader Tilgjengelig!", "body": "{station_name} har nå {available_count} lader(e) tilgjengelig(e). Trykk for å starte."},
+        },
     }
     
     # Get template for type
@@ -1633,6 +1653,7 @@ async def send_notification_to_user(
         NotificationType.PAYMENT_SUCCEEDED: "payment_enabled",
         NotificationType.PAYMENT_FAILED: "payment_enabled",
         NotificationType.COST_MILESTONE: "cost_milestones_enabled",
+        NotificationType.CHARGER_AVAILABLE: "session_updates_enabled",
     }
     
     pref_key = type_to_pref_map.get(notification_type, "session_updates_enabled")
@@ -1756,6 +1777,45 @@ async def process_scheduled_notifications():
             logger.error(f"Error processing scheduled notifications: {e}")
         
         await asyncio.sleep(10)  # Check every 10 seconds
+
+async def check_availability_alerts():
+    """Poll charger availability for all subscribed stations and notify when chargers become available"""
+    while True:
+        try:
+            alerts = await db.station_alerts.find({}).to_list(1000)
+            if alerts:
+                # Group alerts by station_id to avoid redundant DB queries
+                station_to_users: Dict[str, list] = {}
+                for alert in alerts:
+                    station_to_users.setdefault(alert["station_id"], []).append(alert["user_id"])
+
+                for station_id, user_ids in station_to_users.items():
+                    chargers = await db.chargers.find({"station_id": station_id}).to_list(100)
+                    if not chargers:
+                        continue
+
+                    available_count = sum(1 for c in chargers if c["status"] == "AVAILABLE")
+                    if available_count == 0:
+                        continue
+
+                    # Station has chargers available — get station name and notify all subscribed users
+                    station = await db.stations.find_one({"id": station_id})
+                    station_name = station["name"] if station else station_id
+
+                    for user_id in user_ids:
+                        await send_notification_to_user(
+                            user_id,
+                            NotificationType.CHARGER_AVAILABLE,
+                            {"station_name": station_name, "available_count": available_count},
+                        )
+                        # Remove the alert — one-shot notification
+                        await db.station_alerts.delete_one({"user_id": user_id, "station_id": station_id})
+                        logger.info(f"[ALERT] Notified user {user_id} — {available_count} charger(s) available at {station_name}")
+
+        except Exception as e:
+            logger.error(f"Error checking availability alerts: {e}")
+
+        await asyncio.sleep(60)  # Poll every 60 seconds
 
 # ==================== DEVICE REGISTRATION ENDPOINTS ====================
 
@@ -1886,6 +1946,34 @@ async def get_notification_logs(limit: int = 50, user: dict = Depends(get_curren
     
     return serialize_doc(logs)
 
+# ==================== STATION ALERTS ENDPOINTS ====================
+
+@api_router.get("/stations/alerts")
+async def get_station_alerts(user: dict = Depends(get_current_user)):
+    """Get all station IDs the user has availability alerts set for"""
+    alerts = await db.station_alerts.find({"user_id": user["id"]}).to_list(100)
+    return {"station_ids": [a["station_id"] for a in alerts]}
+
+@api_router.post("/stations/{station_id}/alert")
+async def set_station_alert(station_id: str, user: dict = Depends(get_current_user)):
+    """Subscribe to availability notifications for a station"""
+    station = await db.stations.find_one({"id": station_id})
+    if not station:
+        raise HTTPException(status_code=404, detail="Station not found")
+
+    existing = await db.station_alerts.find_one({"user_id": user["id"], "station_id": station_id})
+    if not existing:
+        alert = StationAlert(user_id=user["id"], station_id=station_id)
+        await db.station_alerts.insert_one(alert.dict())
+
+    return {"message": "Alert set", "station_id": station_id}
+
+@api_router.delete("/stations/{station_id}/alert")
+async def cancel_station_alert(station_id: str, user: dict = Depends(get_current_user)):
+    """Cancel availability alert for a station"""
+    await db.station_alerts.delete_one({"user_id": user["id"], "station_id": station_id})
+    return {"message": "Alert cancelled", "station_id": station_id}
+
 # ==================== SIMULATE NOTIFICATIONS ENDPOINTS ====================
 
 @api_router.post("/simulate/notification/{notification_type}")
@@ -1960,6 +2048,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_background_tasks():
+    asyncio.create_task(process_scheduled_notifications())
+    asyncio.create_task(check_availability_alerts())
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
