@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
@@ -7,14 +7,13 @@ import { useTranslation } from 'react-i18next';
 import ActiveSessionBanner from '../../src/components/ActiveSessionBanner';
 import { useSessionStore } from '../../src/store/sessionStore';
 
-const BANNER_HEIGHT = 56; // approximate height of ActiveSessionBanner
-
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
   const currentSession = useSessionStore((s) => s.currentSession);
   const bannerVisible = !!(currentSession && currentSession.status !== 'ENDED');
+  const [bannerHeight, setBannerHeight] = useState(0);
   
   // Calculate bottom padding - use safe area insets for proper spacing
   const bottomPadding = Platform.OS === 'ios' 
@@ -95,11 +94,11 @@ export default function TabLayout() {
       </Tabs>
       
       {/* Active Session Banner */}
-      <ActiveSessionBanner tabBarHeight={tabBarHeight} />
+      <ActiveSessionBanner tabBarHeight={tabBarHeight} onLayout={(h) => setBannerHeight(h)} />
 
       {/* Floating QR Scanner Button */}
       <TouchableOpacity
-        style={[styles.qrButton, { bottom: bannerVisible ? tabBarHeight + 8 + BANNER_HEIGHT + 8 : tabBarHeight + 16 }]}
+        style={[styles.qrButton, { bottom: bannerVisible && bannerHeight > 0 ? tabBarHeight + 8 + bannerHeight + 8 : tabBarHeight + 16 }]}
         onPress={() => router.push('/qr-scanner')}
         activeOpacity={0.8}
       >

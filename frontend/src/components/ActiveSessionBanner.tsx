@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
   tabBarHeight: number;
+  onLayout?: (height: number) => void;
 }
 
-export default function ActiveSessionBanner({ tabBarHeight }: Props) {
+export default function ActiveSessionBanner({ tabBarHeight, onLayout }: Props) {
   const router = useRouter();
   const { t } = useTranslation();
   const currentSession = useSessionStore((s) => s.currentSession);
@@ -28,6 +29,7 @@ export default function ActiveSessionBanner({ tabBarHeight }: Props) {
       onPress={() =>
         router.push({ pathname: '/live-session', params: { sessionId: currentSession.id } })
       }
+      onLayout={(e) => onLayout?.(e.nativeEvent.layout.height)}
       activeOpacity={0.85}
     >
       <Ionicons name={iconName} size={18} color={iconColor} />
