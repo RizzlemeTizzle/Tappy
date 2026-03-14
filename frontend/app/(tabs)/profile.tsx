@@ -7,6 +7,7 @@ import {
   ScrollView,
   Modal,
   FlatList,
+  Pressable,
 } from 'react-native';
 import { showAlert } from '../../src/utils/alert';
 import { useRouter } from 'expo-router';
@@ -21,6 +22,8 @@ export default function ProfileScreen() {
   const { user, logout, isGuest } = useAuthStore();
   const { t, i18n } = useTranslation();
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [activePlan, setActivePlan] = useState<'flex' | 'comfort'>('flex');
 
   const handleLogout = () => {
     showAlert(t('common.logout'), t('auth.logoutConfirm'), [
@@ -101,6 +104,19 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+      </View>
+
+      {/* Subscription Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('profile.subscription')}</Text>
+        <View style={styles.card}>
+          <MenuItem
+            icon="layers"
+            title={activePlan === 'flex' ? 'Flex' : 'Comfort'}
+            subtitle={activePlan === 'flex' ? t('profile.subscriptionFlexTagline') : t('profile.subscriptionComfortTagline')}
+            onPress={() => setShowSubscription(true)}
+          />
+        </View>
       </View>
 
       {/* Payment Section */}
@@ -206,6 +222,111 @@ export default function ProfileScreen() {
 
       {/* Version */}
       <Text style={styles.version}>{t('profile.version', { version: '1.0.0' })}</Text>
+
+      {/* Subscription Modal */}
+      <Modal
+        visible={showSubscription}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowSubscription(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowSubscription(false)}>
+          <Pressable style={[styles.modalContent, styles.subscriptionModal]} onPress={() => {}}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('profile.subscription')}</Text>
+              <TouchableOpacity onPress={() => setShowSubscription(false)}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.subscriptionScroll}>
+              {/* Flex Plan */}
+              <TouchableOpacity
+                style={[styles.planCard, activePlan === 'flex' && styles.planCardActive]}
+                onPress={() => setActivePlan('flex')}
+                activeOpacity={0.85}
+              >
+                <View style={styles.planHeader}>
+                  <View>
+                    <Text style={styles.planName}>Flex</Text>
+                    <Text style={styles.planTagline}>{t('profile.subscriptionFlexTagline')}</Text>
+                  </View>
+                  <View style={styles.planPriceBox}>
+                    <Text style={styles.planPrice}>{t('profile.subscriptionFree')}</Text>
+                    <Text style={styles.planPriceSub}>{t('profile.subscriptionPerMonth')}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.planDivider} />
+
+                <View style={styles.planRows}>
+                  <View style={styles.planRow}>
+                    <Ionicons name="flash" size={16} color="#4CAF50" />
+                    <Text style={styles.planRowText}>{t('profile.subscriptionFlexStartFee')}</Text>
+                  </View>
+                  <View style={styles.planRow}>
+                    <Ionicons name="speedometer" size={16} color="#4CAF50" />
+                    <Text style={styles.planRowText}>{t('profile.subscriptionFlexKwh')}</Text>
+                  </View>
+                  <View style={styles.planRow}>
+                    <Ionicons name="card" size={16} color="#888" />
+                    <Text style={[styles.planRowText, { color: '#AAA' }]}>{t('profile.subscriptionChargingCard')}</Text>
+                  </View>
+                </View>
+
+                {activePlan === 'flex' && (
+                  <View style={styles.planActiveBadge}>
+                    <Ionicons name="checkmark-circle" size={14} color="#000" />
+                    <Text style={styles.planActiveBadgeText}>{t('profile.subscriptionActive')}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Comfort Plan */}
+              <TouchableOpacity
+                style={[styles.planCard, activePlan === 'comfort' && styles.planCardActive]}
+                onPress={() => setActivePlan('comfort')}
+                activeOpacity={0.85}
+              >
+                <View style={styles.planHeader}>
+                  <View>
+                    <Text style={styles.planName}>Comfort</Text>
+                    <Text style={styles.planTagline}>{t('profile.subscriptionComfortTagline')}</Text>
+                  </View>
+                  <View style={styles.planPriceBox}>
+                    <Text style={styles.planPrice}>€3.23</Text>
+                    <Text style={styles.planPriceSub}>{t('profile.subscriptionPerMonth')}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.planDivider} />
+
+                <View style={styles.planRows}>
+                  <View style={styles.planRow}>
+                    <Ionicons name="flash" size={16} color="#4CAF50" />
+                    <Text style={styles.planRowText}>{t('profile.subscriptionComfortStartFee')}</Text>
+                  </View>
+                  <View style={styles.planRow}>
+                    <Ionicons name="speedometer" size={16} color="#4CAF50" />
+                    <Text style={styles.planRowText}>{t('profile.subscriptionComfortKwh')}</Text>
+                  </View>
+                  <View style={styles.planRow}>
+                    <Ionicons name="card" size={16} color="#888" />
+                    <Text style={[styles.planRowText, { color: '#AAA' }]}>{t('profile.subscriptionChargingCard')}</Text>
+                  </View>
+                </View>
+
+                {activePlan === 'comfort' && (
+                  <View style={styles.planActiveBadge}>
+                    <Ionicons name="checkmark-circle" size={14} color="#000" />
+                    <Text style={styles.planActiveBadgeText}>{t('profile.subscriptionActive')}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Language Picker Modal */}
       <Modal
@@ -392,5 +513,89 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 13,
     marginTop: 2,
+  },
+
+  // Subscription modal
+  subscriptionModal: {
+    maxHeight: '85%',
+  },
+  subscriptionScroll: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    gap: 14,
+  },
+  planCard: {
+    backgroundColor: '#2A2A2A',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  planCardActive: {
+    borderColor: '#4CAF50',
+    backgroundColor: 'rgba(76, 175, 80, 0.07)',
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  planName: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  planTagline: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 3,
+  },
+  planPriceBox: {
+    alignItems: 'flex-end',
+  },
+  planPrice: {
+    color: '#4CAF50',
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  planPriceSub: {
+    color: '#888',
+    fontSize: 11,
+    marginTop: 1,
+  },
+  planDivider: {
+    height: 1,
+    backgroundColor: '#3A3A3A',
+    marginBottom: 14,
+  },
+  planRows: {
+    gap: 10,
+  },
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  planRowText: {
+    color: '#DDD',
+    fontSize: 14,
+    flex: 1,
+  },
+  planActiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#4CAF50',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginTop: 14,
+  },
+  planActiveBadgeText: {
+    color: '#000',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

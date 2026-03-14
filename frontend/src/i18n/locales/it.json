@@ -240,7 +240,18 @@
     "deleteAccount": "Elimina Account",
     "darkMode": "Modalità scura",
     "darkModeEnabled": "La modalità scura è abilitata per impostazione predefinita",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Abbonamento",
+    "subscriptionFlexTagline": "Per utenti occasionali (<5 sessioni/mese)",
+    "subscriptionComfortTagline": "Per utenti frequenti (>5 sessioni/mese)",
+    "subscriptionFree": "Gratuito",
+    "subscriptionPerMonth": "/ mese",
+    "subscriptionActive": "Attivo",
+    "subscriptionFlexStartFee": "€0,31 tariffa di avvio per sessione",
+    "subscriptionFlexKwh": "Supplemento €0,024/kWh",
+    "subscriptionComfortStartFee": "Nessuna tariffa di avvio",
+    "subscriptionComfortKwh": "Nessun supplemento kWh",
+    "subscriptionChargingCard": "€9,99 scheda di ricarica (opzionale)"
   },
   "payment": {
     "addCard": "Aggiungi Carta",

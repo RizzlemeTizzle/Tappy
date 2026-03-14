@@ -240,7 +240,18 @@
     "deleteAccount": "Slett Konto",
     "darkMode": "Mørk modus",
     "darkModeEnabled": "Mørk modus er aktivert som standard",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Abonnement",
+    "subscriptionFlexTagline": "For sporadiske brukere (<5 økter/måned)",
+    "subscriptionComfortTagline": "For hyppige brukere (>5 økter/måned)",
+    "subscriptionFree": "Gratis",
+    "subscriptionPerMonth": "/ måned",
+    "subscriptionActive": "Aktiv",
+    "subscriptionFlexStartFee": "€0,31 startavgift per økt",
+    "subscriptionFlexKwh": "€0,024/kWh tillegg",
+    "subscriptionComfortStartFee": "Ingen startavgift",
+    "subscriptionComfortKwh": "Ingen kWh-tillegg",
+    "subscriptionChargingCard": "€9,99 ladekort (valgfritt)"
   },
   "payment": {
     "addCard": "Legg til Kort",

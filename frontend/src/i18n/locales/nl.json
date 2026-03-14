@@ -264,7 +264,18 @@
     "deleteAccount": "Account Verwijderen",
     "darkMode": "Donkere modus",
     "darkModeEnabled": "Donkere modus is standaard ingeschakeld",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Abonnement",
+    "subscriptionFlexTagline": "Voor occasionele gebruikers (<5 sessies/maand)",
+    "subscriptionComfortTagline": "Voor frequente gebruikers (>5 sessies/maand)",
+    "subscriptionFree": "Gratis",
+    "subscriptionPerMonth": "/ maand",
+    "subscriptionActive": "Actief",
+    "subscriptionFlexStartFee": "€0,31 startkosten per sessie",
+    "subscriptionFlexKwh": "€0,024/kWh toeslag",
+    "subscriptionComfortStartFee": "Geen startkosten",
+    "subscriptionComfortKwh": "Geen kWh-toeslag",
+    "subscriptionChargingCard": "€9,99 laadpas (optioneel)"
   },
   "payment": {
     "addCard": "Kaart Toevoegen",

@@ -240,7 +240,18 @@
     "deleteAccount": "Poista Tili",
     "darkMode": "Tumma tila",
     "darkModeEnabled": "Tumma tila on oletuksena käytössä",
-    "info": "Tiedot"
+    "info": "Tiedot",
+    "subscription": "Tilaus",
+    "subscriptionFlexTagline": "Satunnaisille käyttäjille (<5 istuntoa/kk)",
+    "subscriptionComfortTagline": "Tiheille käyttäjille (>5 istuntoa/kk)",
+    "subscriptionFree": "Ilmainen",
+    "subscriptionPerMonth": "/ kk",
+    "subscriptionActive": "Aktiivinen",
+    "subscriptionFlexStartFee": "€0,31 aloitusmaksu per istunto",
+    "subscriptionFlexKwh": "€0,024/kWh lisämaksu",
+    "subscriptionComfortStartFee": "Ei aloitusmaksua",
+    "subscriptionComfortKwh": "Ei kWh-lisämaksua",
+    "subscriptionChargingCard": "€9,99 latauskortti (valinnainen)"
   },
   "payment": {
     "addCard": "Lisää Kortti",

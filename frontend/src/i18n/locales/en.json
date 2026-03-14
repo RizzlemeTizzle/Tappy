@@ -265,7 +265,18 @@
     "deleteAccount": "Delete Account",
     "darkMode": "Dark mode",
     "darkModeEnabled": "Dark mode is enabled by default",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Subscription",
+    "subscriptionFlexTagline": "For casual users (<5 sessions/month)",
+    "subscriptionComfortTagline": "For frequent users (>5 sessions/month)",
+    "subscriptionFree": "Free",
+    "subscriptionPerMonth": "/ month",
+    "subscriptionActive": "Active",
+    "subscriptionFlexStartFee": "€0.31 start fee per session",
+    "subscriptionFlexKwh": "€0.024/kWh surcharge",
+    "subscriptionComfortStartFee": "No start fee",
+    "subscriptionComfortKwh": "No kWh surcharge",
+    "subscriptionChargingCard": "€9.99 charging card (optional)"
   },
   "terms": {
     "lastUpdated": "Last updated: January 1, 2025",

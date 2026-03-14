@@ -240,7 +240,18 @@
     "deleteAccount": "Radera Konto",
     "darkMode": "Mörkt läge",
     "darkModeEnabled": "Mörkt läge är aktiverat som standard",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Prenumeration",
+    "subscriptionFlexTagline": "För tillfälliga användare (<5 sessioner/månad)",
+    "subscriptionComfortTagline": "För frekventa användare (>5 sessioner/månad)",
+    "subscriptionFree": "Gratis",
+    "subscriptionPerMonth": "/ månad",
+    "subscriptionActive": "Aktiv",
+    "subscriptionFlexStartFee": "€0,31 startavgift per session",
+    "subscriptionFlexKwh": "€0,024/kWh tillägg",
+    "subscriptionComfortStartFee": "Ingen startavgift",
+    "subscriptionComfortKwh": "Inget kWh-tillägg",
+    "subscriptionChargingCard": "€9,99 laddkort (valfritt)"
   },
   "payment": {
     "addCard": "Lägg till Kort",

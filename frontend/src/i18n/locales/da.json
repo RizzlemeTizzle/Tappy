@@ -240,7 +240,18 @@
     "deleteAccount": "Slet Konto",
     "darkMode": "Mørk tilstand",
     "darkModeEnabled": "Mørk tilstand er aktiveret som standard",
-    "info": "Info"
+    "info": "Info",
+    "subscription": "Abonnement",
+    "subscriptionFlexTagline": "Til lejlighedsvise brugere (<5 sessioner/måned)",
+    "subscriptionComfortTagline": "Til hyppige brugere (>5 sessioner/måned)",
+    "subscriptionFree": "Gratis",
+    "subscriptionPerMonth": "/ måned",
+    "subscriptionActive": "Aktiv",
+    "subscriptionFlexStartFee": "€0,31 startgebyr per session",
+    "subscriptionFlexKwh": "€0,024/kWh tillæg",
+    "subscriptionComfortStartFee": "Intet startgebyr",
+    "subscriptionComfortKwh": "Intet kWh-tillæg",
+    "subscriptionChargingCard": "€9,99 ladekort (valgfrit)"
   },
   "payment": {
     "addCard": "Tilføj Kort",
